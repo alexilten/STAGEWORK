@@ -133,7 +133,7 @@ function InstancedBatch({ batch, mode, finish }: { batch: Batch; mode: ViewMode;
     <instancedMesh
       ref={ref}
       args={[geom, material, n]}
-      castShadow receiveShadow
+      castShadow={!batch.part.mat.startsWith('chair')} receiveShadow
       onClick={pick}
       onPointerDown={(e) => {
         const o = batch.objects[e.instanceId ?? 0];
@@ -144,7 +144,7 @@ function InstancedBatch({ batch, mode, finish }: { batch: Batch; mode: ViewMode;
         const g = batch.objects[e.instanceId ?? 0]?.group ?? null;
         setHover(g);
         const sel = useStore.getState().selection;
-        document.body.style.cursor = sel && sel.group === g && (g?.startsWith('led:') || g === 'truss:front') ? 'grab' : 'pointer';
+        document.body.style.cursor = sel && sel.group === g && (g?.startsWith('led:') || g === 'truss:front' || g === 'seating') ? 'grab' : 'pointer';
       }}
       onPointerOut={() => { setHover(null); document.body.style.cursor = ''; }}
     />

@@ -1,5 +1,5 @@
 import { ft } from './units';
-import { PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project } from './schema';
+import { DEFAULT_SEATING, PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project } from './schema';
 
 export interface Preset {
   id: string;
@@ -24,6 +24,7 @@ function base(name: string, presetId: string): Project {
     },
     lighting: { enabled: true, fixtureId: 'martin.mac-aura-xb', count: 10 },
     presenter: { visible: true },
+    seating: { ...DEFAULT_SEATING },
   };
 }
 
@@ -41,6 +42,7 @@ export const PRESETS: Preset[] = [
       p.stage.width = ft(56);
       p.rigging.front.width = 20000;
       p.lighting.count = 14;
+      p.seating = { ...p.seating, layout: 'radial', count: 2500 };
       p.ledWalls = [wall({ id: 'main', name: 'Panoramic wall', width: 24000, height: 6000, elevation: 900, upstageGap: 1200, curveDeg: 1 })];
       return p;
     },
@@ -51,6 +53,7 @@ export const PRESETS: Preset[] = [
     build: () => {
       const p = base('Product Launch', 'product-launch');
       p.stage.width = ft(56); p.stage.depth = ft(20);
+      p.seating = { ...p.seating, count: 2000 };
       p.rigging.front.width = 20000;
       p.lighting.count = 12;
       p.ledWalls = [
@@ -69,6 +72,7 @@ export const PRESETS: Preset[] = [
       p.stage.width = ft(48);
       p.rigging.front.width = 18000;
       p.rigging.header.overhang = 250;
+      p.seating = { ...p.seating, layout: 'grid', count: 1500 };
       p.ledWalls = [-1, 0, 1].map((k) => wall({ id: ['l', 'c', 'r'][k + 1], name: ['Left', 'Centre', 'Right'][k + 1] + ' screen', width: 5000, height: 3000, elevation: 1500, offsetX: k * 5750 }));
       return p;
     },
@@ -81,6 +85,7 @@ export const PRESETS: Preset[] = [
       p.stage.width = ft(32); p.stage.height = ft(2);
       p.rigging.front = { enabled: true, distance: 5000, trim: 7000, width: 11000 };
       p.lighting.count = 8;
+      p.seating = { ...p.seating, layout: 'radial', count: 500, frontDistance: 2450 };
       p.ledWalls = [wall({ id: 'main', name: 'Backdrop wall', width: 9000, height: 4500, elevation: 1000 })];
       return p;
     },

@@ -6,7 +6,8 @@ export type MaterialKey =
   | 'deckTop' | 'deckFrame' | 'leg' | 'fascia'
   | 'ledBody' | 'ledSupport'
   | 'truss' | 'hoist' | 'fixture'
-  | 'presenter';
+  | 'presenter'
+  | 'chairSeat' | 'chairFrame';
 
 export type Part =
   | { kind: 'box'; min: Vec3; max: Vec3; mat: MaterialKey }
@@ -20,10 +21,11 @@ export type LayerPath =
   | '30_RIGGING::30_01_TRUSS' | '30_RIGGING::30_02_HOISTS' | '30_RIGGING::30_03_HARDWARE'
   | '40_LIGHTING::40_01_FIXTURES' | '40_LIGHTING::40_02_ACCESSORIES'
   | '50_AUDIO' | '60_SCENIC'
+  | '70_AUDIENCE::70_01_SEATING' | '70_AUDIENCE::70_02_LAYOUT'
   | '90_TECHNICAL::90_01_DIMENSIONS' | '90_TECHNICAL::90_02_CENTERLINES' | '90_TECHNICAL::90_03_REFERENCE';
 
 /** UI layer toggles; several Rhino sub-layers can map to one toggle */
-export type SystemKey = 'decking' | 'supports' | 'finishes' | 'ledCabinets' | 'ledSupports' | 'rigging' | 'lighting' | 'audio' | 'scenic' | 'dimensions' | 'reference';
+export type SystemKey = 'decking' | 'supports' | 'finishes' | 'ledCabinets' | 'ledSupports' | 'rigging' | 'lighting' | 'audio' | 'scenic' | 'seating' | 'dimensions' | 'reference';
 
 export interface BlockDef {
   key: string; // Rhino block name

@@ -1,7 +1,7 @@
 /**
  * Direct manipulation. Dragging a selected LED wall moves it in its own plane
  * (horizontal offset + elevation); with Shift it moves on the floor plane (offset + upstage).
- * The front truss drags its trim height (Shift: distance from the stage).
+ * The front truss drags its trim height (Shift: distance from the stage). Seating slides up/downstage.
  * Values snap to production-meaningful steps; hold Alt for 1 mm steps.
  * Every move goes through store.edit(), so the engine re-resolves and undo is one step per drag.
  */
@@ -17,6 +17,8 @@ export interface DragTarget {
   apply: (d: { x: number; y: number; z: number }, shift: boolean, fine: boolean) => string;
   /** plane to drag on, in STAGECRAFT world mm: a point on the plane */
   anchor: [number, number, number];
+  /** drag on the floor plane regardless of Shift */
+  floor?: boolean;
 }
 
 const snap = (v: number, step: number) => Math.round(v / step) * step;
@@ -57,6 +59,18 @@ export function dragTargetFor(group: string): DragTarget | null {
         const distance = shift ? Math.max(500, f0.distance - snap(d.y, st)) : f0.distance;
         useStore.getState().edit((p) => { p.rigging.front.trim = trim; p.rigging.front.distance = distance; }, key);
         return shift ? `Front truss · ${formatLength(distance, units, { precise: true })} from stage` : `Front truss · trim ${formatLength(trim, units, { precise: true })}`;
+      },
+    };
+  }
+  if (group === 'seating' && project.seating && scene.report.seating) {
+    const s0 = { ...project.seating };
+    const key = `drag:${group}:${performance.now()}`;
+    return {
+      group, label: 'Seating', anchor: [0, -scene.report.seating.frontDistance, 0], floor: true,
+      apply: (d, _shift, fine) => {
+        const frontDistance = Math.max(1000, s0.frontDistance - snap(d.y, fine ? 1 : 50));
+        useStore.getState().edit((p) => { p.seating.frontDistance = frontDistance; }, key);
+        return `Seating · front row ${formatLength(frontDistance, units, { precise: true })} from stage`;
       },
     };
   }

@@ -56,6 +56,35 @@ export interface LightingParams {
   count: number;
 }
 
+export type SeatingLayout = 'block' | 'grid' | 'radial';
+
+/**
+ * Audience seating. Spacing defaults follow common US assembly-occupancy practice
+ * (IBC / IFC Chapter 10, NFPA 101 Ch. 12–13); the engine checks row clear width
+ * against the seats-per-row rule but the final plan always needs the venue / AHJ.
+ */
+export interface SeatingParams {
+  enabled: boolean;
+  layout: SeatingLayout;
+  /** target seat count, 250–5000 */
+  count: number;
+  chairId: string;
+  /** downstage edge of the deck → front of the first row */
+  frontDistance: Mm;
+  /** back-to-back row spacing */
+  rowPitch: Mm;
+  /** seat centre-to-centre */
+  seatPitch: Mm;
+  aisleWidth: Mm;
+  /** seats per row in each block (block / radial layouts) */
+  seatsPerBlock: number;
+}
+
+export const DEFAULT_SEATING: SeatingParams = {
+  enabled: true, layout: 'block', count: 1000, chairId: 'generic.chair-stack',
+  frontDistance: 3050, rowPitch: 915, seatPitch: 560, aisleWidth: 1070, seatsPerBlock: 14,
+};
+
 export interface Project {
   schema: typeof PROJECT_SCHEMA;
   version: number;
@@ -67,6 +96,7 @@ export interface Project {
   rigging: RiggingParams;
   lighting: LightingParams;
   presenter: { visible: boolean };
+  seating: SeatingParams;
 }
 
 export function serializeProject(p: Project): string {
@@ -78,6 +108,7 @@ export function parseProject(text: string): Project {
   if (data?.schema !== PROJECT_SCHEMA) throw new Error('Not a STAGECRAFT project file');
   if (typeof data.version !== 'number' || data.version > PROJECT_VERSION)
     throw new Error(`Project version ${data.version} is newer than this app supports (${PROJECT_VERSION})`);
-  // future: migrations keyed by version
+  // additive fields from later rounds: fill defaults rather than bumping the version
+  if (!data.seating) data.seating = { ...DEFAULT_SEATING, enabled: false };
   return data as Project;
 }

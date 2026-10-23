@@ -5,7 +5,7 @@ import { DEFAULT_PRESET, getPreset } from '../core/presets';
 import type { Project } from '../core/schema';
 
 export type ViewMode = 'presentation' | 'technical';
-export type CameraView = 'perspective' | 'front' | 'side' | 'plan' | 'iso';
+export type CameraView = 'perspective' | 'front' | 'side' | 'plan' | 'iso' | 'house';
 export interface Selection { group: string; objectId?: string }
 
 export const ALL_LAYERS: { key: SystemKey; label: string; rhino: string }[] = [
@@ -18,6 +18,7 @@ export const ALL_LAYERS: { key: SystemKey; label: string; rhino: string }[] = [
   { key: 'lighting', label: 'Lighting', rhino: '40' },
   { key: 'audio', label: 'Audio', rhino: '50' },
   { key: 'scenic', label: 'Scenic', rhino: '60' },
+  { key: 'seating', label: 'Audience seating', rhino: '70' },
   { key: 'dimensions', label: 'Dimensions', rhino: '90_01' },
   { key: 'reference', label: 'Reference', rhino: '00' },
 ];
@@ -60,7 +61,7 @@ const urlPreset = typeof window !== 'undefined' ? new URLSearchParams(window.loc
 const initial = (urlPreset ? getPreset(urlPreset) : DEFAULT_PRESET).build();
 const layersFor = (mode: ViewMode): Record<SystemKey, boolean> => ({
   decking: true, supports: mode === 'technical', finishes: true, ledCabinets: true, ledSupports: true,
-  rigging: true, lighting: true, audio: true, scenic: true, dimensions: mode === 'technical', reference: true,
+  rigging: true, lighting: true, audio: true, scenic: true, seating: true, dimensions: mode === 'technical', reference: true,
 });
 
 export const useStore = create<State>((set, get) => ({

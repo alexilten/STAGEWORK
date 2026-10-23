@@ -10,3 +10,4 @@ rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chor
 rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",9,,,secondary,prolyte.h30v
 rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,10,,,generic,generic.hoist-1t
 lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,10,6.5,65,secondary,martin.mac-aura-xb
+seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,1500,,,generic,generic.chair-stack

@@ -32,7 +32,7 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
       if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
       if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(useStore.getState().project); }
       if (!mod && e.key === 't') setMode(useStore.getState().mode === 'technical' ? 'presentation' : 'technical');
-      const views = { '1': 'perspective', '2': 'front', '3': 'side', '4': 'plan', '5': 'iso' } as const;
+      const views = { '1': 'perspective', '2': 'front', '3': 'side', '4': 'plan', '5': 'iso', '6': 'house' } as const;
       if (!mod && e.key in views) useStore.getState().setView(views[e.key as keyof typeof views]);
       if (e.key === 'Escape') useStore.getState().select(null);
       if (e.key.startsWith('Arrow')) {
@@ -123,6 +123,7 @@ const SYSTEM_SETS: { label: string; systems?: SystemKey[] }[] = [
   { label: 'Stage only', systems: ['decking', 'supports', 'finishes'] },
   { label: 'LED only', systems: ['ledCabinets', 'ledSupports'] },
   { label: 'Rigging + lighting', systems: ['rigging', 'lighting'] },
+  { label: 'Audience only', systems: ['seating'] },
 ];
 
 function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast: (m: string) => void }) {

@@ -31,6 +31,8 @@ function materialTable(finish: StageFinish): Record<MaterialKey | 'ledFace', Mat
     hoist: { name: 'SC_Hoist', rgb: [31, 31, 34], metal: 0.4, rough: 0.5 },
     fixture: { name: 'SC_Fixture', rgb: [29, 29, 32], metal: 0.35, rough: 0.45 },
     presenter: { name: 'SC_Reference_Figure', rgb: [235, 232, 227], metal: 0, rough: 0.85 },
+    chairSeat: { name: 'SC_Chair_Seat', rgb: [34, 34, 37], metal: 0, rough: 0.7 },
+    chairFrame: { name: 'SC_Chair_Frame_Steel', rgb: [150, 150, 155], metal: 0.8, rough: 0.35 },
   };
 }
 

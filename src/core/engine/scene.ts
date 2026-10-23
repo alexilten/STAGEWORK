@@ -1,5 +1,6 @@
-import { DECK_SYSTEMS, FIXTURES, HOISTS, LED_CABINETS, TRUSS_SYSTEMS, getCatalogItem } from '../catalog';
-import type { DeckSystem, Fixture, Hoist, LedCabinet, TrussSystem } from '../catalog';
+import { CHAIRS, DECK_SYSTEMS, FIXTURES, HOISTS, LED_CABINETS, TRUSS_SYSTEMS, getCatalogItem } from '../catalog';
+import type { Chair, DeckSystem, Fixture, Hoist, LedCabinet, TrussSystem } from '../catalog';
+import { resolveSeating, type SeatingReport } from './seating';
 import type { Project } from '../schema';
 import { resolveDeck, type DeckLayout } from './deck';
 import { resolveLedWall, type LedLayout } from './led';
@@ -13,6 +14,7 @@ export interface ProductionReport {
   trussSystem: TrussSystem;
   fixtures: { fixture: Fixture; count: number } | null;
   hoist: Hoist;
+  seating: SeatingReport | null;
 }
 
 export interface SceneGraph {
@@ -21,7 +23,10 @@ export interface SceneGraph {
   annotations: Annotation[];
   report: ProductionReport;
   warnings: Warning[];
+  /** stage + overhead bounds (camera framing, shadows) */
   bounds: { min: [number, number, number]; max: [number, number, number] };
+  /** everything including the audience */
+  houseBounds: { min: [number, number, number]; max: [number, number, number] };
 }
 
 /**
@@ -116,6 +121,23 @@ export function resolveScene(project: Project): SceneGraph {
     });
   }
 
+  // ── Audience seating
+  let seating: SeatingReport | null = null;
+  if (project.seating?.enabled) {
+    const chair = getCatalogItem<Chair>(project.seating.chairId, 'chair');
+    const r = resolveSeating(project.seating, chair, { stageWidth: W, stageDepth: D });
+    seating = r.report; addBlocks([r.block]); objects.push(...r.objects); annotations.push(...r.annotations); warnings.push(...r.warnings);
+    if (seating.count) {
+      // sightline: steepest look-up from the front row to the top of the main LED surface
+      const main = led[0];
+      if (main) {
+        const eye = 1150; // seated eye height, common planning value
+        const deg = (Math.atan2(main.top - eye, seating.frontDistance + Math.max(0, main.origin[1])) * 180) / Math.PI;
+        if (deg > 35) warnings.push({ level: 'info', code: 'seating.sightline', target: 'seating', message: `Front row looks up ${deg.toFixed(0)}° to the top of ${main.name} (comfort guideline ≈ 30–35°). Move seating back or lower the wall.` });
+      }
+    }
+  }
+
   // ── Technical annotations (exported to 90_TECHNICAL)
   const off = 900;
   annotations.push(
@@ -144,11 +166,18 @@ export function resolveScene(project: Project): SceneGraph {
   }
   for (const t of truss) { min[0] = Math.min(min[0], t.center[0] - t.length / 2); max[0] = Math.max(max[0], t.center[0] + t.length / 2); max[2] = Math.max(max[2], t.bottom + 290); }
 
+  const hmin: [number, number, number] = [...min], hmax: [number, number, number] = [...max];
+  if (seating?.count) {
+    hmin[0] = Math.min(hmin[0], seating.min[0]); hmin[1] = Math.min(hmin[1], seating.min[1]);
+    hmax[0] = Math.max(hmax[0], seating.max[0]); hmax[1] = Math.max(hmax[1], seating.max[1]);
+  }
+
   return {
     objects, blocks, annotations, warnings,
-    report: { stage: { ...deck.layout, system: deckSys, areaMm2: W * D }, led, truss, trussSystem: trussSys, fixtures, hoist },
+    report: { stage: { ...deck.layout, system: deckSys, areaMm2: W * D }, led, truss, trussSystem: trussSys, fixtures, hoist, seating },
     bounds: { min, max },
+    houseBounds: { min: hmin, max: hmax },
   };
 }
 
-export const catalogs = { LED_CABINETS, DECK_SYSTEMS, TRUSS_SYSTEMS, FIXTURES, HOISTS };
+export const catalogs = { LED_CABINETS, DECK_SYSTEMS, TRUSS_SYSTEMS, FIXTURES, HOISTS, CHAIRS };
