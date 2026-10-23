@@ -50,6 +50,7 @@ export function Viewport() {
       <group rotation={WORLD_ROTATION} scale={MM}>
         <StageModel scene={scene} />
         {dims && <Dimensions scene={scene} />}
+        <DragGuides scene={scene} />
       </group>
 
       <ContactShadows position={[0, 0.001, -(b.min[1] + b.max[1]) / 2 * MM]} scale={span * 1.6} far={8} blur={2.6} opacity={tech ? 0.25 : 0.55} resolution={1024} color="#3a3a40" frames={Infinity} />
@@ -131,4 +132,23 @@ function CameraRig({ scene }: { scene: SceneGraph }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boundsKey]);
   return <CameraControls ref={ref} makeDefault minDistance={2} maxDistance={400} maxPolarAngle={Math.PI * 0.495} smoothTime={0.35} draggingSmoothTime={0.08} dollyToCursor />;
+}
+
+/** While dragging: centreline, stage front and deck-top datum, so moves read against the stage. */
+function DragGuides({ scene }: { scene: SceneGraph }) {
+  const dragging = useStore((s) => s.dragInfo != null);
+  const sel = useStore((s) => s.selection);
+  if (!dragging) return null;
+  const st = scene.report.stage;
+  const W = st.width.resolved, D = st.depth.resolved, H = st.height.resolved;
+  const L = scene.report.led.find((l) => `led:${l.id}` === sel?.group);
+  const centred = L && Math.abs(L.origin[0]) < 0.5;
+  return (
+    <group>
+      <Line points={[[0, -4000, H], [0, D + 6000, H]]} color={centred ? '#0a84ff' : '#a1a1a6'} lineWidth={centred ? 2 : 1} dashed dashSize={250} gapSize={150} />
+      <Line points={[[0, D + 400, 0], [0, D + 400, 14000]]} color={centred ? '#0a84ff' : '#a1a1a6'} lineWidth={centred ? 2 : 1} dashed dashSize={250} gapSize={150} />
+      <Line points={[[-W / 2 - 3000, D + 400, H], [W / 2 + 3000, D + 400, H]]} color="#a1a1a6" lineWidth={1} dashed dashSize={250} gapSize={150} />
+      {L && <Line points={[[L.origin[0], L.origin[1] - L.sagitta - 20, H], [L.origin[0], L.origin[1] - L.sagitta - 20, L.origin[2]]]} color="#0a84ff" lineWidth={1.5} />}
+    </group>
+  );
 }
