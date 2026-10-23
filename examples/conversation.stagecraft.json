@@ -1,0 +1,51 @@
+{
+  "schema": "stagecraft.project",
+  "version": 1,
+  "name": "Conversation Stage",
+  "presetId": "conversation",
+  "units": "metric",
+  "stage": {
+    "width": 9753.6,
+    "depth": 4876.8,
+    "height": 609.6,
+    "deckSystemId": "generic.deck-8x4",
+    "finish": "white",
+    "fascia": true
+  },
+  "ledWalls": [
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 1000,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "main",
+      "name": "Backdrop wall",
+      "width": 9000,
+      "height": 4500
+    }
+  ],
+  "rigging": {
+    "trussId": "prolyte.h30v",
+    "header": {
+      "enabled": true,
+      "clearance": 600,
+      "overhang": 500,
+      "maxHoistSpacing": 6000
+    },
+    "front": {
+      "enabled": true,
+      "distance": 5000,
+      "trim": 7000,
+      "width": 11000
+    }
+  },
+  "lighting": {
+    "enabled": true,
+    "fixtureId": "martin.mac-aura-xb",
+    "count": 8
+  },
+  "presenter": {
+    "visible": true
+  }
+}

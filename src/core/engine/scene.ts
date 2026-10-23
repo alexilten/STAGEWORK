@@ -1,0 +1,154 @@
+import { DECK_SYSTEMS, FIXTURES, HOISTS, LED_CABINETS, TRUSS_SYSTEMS, getCatalogItem } from '../catalog';
+import type { DeckSystem, Fixture, Hoist, LedCabinet, TrussSystem } from '../catalog';
+import type { Project } from '../schema';
+import { resolveDeck, type DeckLayout } from './deck';
+import { resolveLedWall, type LedLayout } from './led';
+import { buildTrussRun, fixtureParts, type TrussRun } from './rigging';
+import type { Annotation, BlockDef, SceneObject, Warning } from './types';
+
+export interface ProductionReport {
+  stage: DeckLayout & { system: DeckSystem; areaMm2: number };
+  led: LedLayout[];
+  truss: TrussRun[];
+  trussSystem: TrussSystem;
+  fixtures: { fixture: Fixture; count: number } | null;
+  hoist: Hoist;
+}
+
+export interface SceneGraph {
+  objects: SceneObject[];
+  blocks: Record<string, BlockDef>;
+  annotations: Annotation[];
+  report: ProductionReport;
+  warnings: Warning[];
+  bounds: { min: [number, number, number]; max: [number, number, number] };
+}
+
+/**
+ * THE single derivation step: project parameters → physically resolved scene.
+ * Pure and deterministic (same project ⇒ identical scene), so the viewport, the
+ * report and every exporter agree by construction.
+ */
+export function resolveScene(project: Project): SceneGraph {
+  const objects: SceneObject[] = [];
+  const blocks: Record<string, BlockDef> = {};
+  const annotations: Annotation[] = [];
+  const warnings: Warning[] = [];
+  const addBlocks = (b: BlockDef[]) => b.forEach((d) => (blocks[d.key] = d));
+
+  // ── Stage
+  const deckSys = getCatalogItem<DeckSystem>(project.stage.deckSystemId, 'deck');
+  const deck = resolveDeck(project.stage, deckSys);
+  addBlocks(deck.blocks); objects.push(...deck.objects); warnings.push(...deck.warnings);
+  const W = deck.layout.width.resolved, D = deck.layout.depth.resolved, H = deck.layout.height.resolved;
+
+  // ── LED
+  const led: LedLayout[] = [];
+  let ledBarH = 0;
+  for (const wall of project.ledWalls) {
+    const cab = getCatalogItem<LedCabinet>(wall.cabinetId, 'led-cabinet');
+    const r = resolveLedWall(wall, cab, { stageTop: H, stageDepth: D });
+    led.push(r.layout); addBlocks([r.block]); objects.push(...r.objects); warnings.push(...r.warnings);
+    ledBarH = r.flyingBarHeight;
+    // conflicts
+    const L = r.layout;
+    const wallFrontMin = L.origin[1] - L.sagitta;
+    const onDeck = wallFrontMin < D && Math.abs(L.origin[0]) - L.chord / 2 < W / 2;
+    if (onDeck && L.origin[2] < H - 0.5) warnings.push({ level: 'error', code: 'led.collision.deck', target: `led:${L.id}`, message: `${L.name} intersects the stage deck — raise it or move it upstage.` });
+    if (L.chord > W + 0.5 && Math.abs(L.origin[0]) < 1) warnings.push({ level: 'info', code: 'led.wider', target: `led:${L.id}`, message: `${L.name} is wider than the stage by ${Math.round(L.chord - W)} mm.` });
+  }
+
+  // ── Rigging
+  const trussSys = getCatalogItem<TrussSystem>(project.rigging.trussId, 'truss');
+  const hoist = HOISTS[0];
+  const truss: TrussRun[] = [];
+  const { header, front } = project.rigging;
+  if (header.enabled) {
+    for (const L of led) {
+      const yC = L.origin[1] - L.sagitta / 2 + L.cabinet.depth / 2;
+      const bottom = L.top + ledBarH + header.clearance;
+      const r = buildTrussRun(trussSys, hoist, {
+        id: `HDR_${L.id.toUpperCase()}`, name: `${L.name} header`, target: L.chord + 2 * header.overhang,
+        center: [L.origin[0], yC, bottom], maxHoistSpacing: header.maxHoistSpacing, group: `truss:header:${L.id}`,
+      });
+      truss.push(r.run); addBlocks(r.blocks); objects.push(...r.objects);
+    }
+  }
+  let frontRun: TrussRun | null = null;
+  if (front.enabled) {
+    const r = buildTrussRun(trussSys, hoist, {
+      id: 'FOH', name: 'Front light truss', target: front.width, center: [0, -front.distance, front.trim],
+      maxHoistSpacing: header.maxHoistSpacing, group: 'truss:front',
+    });
+    frontRun = r.run; truss.push(r.run); addBlocks(r.blocks); objects.push(...r.objects);
+    if (front.trim < H + 4000) warnings.push({ level: 'warn', code: 'truss.front.trim', target: 'truss:front', message: `Front truss trim is only ${Math.round(front.trim - H)} mm above the deck — check sightlines and camera angles.` });
+  }
+  if (truss.length) warnings.push({ level: 'info', code: 'engineering', message: 'Suspended loads shown for planning only. Rigging, truss loading and hoist selection require review by a qualified rigging engineer.' });
+
+  // ── Lighting (hung under the front truss)
+  let fixtures: ProductionReport['fixtures'] = null;
+  if (project.lighting.enabled && frontRun && project.lighting.count > 0) {
+    const fx = getCatalogItem<Fixture>(project.lighting.fixtureId, 'fixture');
+    const key = `SC_FIX_${fx.manufacturer}_${fx.model}`.replace(/[^\w]+/g, '_');
+    addBlocks([{ key, description: `${fx.manufacturer} ${fx.model}`, catalogId: fx.id, parts: fixtureParts(fx) }]);
+    const n = project.lighting.count;
+    const usable = frontRun.length - 600;
+    for (let i = 0; i < n; i++) {
+      const x = n === 1 ? 0 : -usable / 2 + (usable * i) / (n - 1);
+      objects.push({
+        id: `FIX.FOH.${String(i + 1).padStart(2, '0')}`, label: `${fx.manufacturer} ${fx.model}`, layer: '40_LIGHTING::40_01_FIXTURES', system: 'lighting', group: 'fixtures',
+        block: key, position: [x, frontRun.center[1], frontRun.bottom], rotationZ: 0,
+        meta: { catalogId: fx.id, type: fx.fixtureType, weightKg: fx.weightKg, powerMaxW: fx.powerMaxW, position: `FOH truss #${i + 1}` },
+      });
+    }
+    fixtures = { fixture: fx, count: n };
+  }
+
+  // ── Presenter scale figure (1.75 m)
+  if (project.presenter.visible) {
+    objects.push({
+      id: 'REF.PRESENTER', label: 'Presenter scale figure (1.75 m)', layer: '00_REFERENCE', system: 'reference', group: 'presenter',
+      parts: [
+        { kind: 'cyl', from: [0, 0, 0], to: [0, 0, 1480], r: 170, mat: 'presenter' },
+        { kind: 'cyl', from: [0, 0, 1530], to: [0, 0, 1750], r: 105, mat: 'presenter' },
+      ],
+      position: [0, Math.min(D * 0.38, 2400), H], rotationZ: 0, meta: { height: 1750 },
+    });
+  }
+
+  // ── Technical annotations (exported to 90_TECHNICAL)
+  const off = 900;
+  annotations.push(
+    { id: 'DIM.STAGE.WIDTH', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [-W / 2, -off, 0], to: [W / 2, -off, 0], value: W, label: 'Stage width' },
+    { id: 'DIM.STAGE.DEPTH', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [W / 2 + off, 0, 0], to: [W / 2 + off, D, 0], value: D, label: 'Stage depth' },
+    { id: 'DIM.STAGE.HEIGHT', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [-W / 2 - off, 0, 0], to: [-W / 2 - off, 0, H], value: H, label: 'Deck height' },
+    { id: 'CL.STAGE', kind: 'line', layer: '90_TECHNICAL::90_02_CENTERLINES', from: [0, -3000, 0], to: [0, D + 3000, 0], label: 'Centreline' },
+    { id: 'REF.STAGE.FRONT', kind: 'line', layer: '90_TECHNICAL::90_03_REFERENCE', from: [-W / 2 - 2000, 0, 0], to: [W / 2 + 2000, 0, 0], label: 'Stage front (Y=0)' },
+  );
+  for (const L of led) {
+    const x0 = L.origin[0] - L.chord / 2, x1 = L.origin[0] + L.chord / 2, y = L.origin[1] - L.sagitta;
+    const tag = L.id.toUpperCase();
+    annotations.push(
+      { id: `DIM.LED.${tag}.WIDTH`, kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [x0, y, L.top + 450], to: [x1, y, L.top + 450], value: L.chord, label: `${L.name} width` },
+      { id: `DIM.LED.${tag}.HEIGHT`, kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [x1 + 450, y, L.origin[2]], to: [x1 + 450, y, L.top], value: L.top - L.origin[2], label: `${L.name} height` },
+      { id: `DIM.LED.${tag}.ELEV`, kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [x0 - 450, y, H], to: [x0 - 450, y, L.origin[2]], value: L.origin[2] - H, label: `${L.name} above deck` },
+    );
+  }
+
+  // bounds
+  const min: [number, number, number] = [-W / 2, Math.min(0, frontRun ? frontRun.center[1] - 300 : 0), 0];
+  const max: [number, number, number] = [W / 2, D, H];
+  for (const L of led) {
+    min[0] = Math.min(min[0], L.origin[0] - L.chord / 2); max[0] = Math.max(max[0], L.origin[0] + L.chord / 2);
+    max[1] = Math.max(max[1], L.origin[1] + L.cabinet.depth); max[2] = Math.max(max[2], L.top);
+  }
+  for (const t of truss) { min[0] = Math.min(min[0], t.center[0] - t.length / 2); max[0] = Math.max(max[0], t.center[0] + t.length / 2); max[2] = Math.max(max[2], t.bottom + 290); }
+
+  return {
+    objects, blocks, annotations, warnings,
+    report: { stage: { ...deck.layout, system: deckSys, areaMm2: W * D }, led, truss, trussSystem: trussSys, fixtures, hoist },
+    bounds: { min, max },
+  };
+}
+
+export const catalogs = { LED_CABINETS, DECK_SYSTEMS, TRUSS_SYSTEMS, FIXTURES, HOISTS };

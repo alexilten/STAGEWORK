@@ -1,0 +1,16 @@
+const P = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+export const Icon = {
+  undo: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><path d="M5.5 4.5 3 7l2.5 2.5" /><path d="M3 7h6.5a3.5 3.5 0 0 1 0 7H8" /></svg>,
+  redo: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><path d="M10.5 4.5 13 7l-2.5 2.5" /><path d="M13 7H6.5a3.5 3.5 0 0 0 0 7H8" /></svg>,
+  open: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><path d="M2.5 4.5v8h11v-6h-6l-1.5-2z" /></svg>,
+  save: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><path d="M8 2.5v7M5 7l3 3 3-3" /><path d="M3 11.5v2h10v-2" /></svg>,
+  export: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><path d="M8 10V2.5M5 5.5l3-3 3 3" /><path d="M3 9.5v4h10v-4" /></svg>,
+  eye: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" /><circle cx="8" cy="8" r="2" /></svg>,
+  eyeOff: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><path d="M2 2l12 12" /><path d="M6.2 4c.6-.3 1.2-.5 1.8-.5 4 0 6.5 4.5 6.5 4.5a12 12 0 0 1-1.7 2.2M10 11.9c-.6.4-1.3.6-2 .6-4 0-6.5-4.5-6.5-4.5A11 11 0 0 1 4 5.1" /></svg>,
+  chevron: () => <svg width="12" height="12" viewBox="0 0 12 12" {...P}><path d="M3 4.5 6 7.5l3-3" /></svg>,
+  frame: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10" /></svg>,
+  close: () => <svg width="12" height="12" viewBox="0 0 12 12" {...P}><path d="M3 3l6 6M9 3 3 9" /></svg>,
+  warn: () => <svg width="14" height="14" viewBox="0 0 16 16" {...P}><path d="M8 2 1.5 13.5h13z" /><path d="M8 6.5v3.2M8 11.6v.1" /></svg>,
+  info: () => <svg width="14" height="14" viewBox="0 0 16 16" {...P}><circle cx="8" cy="8" r="6.5" /><path d="M8 7.2v4M8 4.9v.1" /></svg>,
+  check: () => <svg width="12" height="12" viewBox="0 0 12 12" {...P}><path d="M2.5 6.2 5 8.5l4.5-5" /></svg>,
+};

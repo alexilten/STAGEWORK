@@ -1,0 +1,36 @@
+{
+  "name": "stagecraft",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "STAGECRAFT — parametric stage design configurator with native Rhino export",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "export:samples": "vite-node scripts/export-samples.ts",
+    "verify:3dm": "python3 scripts/verify_3dm.py samples/*.3dm"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.4.0",
+    "@react-three/postprocessing": "^3.0.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "rhino3dm": "^8.35.0",
+    "three": "^0.180.0",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/three": "^0.180.0",
+    "@vitejs/plugin-react": "^5.1.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.12",
+    "vitest": "^3.2.4"
+  }
+}

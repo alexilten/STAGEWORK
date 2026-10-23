@@ -1,0 +1,14 @@
+System,Rhino layer,Manufacturer,Model,Item,Qty,Unit weight (kg),Total weight (kg),Verification,Catalogue id
+decking,10_STAGE::10_01_DECKING,Generic,Steel-frame platform 8′ × 4′,8′ × 4′ platform,28,,,generic,generic.deck-8x4
+supports,10_STAGE::10_03_SUPPORTS,Generic,Steel-frame platform 8′ × 4′,Platform leg,112,,,generic,generic.deck-8x4
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Stage fascia — front,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Stage fascia — house left,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Stage fascia — house right,1,,,generic,
+ledCabinets,20_LED::20_01_CABINETS,ROE Visual,Black Pearl BP2 V2,Black Pearl BP2 V2 cabinet,576,9.35,5385.6,secondary,roe.bp2v2
+ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 2-wide (generic),24,,,generic,
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 0.71 m",11,,,secondary,prolyte.h30v
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 1.5 m",1,,,secondary,prolyte.h30v
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",11,,,secondary,prolyte.h30v
+rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,10,,,generic,generic.hoist-1t
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2 m",1,14.49,14.49,secondary,prolyte.h30v
+lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,14,6.5,91,secondary,martin.mac-aura-xb
