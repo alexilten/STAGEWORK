@@ -34,6 +34,7 @@ export function App() {
         <button className="icon-btn" title="Frame stage" onClick={() => setView(view)}><Icon.frame /></button>
       </div>
       <Hud />
+      <DragInfo />
       {toast && <div className="toast glass">{toast}</div>}
     </div>
   );
@@ -53,4 +54,9 @@ function Hud() {
       {errs > 0 && <span className="err">{errs} conflict{errs > 1 ? 's' : ''}</span>}
     </div>
   );
+}
+
+function DragInfo() {
+  const info = useStore((s) => s.dragInfo);
+  return info ? <div className="drag-info glass">{info}</div> : null;
 }

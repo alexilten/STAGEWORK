@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import type { SystemKey } from '../core/engine/types';
 import { PRESETS } from '../core/presets';
 import { parseProject } from '../core/schema';
-import { export3dm, exportBom, exportProject, loadRhino } from '../export/browser';
+import { export3dm, exportBom, exportGlbFile, exportProject, loadRhino } from '../export/browser';
+import { getCatalogItem, type LedCabinet } from '../core/catalog';
+import { deleteUserPreset, listUserPresets, loadUserPreset, saveUserPreset } from './userPresets';
 import { Segmented } from './controls';
 import { Icon } from './icons';
 import { useStore } from './store';
@@ -20,6 +22,7 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
   const setMode = useStore((s) => s.setMode);
   const fileRef = useRef<HTMLInputElement>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [userPresets, setUserPresets] = useState(listUserPresets);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -32,6 +35,24 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
       const views = { '1': 'perspective', '2': 'front', '3': 'side', '4': 'plan', '5': 'iso' } as const;
       if (!mod && e.key in views) useStore.getState().setView(views[e.key as keyof typeof views]);
       if (e.key === 'Escape') useStore.getState().select(null);
+      if (e.key.startsWith('Arrow')) {
+        const st = useStore.getState();
+        const g = st.selection?.group;
+        if (!g?.startsWith('led:')) return;
+        const i = st.project.ledWalls.findIndex((w) => `led:${w.id}` === g);
+        if (i < 0) return;
+        e.preventDefault();
+        const w = st.project.ledWalls[i];
+        const step = e.altKey ? 10 : 0;
+        const sx = step || getCatalogItem<LedCabinet>(w.cabinetId, 'led-cabinet').width / 2, sz = step || 50;
+        st.edit((p) => {
+          const t = p.ledWalls[i];
+          if (e.key === 'ArrowLeft') t.offsetX -= sx;
+          if (e.key === 'ArrowRight') t.offsetX += sx;
+          if (e.key === 'ArrowUp') e.shiftKey ? (t.upstageGap += sz) : (t.elevation += sz);
+          if (e.key === 'ArrowDown') e.shiftKey ? (t.upstageGap -= sz) : (t.elevation -= sz);
+        }, `nudge:${g}`);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -60,9 +81,20 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
       </div>
       <div className="tb-group">
         <div className="select tb-select">
-          <select value={project.presetId ?? ''} onChange={(e) => loadPreset(e.target.value)} title="Start from a preset">
+          <select value={project.presetId ?? ''} title="Start from a preset" onChange={(e) => {
+            const v = e.target.value;
+            if (v === '__save') { setUserPresets(saveUserPreset(project)); onToast(`Saved “${project.name}” as a preset in this browser`); return; }
+            if (v.startsWith('__del:')) { setUserPresets(deleteUserPreset(v.slice(6))); onToast('Preset removed'); return; }
+            if (v.startsWith('user:')) { const u = userPresets.find((x) => `user:${x.id}` === v); if (u) { load({ ...loadUserPreset(u), presetId: v }); } return; }
+            loadPreset(v);
+          }}>
             {!project.presetId && <option value="">Custom</option>}
-            {PRESETS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            <optgroup label="Presets">{PRESETS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</optgroup>
+            {userPresets.length > 0 && <optgroup label="My presets">{userPresets.map((u) => <option key={u.id} value={`user:${u.id}`}>{u.name}</option>)}</optgroup>}
+            <optgroup label="Manage">
+              <option value="__save">Save current as preset</option>
+              {userPresets.map((u) => <option key={u.id} value={`__del:${u.id}`}>Remove “{u.name}”</option>)}
+            </optgroup>
           </select>
           <span className="chev"><Icon.chevron /></span>
         </div>
@@ -104,7 +136,7 @@ function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast: (m: st
   const { scene, project } = useStore.getState();
   return (
     <div className="menu glass" onMouseLeave={onClose}>
-      <div className="menu-title">Rhino model</div>
+      <div className="menu-title">Export</div>
       <div className="menu-row">
         <Segmented size="sm" value={version} onChange={setVersion} options={[{ value: '8', label: 'Rhino 8' }, { value: '7', label: 'Rhino 7' }]} />
       </div>
@@ -118,9 +150,10 @@ function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast: (m: st
         return n;
       }, 'Rhino .3dm exported')}>{busy ? 'Preparing…' : 'Export .3dm'}</button>
       <div className="menu-sep" />
+      <button className="menu-item" onClick={() => go(() => exportGlbFile(scene, project, SYSTEM_SETS[set].systems), 'GLB exported')}>glTF binary (selection above) <span>.glb</span></button>
       <button className="menu-item" onClick={() => go(() => exportBom(scene, project), 'Bill of materials exported')}>Bill of materials <span>.csv</span></button>
       <button className="menu-item" onClick={() => go(() => exportProject(project), 'Project saved')}>Project file <span>.json</span></button>
-      <div className="menu-item disabled" title="Round 4">GLB · FBX · DXF · STEP <span>planned</span></div>
+      <div className="menu-item disabled" title="Round 4">FBX · DXF · DWG · STEP <span>planned</span></div>
     </div>
   );
 }

@@ -17,14 +17,18 @@ Implemented and tested:
 
 Tests (`npm test`, 24 passing): LED modularity, stage geometry, modular constraints, persistence, Rhino export structure, scene/export consistency for all presets, unit parsing. Plus `npm run verify:3dm` (independent Python reader).
 
-## Round 2 — refined UX & creative systems (next)
-1. Direct manipulation: drag LED walls / stage in the viewport with snapping guides; transform gizmo.
-2. Add / remove / duplicate LED surfaces in the UI; per-wall header toggle.
-3. GLB export from the SceneGraph.
-4. Real-time dimension annotations in Presentation mode (subtle), clearance indicators.
-5. Preset customisation & save as preset; project thumbnails.
-6. Material refinement (stage finishes, LED glass, fascia options), studio backdrop options.
-7. Usability pass with a designer workflow script (Test 7).
+## Round 2 — refined UX & creative systems (in progress)
+Done:
+- Direct manipulation: select an LED wall (or the front truss), then drag it. Walls move in their own plane (offset + elevation); Shift-drag moves up/downstage; Alt disables snapping; arrow keys nudge. Snaps to half-cabinet / 50 mm; one undo step per drag; live readout.
+- Add, duplicate, rename and remove LED surfaces.
+- GLB export written directly from the SceneGraph: shared meshes per equipment block, one named node per component with metadata in `extras`, layer hierarchy, metres / Y-up. Passes the Khronos glTF validator for every preset and loads at true size in three.js (tests/glb.test.ts).
+- Save the current design as a custom preset (stored in this browser).
+
+Next:
+1. Transform gizmo and snapping guides drawn in the viewport.
+2. Subtle dimensions in Presentation mode; clearance indicators (LED bottom vs. presenter eye line, truss vs. LED).
+3. Material refinement (stage finishes, LED glass, fascia options), studio backdrop options.
+4. Usability pass with a designer workflow script (Test 7).
 
 ## Round 3 — technical production systems
 Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, expanded LED/lighting catalogue (Robe, Ayrton, Claypaky, ETC, Chauvet), lighting positions & arrangement presets, audio (line arrays, fills), scenic panels/portals, richer warnings (sightlines, trim vs. venue height).
@@ -42,5 +46,5 @@ Performance (5k+ cabinets), catalogue search/filter UI, venue models (e.g. Pier 
 - Deck legs are drawn 4 per platform; real systems share legs/clamps.
 - Curved walls hang from a straight header truss with no pickup geometry.
 - Rectangular single-level stages only.
-- No GLB/FBX/DXF/STEP yet.
+- No FBX/DXF/DWG/STEP yet (GLB done in Round 2).
 - The .3dm has not been opened in desktop Rhino from the build environment; it is verified with two openNURBS readers.

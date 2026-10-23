@@ -48,6 +48,12 @@ interface State {
   setMode: (m: ViewMode) => void;
   setView: (v: CameraView) => void;
   setActiveWall: (id: string) => void;
+  addWall: () => void;
+  duplicateWall: (id: string) => void;
+  removeWall: (id: string) => void;
+  /** live readout while dragging in the viewport */
+  dragInfo: string | null;
+  setDragInfo: (s: string | null) => void;
 }
 
 const urlPreset = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('preset') : null;
@@ -72,7 +78,8 @@ export const useStore = create<State>((set, get) => ({
     const next = structuredClone(project);
     fn(next);
     const now = performance.now();
-    const merge = key != null && key === lastEditKey && now - lastEditAt < 800;
+    // drags/nudges are one gesture regardless of frame time; slider edits merge within 800 ms
+    const merge = key != null && key === lastEditKey && (key.startsWith('drag:') || now - lastEditAt < 800);
     set({
       project: next, scene: resolveScene(next),
       past: merge ? past : [...past.slice(-199), project], future: [],
@@ -98,7 +105,39 @@ export const useStore = create<State>((set, get) => ({
   toggleLayer: (k) => set({ layers: { ...get().layers, [k]: !get().layers[k] } }),
   setMode: (m) => set({ mode: m, layers: { ...get().layers, dimensions: m === 'technical', supports: m === 'technical' ? true : get().layers.supports } }),
   setView: (v) => set({ view: v, viewNonce: get().viewNonce + 1 }),
-  setActiveWall: (id) => set({ activeWall: id }),
+  setActiveWall: (id) => set({ activeWall: id, selection: { group: `led:${id}` } }),
+  addWall: () => {
+    const id = uniqueWallId(get().project);
+    get().edit((p) => {
+      const ref = p.ledWalls[p.ledWalls.length - 1];
+      const x = ref ? ref.offsetX + ref.width / 2 + 1500 + 1500 : 0;
+      p.ledWalls.push({ id, name: `Screen ${p.ledWalls.length + 1}`, cabinetId: ref?.cabinetId ?? 'roe.bp2v2', width: 3000, height: 2000, elevation: 1500, offsetX: x, upstageGap: ref ? ref.upstageGap : 300, curveDeg: 0 });
+    });
+    set({ activeWall: id, selection: { group: `led:${id}` } });
+  },
+  duplicateWall: (src) => {
+    const id = uniqueWallId(get().project);
+    get().edit((p) => {
+      const w = p.ledWalls.find((x) => x.id === src);
+      if (!w) return;
+      p.ledWalls.push({ ...w, id, name: `${w.name} copy`, offsetX: w.offsetX + w.width + 500 });
+    });
+    set({ activeWall: id, selection: { group: `led:${id}` } });
+  },
+  removeWall: (id) => {
+    get().edit((p) => { p.ledWalls = p.ledWalls.filter((w) => w.id !== id); });
+    set({ activeWall: get().project.ledWalls[0]?.id ?? '', selection: null });
+  },
+  dragInfo: null,
+  setDragInfo: (s) => set({ dragInfo: s }),
 }));
 
+function uniqueWallId(p: Project) {
+  let n = p.ledWalls.length + 1;
+  while (p.ledWalls.some((w) => w.id === `s${n}`)) n++;
+  return `s${n}`;
+}
+
 const fixWall = (p: Project, id: string) => (p.ledWalls.some((w) => w.id === id) ? id : p.ledWalls[0]?.id ?? '');
+
+if (import.meta.env?.DEV && typeof window !== 'undefined') (window as unknown as { __stagecraft: typeof useStore }).__stagecraft = useStore;

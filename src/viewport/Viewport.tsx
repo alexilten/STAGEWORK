@@ -7,6 +7,7 @@ import type { SceneGraph } from '../core/engine/scene';
 import { formatLength } from '../core/units';
 import { useStore, type CameraView } from '../ui/store';
 import { StageModel } from './StageModel';
+import { DragController } from './DragController';
 
 /** World is mm, Z-up (see core/schema.ts). three.js is Y-up metres → one wrapping transform. */
 const WORLD_ROTATION = new THREE.Euler(-Math.PI / 2, 0, 0);
@@ -57,6 +58,7 @@ export function Viewport() {
           cellColor="#d9d9de" sectionColor="#bdbdc6" fadeDistance={70} fadeStrength={1.6} infiniteGrid />
       )}
       <CameraRig scene={scene} />
+      <DragController />
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <N8AO aoRadius={0.9} intensity={tech ? 1.2 : 2.4} distanceFalloff={0.6} halfRes color="#1a1a22" />
         <SMAA />

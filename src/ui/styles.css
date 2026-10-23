@@ -200,3 +200,21 @@ code { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
 @keyframes pop { from { opacity: 0; transform: scale(0.96) translateY(-4px); } to { opacity: 1; transform: none; } }
 
 @media (max-width: 1100px) { .panel { width: 270px; } .panel.right { width: 260px; } .project-name { width: 140px; } .hud { display: none; } }
+
+/* ── Round 2 */
+.surface-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 12px; }
+.surface-tabs button { height: 28px; padding: 0 11px; border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--ink-2); background: rgba(0,0,0,.045); transition: background .2s var(--ease), color .2s; }
+.surface-tabs button:hover { background: rgba(0,0,0,.075); }
+.surface-tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 0 0 .5px rgba(0,0,0,.06); }
+.surface-tabs button.add { width: 28px; padding: 0; font-size: 16px; font-weight: 400; }
+.surface-head { display: flex; align-items: center; gap: 4px; }
+.name-input { flex: 1; min-width: 0; border: 0; background: transparent; font-weight: 600; font-size: 13px; padding: 4px 6px; margin-left: -6px; border-radius: 7px; }
+.name-input:hover { background: rgba(0,0,0,.04); }
+.name-input:focus { outline: none; background: #fff; box-shadow: 0 0 0 3px var(--accent-soft); }
+.text-btn { font-size: 12px; color: var(--accent); padding: 4px 6px; border-radius: 6px; }
+.text-btn:hover { background: var(--accent-soft); }
+.text-btn.danger { color: var(--err); }
+.text-btn.danger:hover { background: rgba(215,0,21,.07); }
+.drag-hint { margin: -6px 0 12px; }
+.drag-info { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); padding: 7px 14px; border-radius: 10px; font-weight: 500; font-variant-numeric: tabular-nums; z-index: 8; pointer-events: none; background: var(--glass-strong); }
+.menu-item.preset-del { color: var(--err); }

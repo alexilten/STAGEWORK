@@ -1,7 +1,7 @@
 import { DECK_SYSTEMS, FIXTURES, LED_CABINETS, getCatalogItem, type DeckSystem, type LedCabinet } from '../core/catalog';
 import type { StageFinish } from '../core/schema';
 import { formatLength } from '../core/units';
-import { LengthControl, NumberControl, Section, Segmented, Select, Toggle, VerificationBadge } from './controls';
+import { LengthControl, NumberControl, Section, Select, Toggle, VerificationBadge } from './controls';
 import { useStore } from './store';
 
 const ASPECTS: { label: string; r: number }[] = [
@@ -14,6 +14,9 @@ export function LeftPanel() {
   const edit = useStore((s) => s.edit);
   const activeWall = useStore((s) => s.activeWall);
   const setActiveWall = useStore((s) => s.setActiveWall);
+  const addWall = useStore((s) => s.addWall);
+  const duplicateWall = useStore((s) => s.duplicateWall);
+  const removeWall = useStore((s) => s.removeWall);
   const u = project.units;
   const st = scene.report.stage;
   const deck = getCatalogItem<DeckSystem>(project.stage.deckSystemId, 'deck');
@@ -55,12 +58,21 @@ export function LeftPanel() {
           <Toggle label="Fascia" checked={project.stage.fascia} onChange={(v) => edit((p) => { p.stage.fascia = v; })} />
         </Section>
 
-        {wall && L && cab && (
-          <Section title="LED media" summary={`${L.cols} × ${L.rows} · ${L.count} cabinets`}>
-            {project.ledWalls.length > 1 && (
-              <Segmented size="sm" value={wall.id} onChange={setActiveWall}
-                options={project.ledWalls.map((w) => ({ value: w.id, label: w.name.replace(/ (wall|screen)$/i, '') }))} />
-            )}
+        <Section title="LED media" summary={L ? `${project.ledWalls.length} surface${project.ledWalls.length === 1 ? '' : 's'} · ${scene.report.led.reduce((a, l) => a + l.count, 0)} cabinets` : 'none'}>
+          <div className="surface-tabs">
+            {project.ledWalls.map((w) => (
+              <button key={w.id} className={w.id === wall?.id ? 'on' : ''} onClick={() => setActiveWall(w.id)}>{w.name.replace(/ (wall|screen)$/i, '')}</button>
+            ))}
+            <button className="add" onClick={addWall} title="Add an LED surface">+</button>
+          </div>
+          {!wall && <p className="muted small">No LED surfaces. Add one to start.</p>}
+          {wall && L && cab && (<>
+            <div className="ctl surface-head">
+              <input id="wall-name" className="name-input" value={wall.name} spellCheck={false} onChange={(e) => edit((p) => { p.ledWalls[wi].name = e.target.value; }, `led.${wall.id}.name`)} />
+              <button className="text-btn" onClick={() => duplicateWall(wall.id)}>Duplicate</button>
+              <button className="text-btn danger" onClick={() => removeWall(wall.id)}>Remove</button>
+            </div>
+            <p className="muted small drag-hint">Select the wall in the viewport, then drag it. Shift-drag moves it up/downstage, Alt turns off snapping, arrow keys nudge.</p>
             <Select label="Cabinet" value={wall.cabinetId}
               options={LED_CABINETS.map((c) => ({ value: c.id, label: `${c.manufacturer === 'Generic' ? '' : c.manufacturer + ' '}${c.model}`, badge: `${c.width}×${c.height}` }))}
               onChange={(v) => edit((p) => { p.ledWalls[wi].cabinetId = v; })} />
@@ -95,8 +107,8 @@ export function LeftPanel() {
             <NumberControl label="Curve per joint" value={L.curveDeg} min={0} max={curveMax || 1} step={0.5} suffix="°" disabled={!curveMax}
               hint={curveMax ? <>Concave · product limit {curveMax}° · sagitta {formatLength(L.sagitta, u, { precise: true })}</> : 'Curving not documented for this cabinet'}
               onChange={(v) => edit((p) => { p.ledWalls[wi].curveDeg = v; }, `led.${wall.id}.curve`)} />
-          </Section>
-        )}
+          </>)}
+        </Section>
 
         <Section title="Rigging" defaultOpen={false} summary={`${scene.report.truss.reduce((a, t) => a + t.sections.length, 0)} truss sections`}>
           <Toggle label="LED header truss" checked={project.rigging.header.enabled} onChange={(v) => edit((p) => { p.rigging.header.enabled = v; })} />
