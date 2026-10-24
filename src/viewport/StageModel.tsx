@@ -43,7 +43,9 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
   const mode = useStore((s) => s.mode);
   const finish = useStore((s) => s.project.stage.finish);
   const scenicFinish = useStore((s) => s.project.scenic?.portal.finish ?? 'white');
-  const visible = useMemo(() => scene.objects.filter((o) => layers[o.system]), [scene, layers]);
+  // looking through a camera hides that camera's own rig
+  const hidden = useStore((s) => (s.shot ? `bcast:${s.shot.cam}` : null));
+  const visible = useMemo(() => scene.objects.filter((o) => layers[o.system] && o.group !== hidden), [scene, layers, hidden]);
 
   // group visible objects into instanced batches: one per (block|unique object, part)
   const batches = useMemo(() => {
@@ -101,6 +103,9 @@ function InstancedBatch({ batch, mode, finish, scenicFinish }: { batch: Batch; m
     material.userData.uniforms.uEdge.value = batch.part.kind === 'box' ? look.edge : 0;
     material.userData.uniforms.uEdgeColor.value.set(look.edgeColor ?? '#000');
     material.envMapIntensity = mode === 'technical' ? 0.4 : 1;
+    material.transparent = look.opacity != null;
+    material.opacity = look.opacity ?? 1;
+    material.depthWrite = look.opacity == null;
   }, [material, look, batch.part.kind, mode]);
 
   useLayoutEffect(() => {

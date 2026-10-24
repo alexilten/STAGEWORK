@@ -5,13 +5,14 @@ import type { ViewMode } from '../ui/store';
 
 export const ACCENT = new THREE.Color('#0a84ff');
 
-interface Look { color: string; metalness: number; roughness: number; edge: number; edgeColor?: string }
+interface Look { color: string; metalness: number; roughness: number; edge: number; edgeColor?: string; opacity?: number }
 
 const FINISH: Record<StageFinish, string> = { white: '#f2f1ee', black: '#1b1b1d', graphite: '#3a3a3d', oak: '#b99a74' };
 
 export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish, scenicFinish: StageFinish = 'white'): Look {
   if (mode === 'technical') {
-    const tone: Partial<Record<MaterialKey, string>> = { drape: '#d0d0d6', scenicFlat: '#ececef', speaker: '#d7d7dc', speakerGrille: '#bcbcc2', chairSeat: '#e4e4e8', chairFrame: '#c7c7cc', ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc' };
+    if (key === 'glass') return { color: '#cfe3f0', metalness: 0, roughness: 0.1, edge: 0, opacity: 0.35 };
+    const tone: Partial<Record<MaterialKey, string>> = { camera: '#b9b9bf', platform: '#d6d6db', screen: '#9a9aa2', drape: '#d0d0d6', scenicFlat: '#ececef', speaker: '#d7d7dc', speakerGrille: '#bcbcc2', chairSeat: '#e4e4e8', chairFrame: '#c7c7cc', ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc' };
     return { color: tone[key] ?? '#f7f7f8', metalness: 0, roughness: 0.9, edge: 1, edgeColor: '#5d5d63' };
   }
   switch (key) {
@@ -31,6 +32,10 @@ export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish, s
     case 'speakerGrille': return { color: '#0c0c0e', metalness: 0.5, roughness: 0.45, edge: 0 };
     case 'scenicFlat': return { color: FINISH[scenicFinish], metalness: 0, roughness: 0.8, edge: 0.35, edgeColor: scenicFinish === 'white' ? '#cfccc6' : '#0c0c0d' };
     case 'drape': return { color: '#121213', metalness: 0, roughness: 1, edge: 0 };
+    case 'camera': return { color: '#2a2a2e', metalness: 0.45, roughness: 0.45, edge: 0 };
+    case 'platform': return { color: '#1e1e21', metalness: 0, roughness: 0.92, edge: 0.4, edgeColor: '#000000' };
+    case 'glass': return { color: '#cfe3f0', metalness: 0, roughness: 0.05, edge: 0, opacity: 0.3 };
+    case 'screen': return { color: '#0d1422', metalness: 0.2, roughness: 0.18, edge: 0 };
   }
 }
 

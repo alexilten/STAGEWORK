@@ -11,15 +11,18 @@ export function buildBom(scene: SceneGraph): BomLine[] {
   const cat = new Map(CATALOG.map((c) => [c.id, c]));
   const lines = new Map<string, BomLine>();
   for (const o of scene.objects) {
-    if (o.system === 'reference') continue;
+    if (o.system === 'reference' || o.meta.bomSkip) continue;
     const catalogId = typeof o.meta.catalogId === 'string' ? o.meta.catalogId : '';
     const c = cat.get(catalogId);
-    const key = `${o.block ?? o.label}|${catalogId}`;
+    const str = (k: string) => (typeof o.meta[k] === 'string' ? (o.meta[k] as string) : undefined);
+    // items outside the main catalogue (broadcast gear) carry their own BOM line in meta
+    const item = str('bom');
+    const key = item ? `bom|${item}` : `${o.block ?? o.label}|${catalogId}`;
     const unit = typeof o.meta.weightKg === 'number' ? o.meta.weightKg
       : c && 'weightKg' in c && o.layer === '20_LED::20_01_CABINETS' ? c.weightKg : null;
     const line = lines.get(key) ?? {
-      system: o.system, layer: o.layer, manufacturer: c?.manufacturer ?? 'Generic', model: c?.model ?? '—',
-      item: o.label, qty: 0, unitWeightKg: unit ?? null, totalWeightKg: null, verification: c?.verification ?? 'generic', catalogId,
+      system: o.system, layer: o.layer, manufacturer: c?.manufacturer ?? str('manufacturer') ?? 'Generic', model: c?.model ?? str('model') ?? '—',
+      item: item ?? o.label, qty: 0, unitWeightKg: unit ?? null, totalWeightKg: null, verification: c?.verification ?? str('verification') ?? 'generic', catalogId,
     };
     line.qty++;
     lines.set(key, line);

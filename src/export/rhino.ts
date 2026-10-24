@@ -33,11 +33,12 @@ export const LAYER_TREE: { name: string; color: [number, number, number]; childr
   { name: '50_AUDIO', color: [120, 70, 190], children: ['50_01_MAINS', '50_02_SUBS', '50_03_FILLS', '50_04_MONITORS'] },
   { name: '60_SCENIC', color: [40, 150, 100], children: ['60_01_PORTAL', '60_02_MASKING', '60_03_DRAPES'] },
   { name: '70_AUDIENCE', color: [110, 110, 130], children: ['70_01_SEATING', '70_02_LAYOUT'] },
+  { name: '80_BROADCAST', color: [0, 150, 170], children: ['80_01_CAMERAS', '80_02_PLATFORMS', '80_03_TRACK', '80_04_PROMPTERS', '80_05_CREW'] },
   { name: '90_TECHNICAL', color: [230, 40, 40], children: ['90_01_DIMENSIONS', '90_02_CENTERLINES', '90_03_REFERENCE'] },
 ];
 
 /** Rhino display/render materials (simple, renderer-agnostic). */
-export const RHINO_MATERIALS: Record<MaterialKey, { name: string; rgb: [number, number, number]; gloss?: number }> = {
+export const RHINO_MATERIALS: Record<MaterialKey, { name: string; rgb: [number, number, number]; gloss?: number; transparency?: number }> = {
   deckTop: { name: 'SC_Deck_Top', rgb: [42, 42, 44], gloss: 0.15 },
   deckFrame: { name: 'SC_Deck_Frame_Steel', rgb: [70, 70, 72], gloss: 0.4 },
   leg: { name: 'SC_Leg_Steel', rgb: [120, 120, 124], gloss: 0.5 },
@@ -54,6 +55,10 @@ export const RHINO_MATERIALS: Record<MaterialKey, { name: string; rgb: [number, 
   speakerGrille: { name: 'SC_Speaker_Grille', rgb: [12, 12, 14], gloss: 0.1 },
   scenicFlat: { name: 'SC_Scenic_Flat', rgb: [236, 235, 232], gloss: 0.05 },
   drape: { name: 'SC_Drape_Black_Velour', rgb: [14, 14, 15] },
+  camera: { name: 'SC_Camera', rgb: [38, 38, 42], gloss: 0.3 },
+  platform: { name: 'SC_Camera_Platform', rgb: [30, 30, 32] },
+  glass: { name: 'SC_Prompter_Glass', rgb: [200, 214, 224], gloss: 0.9, transparency: 0.75 },
+  screen: { name: 'SC_Monitor_Screen', rgb: [12, 16, 26], gloss: 0.6 },
 };
 
 export interface RhinoExportOptions {
@@ -101,6 +106,7 @@ export function exportRhino(rh: RhinoModule, scene: SceneGraph, project: Project
     mat.name = m.name;
     mat.diffuseColor = rgba(m.rgb);
     if (m.gloss) { mat.shine = m.gloss * 255; mat.reflectivity = m.gloss * 0.3; }
+    if (m.transparency) mat.transparency = m.transparency;
     matIndex.set(key, doc.materials().add(mat));
   }
 

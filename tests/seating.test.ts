@@ -4,7 +4,8 @@ import { maxSeatsPerRow, requiredRowClear, rowLabel, SEAT_COUNT, wheelchairSpace
 import { getPreset } from '../src/core/presets';
 import { parseProject, serializeProject, type Project, type SeatingLayout } from '../src/core/schema';
 
-const project = (mut?: (p: Project) => void) => { const p = getPreset('minimal-keynote').build(); mut?.(p); return p; };
+// broadcast off: camera positions remove seats ("seat kills"), tested in broadcast.test.ts
+const project = (mut?: (p: Project) => void) => { const p = getPreset('minimal-keynote').build(); p.broadcast!.enabled = false; mut?.(p); return p; };
 const seats = (s: ReturnType<typeof resolveScene>) => s.objects.filter((o) => o.system === 'seating');
 const LAYOUTS: SeatingLayout[] = ['block', 'grid', 'radial'];
 

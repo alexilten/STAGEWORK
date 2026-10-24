@@ -10,13 +10,29 @@ finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — chat riser front,1,,,ge
 finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — chat riser back,1,,,generic,
 finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — chat riser left,1,,,generic,
 finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — chat riser right,1,,,generic,
-ledCabinets,20_LED::20_01_CABINETS,ROE Visual,Black Pearl BP2 V2,Black Pearl BP2 V2 cabinet,162,9.35,1514.7,secondary,roe.bp2v2
-ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 2-wide (generic),9,,,generic,
-rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 1 m",1,,,secondary,prolyte.h30v
-rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",9,,,secondary,prolyte.h30v
+ledCabinets,20_LED::20_01_CABINETS,ROE Visual,Black Pearl BP2 V2,Black Pearl BP2 V2 cabinet,135,9.35,1262.25,secondary,roe.bp2v2
+ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 2-wide (generic),7,,,generic,
+ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 1-wide (generic),1,,,generic,
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",8,,,secondary,prolyte.h30v
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2.5 m",4,,,secondary,prolyte.h30v
 rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,15,,,generic,generic.hoist-1t
 rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2 m",1,14.49,14.49,secondary,prolyte.h30v
-lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,32,6.5,208,secondary,martin.mac-aura-xb
+lighting,40_LIGHTING::40_01_FIXTURES,ETC,Source Four LED Series 3 Lustr X8,ETC Source Four LED Series 3 Lustr X8,32,8.87,283.84,secondary,etc.s4-led-s3-lustr
 lighting,40_LIGHTING::40_03_POSITIONS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 0.71 m",18,,,secondary,prolyte.h30v
-lighting,40_LIGHTING::40_03_POSITIONS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2.5 m",3,,,secondary,prolyte.h30v
-seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,500,,,generic,generic.chair-stack
+broadcast,80_BROADCAST::80_02_PLATFORMS,Generic,—,Camera platform 2438 × 2438 × 406 mm,1,,,generic,
+broadcast,80_BROADCAST::80_01_CAMERAS,Sony / Canon,HDC-3500 + UHD-DIGISUPER 90 (UJ90x9B),HDC-3500 + UHD-DIGISUPER 90 (UJ90x9B),3,28.2,84.6,manufacturer,canon.uj90x9b
+broadcast,80_BROADCAST::80_01_CAMERAS,Generic,—,Camera tripod / pedestal (generic),4,,,generic,
+broadcast,80_BROADCAST::80_05_CREW,Generic,—,Camera operator (crew),5,,,generic,
+broadcast,80_BROADCAST::80_01_CAMERAS,Sony / Canon,HDC-3500 + CJ20ex7.8B,HDC-3500 + CJ20ex7.8B,1,7.18,7.18,manufacturer,canon.cj20ex7.8b
+broadcast,80_BROADCAST::80_02_PLATFORMS,Generic,—,Camera platform 1219 × 1219 × 203 mm,2,,,generic,
+broadcast,80_BROADCAST::80_03_TRACK,Ross Video,"Furio SE track, 360 mm gauge",Camera track section (up to 600 mm),15,,,manufacturer,
+broadcast,80_BROADCAST::80_03_TRACK,Ross Video,Furio SE + VR100,Furio SE dolly + VR100,1,,,manufacturer,ross.furio-se
+broadcast,80_BROADCAST::80_01_CAMERAS,Sony / Canon,HDC-3500 + CJ15ex4.3B,HDC-3500 + CJ15ex4.3B,2,7.19,14.38,manufacturer,canon.cj15ex4.3b
+broadcast,80_BROADCAST::80_04_PROMPTERS,Autocue,Conference prompter (17″),"Conference prompter (17″), stand + monitor + glass",2,,,secondary,autocue.conference
+broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,Confidence monitor 55″ on floor stand (generic),2,,,generic,
+broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,FOH confidence screen 85″ (generic),2,,,generic,
+broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,Screen drop pipes (pair),2,,,generic,
+seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A2,498,,,generic,generic.chair-stack
+scenic,60_SCENIC::60_01_PORTAL,Generic,—,Portal leg — house left,1,,,generic,
+scenic,60_SCENIC::60_01_PORTAL,Generic,—,Portal leg — house right,1,,,generic,
+scenic,60_SCENIC::60_01_PORTAL,Generic,—,Portal header,1,,,generic,

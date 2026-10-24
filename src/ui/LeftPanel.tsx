@@ -1,10 +1,11 @@
 import { CHAIRS, DECK_SYSTEMS, FIXTURES, LED_CABINETS, SPEAKERS, getCatalogItem, type DeckSystem, type LedCabinet, type Speaker } from '../core/catalog';
 import { SEAT_COUNT } from '../core/engine/seating';
 import { useState } from 'react';
-import { DEFAULT_AUDIO, DEFAULT_SCENIC, DEFAULT_SEATING, type ScenicParams, DEFAULT_SHAPES, type AudioParams, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
+import { DEFAULT_AUDIO, DEFAULT_BROADCAST, type BroadcastParams, DEFAULT_SCENIC, DEFAULT_SEATING, type ScenicParams, DEFAULT_SHAPES, type AudioParams, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
 import { formatLength } from '../core/units';
 import { LengthControl, NumberControl, Section, Segmented, Select, Toggle, VerificationBadge } from './controls';
 import { useStore } from './store';
+import { Icon } from './icons';
 
 const ASPECTS: { label: string; r: number }[] = [
   { label: '16:9', r: 16 / 9 }, { label: '21:9', r: 21 / 9 }, { label: '32:9', r: 32 / 9 }, { label: '4:1', r: 4 },
@@ -65,7 +66,7 @@ export function LeftPanel() {
 
         <RiserSection />
 
-        <Section title="LED media" summary={L ? `${project.ledWalls.length} surface${project.ledWalls.length === 1 ? '' : 's'} · ${scene.report.led.reduce((a, l) => a + l.count, 0)} cabinets` : 'none'}>
+        <Section title="LED media" defaultOpen={false} summary={L ? `${project.ledWalls.length} surface${project.ledWalls.length === 1 ? '' : 's'} · ${scene.report.led.reduce((a, l) => a + l.count, 0)} cabinets` : 'none'}>
           <div className="surface-tabs">
             {project.ledWalls.map((w) => (
               <button key={w.id} className={w.id === wall?.id ? 'on' : ''} onClick={() => setActiveWall(w.id)}>{w.name.replace(/ (wall|screen)$/i, '')}</button>
@@ -165,10 +166,7 @@ export function LeftPanel() {
 
         <AudioSection />
         <ScenicSection />
-
-        <Section title="Scenic" defaultOpen={false} summary="Round 3">
-          <p className="muted small">Scenic panels, portals and architectural frames arrive in a later round. The <code>60_SCENIC</code> Rhino layer is already reserved in every export.</p>
-        </Section>
+        <BroadcastSection />
       </div>
     </aside>
   );
@@ -192,7 +190,7 @@ function AudienceSection() {
   const layout = LAYOUTS.find((l) => l.value === p.layout)!;
   const off = !p.enabled;
   return (
-    <Section title="Audience" summary={p.enabled && r ? `${r.count.toLocaleString()} seats · ${layout.label.toLowerCase()}` : 'off'}>
+    <Section title="Audience" defaultOpen={false} summary={p.enabled && r ? `${r.count.toLocaleString()} seats · ${layout.label.toLowerCase()}` : 'off'}>
       <Toggle label="Seating" checked={p.enabled} onChange={(v) => set((s) => { s.enabled = v; })} />
       <div className={`ctl ${off ? 'disabled' : ''}`}>
         <Segmented value={p.layout} onChange={(v) => { set((s) => { s.layout = v; }); select({ group: 'seating' }); }} options={LAYOUTS.map((l) => ({ value: l.value, label: l.label, title: l.hint }))} />
@@ -311,7 +309,7 @@ function RiserSection() {
   };
   const set = (patch: Partial<NonNullable<typeof r>>, key?: string) => edit((p) => { p.stage.risers![ri] = { ...p.stage.risers![ri], ...patch }; }, key);
   return (
-    <Section title="Risers" defaultOpen={risers.length > 0} summary={risers.length ? `${risers.length} riser${risers.length > 1 ? 's' : ''}` : 'none'}>
+    <Section title="Risers" defaultOpen={false} summary={risers.length ? `${risers.length} riser${risers.length > 1 ? 's' : ''}` : 'none'}>
       <div className="surface-tabs">
         {risers.map((x) => <button key={x.id} className={x.id === r?.id ? 'on' : ''} onClick={() => pick(x.id)}>{x.name}</button>)}
         <button className="add" onClick={add} title="Add a riser on the deck">+</button>
@@ -413,6 +411,81 @@ function ScenicSection() {
         <LengthControl label="Height above deck" units={u} value={M.height} min={2000} max={12000} step={100} onChange={(v) => set((x) => { x.masking.height = v; }, 'scn.mh')} />
       </>)}
       <Toggle label="Upstage drape" checked={sc.drape.enabled} onChange={(v) => set((x) => { x.drape.enabled = v; })} />
+    </Section>
+  );
+}
+
+function BroadcastSection() {
+  const project = useStore((s) => s.project);
+  const r = useStore((s) => s.scene.report.broadcast);
+  const edit = useStore((s) => s.edit);
+  const setShot = useStore((s) => s.setShot);
+  const select = useStore((s) => s.select);
+  const u = project.units;
+  const b = project.broadcast ?? DEFAULT_BROADCAST;
+  const set = (fn: (x: BroadcastParams) => void, key?: string) => edit((p) => { p.broadcast ??= structuredClone(DEFAULT_BROADCAST); fn(p.broadcast); }, key);
+  const off = !b.enabled;
+  const pl = r?.platform;
+  const summary = b.enabled && r ? `${r.cameras.length} camera${r.cameras.length === 1 ? '' : 's'}${r.prompters.presidential ? ' · prompters' : ''}` : 'off';
+  return (
+    <Section title="Broadcast" defaultOpen={false} summary={summary}>
+      <Toggle label="Cameras & prompters" checked={b.enabled} onChange={(v) => set((x) => { x.enabled = v; })} />
+      {!off && r && (<>
+        {r.cameras.length > 0 && (
+          <div className="cam-list">
+            {r.cameras.map((c) => (
+              <button key={c.id} title={`Look through ${c.name}`} onClick={() => setShot({ cam: c.id, shot: c.role.includes('wide') ? 'wide' : 'mcu', focal: null })}>
+                <span>{c.name}</span><span>{c.role}</span><Icon.camera />
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="sub-label">Front of house</div>
+        <NumberControl label="Platform cameras" value={b.foh.cameras} min={0} max={3} step={1}
+          hint={pl ? <>{pl.placement === 'back' ? 'Behind the last row' : 'In the house'} · {formatLength(-pl.yFront, u)} from the stage · {formatLength(pl.height, u, { precise: true })} high</> : 'Long-lens cameras facing the stage'}
+          onChange={(v) => { set((x) => { x.foh.cameras = v; }, 'bc.foh'); select({ group: 'bcast:platform' }); }} />
+        {b.foh.cameras > 0 && (<>
+          <div className="ctl">
+            <Segmented value={b.foh.placement} onChange={(v) => set((x) => { x.foh.placement = v; })} options={[
+              { value: 'auto', label: 'Auto', title: 'Behind the last row, moving into the house when the throw is too long for a close-up' },
+              { value: 'back', label: 'Back of house', title: 'Always behind the last row' },
+              { value: 'custom', label: 'Distance', title: 'Set the distance from the stage' },
+            ]} />
+          </div>
+          {b.foh.placement === 'custom' && (
+            <LengthControl label="Distance from stage" units={u} value={b.foh.distance} min={5000} max={80000} step={500}
+              onChange={(v) => set((x) => { x.foh.distance = v; }, 'bc.dist')} />
+          )}
+          <Toggle label="Clear a standing audience" checked={b.foh.standing} onChange={(v) => set((x) => { x.foh.standing = v; })} />
+        </>)}
+        <Toggle label="Side cameras (house L/R)" checked={b.sideCams} onChange={(v) => set((x) => { x.sideCams = v; })} />
+        <div className="sub-label">Stage</div>
+        <Toggle label="Front rail with robotic dolly" checked={b.rail.enabled} onChange={(v) => set((x) => { x.rail.enabled = v; })} />
+        {b.rail.enabled && (<>
+          <LengthControl label="Track length" units={u} value={b.rail.length} min={2000} max={30000} step={500}
+            hint={r.rail ? <>Lens {formatLength(r.rail.lensHeight, u, { precise: true })} · {r.rail.head} head · {r.rail.payloadKg.toFixed(1)} kg</> : undefined}
+            onChange={(v) => set((x) => { x.rail.length = v; }, 'bc.rail')} />
+          <Toggle label="On-camera prompter" checked={b.rail.prompter} onChange={(v) => set((x) => { x.rail.prompter = v; })} />
+        </>)}
+        <Toggle label="RF handheld" checked={b.handheld} onChange={(v) => set((x) => { x.handheld = v; })} />
+        <div className="sub-label">Prompters</div>
+        <Toggle label="Presidential glass (pair)" checked={b.prompters.presidential} onChange={(v) => set((x) => { x.prompters.presidential = v; })} />
+        <div className="ctl">
+          <div className="ctl-row"><span className="ctl-label">Downstage monitors</span></div>
+          <Segmented value={b.prompters.dsm} onChange={(v) => set((x) => { x.prompters.dsm = v; })} options={[
+            { value: 'off', label: 'Off' }, { value: 'stand', label: 'On stands', title: 'Angled up at the presenter from the downstage edge' }, { value: 'recessed', label: 'In the deck', title: 'Recessed under glass, flush with the deck' },
+          ]} />
+        </div>
+        {b.prompters.dsm !== 'off' && <NumberControl label="Monitors" value={b.prompters.dsmCount} min={1} max={4} step={1} onChange={(v) => set((x) => { x.prompters.dsmCount = v; }, 'bc.dsm')} />}
+        <div className="ctl">
+          <div className="ctl-row"><span className="ctl-label">FOH confidence screens</span></div>
+          <Segmented value={b.prompters.foh} onChange={(v) => set((x) => { x.prompters.foh = v; })} options={[
+            { value: 'off', label: 'Off' }, { value: 'truss', label: 'Hung', title: 'Hung under the front truss' }, { value: 'riser', label: 'At cameras', title: 'On stands beside the camera platform' },
+          ]} />
+          {r.prompters.foh > 0 && <div className="ctl-hint">{formatLength(r.prompters.fohDistance, u)} from the presenter · readable to ≈ {formatLength(r.prompters.fohReadable, u)}</div>}
+        </div>
+        {r.seatKills > 0 && <p className="muted small">{r.seatKills} seat{r.seatKills === 1 ? '' : 's'} removed for camera positions.</p>}
+      </>)}
     </Section>
   );
 }

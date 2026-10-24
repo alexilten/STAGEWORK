@@ -186,6 +186,48 @@ export const DEFAULT_SCENIC: ScenicParams = {
   drape: { enabled: false },
 };
 
+/**
+ * Broadcast / IMAG camera plan (see engine/broadcast.ts). Positions are derived from the
+ * stage and the seating, so they follow the audience as it grows, shrinks or changes shape.
+ */
+export interface BroadcastParams {
+  enabled: boolean;
+  /** long-lens cameras on a platform at the back of (or in) the house, facing the stage */
+  foh: {
+    cameras: number;
+    /** auto = behind the last row unless the throw is too long for a close-up, then in the house */
+    placement: 'auto' | 'back' | 'custom';
+    /** custom: stage front → platform front edge */
+    distance: Mm;
+    /** clear the heads of a standing audience (walk-ons, ovations) rather than a seated one */
+    standing: boolean;
+  };
+  /** cross-shot cameras on low platforms at the front corners of the house */
+  sideCams: boolean;
+  /** robotic camera on a straight (or apron-following) track between the stage and the front row */
+  rail: { enabled: boolean; length: Mm; prompter: boolean };
+  /** roaming RF handheld, shown at its start position */
+  handheld: boolean;
+  prompters: {
+    /** presidential (conference) glass pair either side of the presenter */
+    presidential: boolean;
+    /** downstage confidence monitors: on stands at the lip, or recessed into the deck */
+    dsm: 'off' | 'stand' | 'recessed';
+    dsmCount: number;
+    /** large confidence screens out front: on the camera platform, or hung under the front truss */
+    foh: 'off' | 'riser' | 'truss';
+  };
+}
+
+export const DEFAULT_BROADCAST: BroadcastParams = {
+  enabled: false,
+  foh: { cameras: 2, placement: 'auto', distance: 25000, standing: false },
+  sideCams: true,
+  rail: { enabled: true, length: 9000, prompter: false },
+  handheld: true,
+  prompters: { presidential: true, dsm: 'stand', dsmCount: 2, foh: 'truss' },
+};
+
 export interface Project {
   schema: typeof PROJECT_SCHEMA;
   version: number;
@@ -201,6 +243,7 @@ export interface Project {
   audio: AudioParams;
   media?: MediaParams | null;
   scenic?: ScenicParams;
+  broadcast?: BroadcastParams;
 }
 
 export function serializeProject(p: Project): string {
@@ -216,6 +259,7 @@ export function parseProject(text: string): Project {
   if (!data.seating) data.seating = { ...DEFAULT_SEATING, enabled: false };
   if (!data.audio) data.audio = { ...DEFAULT_AUDIO };
   if (!data.scenic) data.scenic = structuredClone(DEFAULT_SCENIC);
+  if (!data.broadcast) data.broadcast = structuredClone(DEFAULT_BROADCAST);
   if (!data.lighting.electrics) data.lighting.electrics = { ...DEFAULT_LIGHTING_POSITIONS.electrics };
   if (!data.lighting.booms) data.lighting.booms = { ...DEFAULT_LIGHTING_POSITIONS.booms };
   return data as Project;

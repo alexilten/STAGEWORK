@@ -14,4 +14,17 @@ rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chor
 lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,34,6.5,221,secondary,martin.mac-aura-xb
 lighting,40_LIGHTING::40_03_POSITIONS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2.5 m",3,,,secondary,prolyte.h30v
 lighting,40_LIGHTING::40_03_POSITIONS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 0.71 m",3,,,secondary,prolyte.h30v
+broadcast,80_BROADCAST::80_02_PLATFORMS,Generic,—,Camera platform 2438 × 2438 × 406 mm,1,,,generic,
+broadcast,80_BROADCAST::80_01_CAMERAS,Sony / Canon,HDC-3500 + UHD-DIGISUPER 90 (UJ90x9B),HDC-3500 + UHD-DIGISUPER 90 (UJ90x9B),3,28.2,84.6,manufacturer,canon.uj90x9b
+broadcast,80_BROADCAST::80_01_CAMERAS,Generic,—,Camera tripod / pedestal (generic),4,,,generic,
+broadcast,80_BROADCAST::80_05_CREW,Generic,—,Camera operator (crew),5,,,generic,
+broadcast,80_BROADCAST::80_01_CAMERAS,Sony / Canon,HDC-3500 + CJ20ex7.8B,HDC-3500 + CJ20ex7.8B,1,7.18,7.18,manufacturer,canon.cj20ex7.8b
+broadcast,80_BROADCAST::80_02_PLATFORMS,Generic,—,Camera platform 1219 × 1219 × 203 mm,2,,,generic,
+broadcast,80_BROADCAST::80_03_TRACK,Ross Video,"Furio SE track, 360 mm gauge",Camera track section (up to 600 mm),15,,,manufacturer,
+broadcast,80_BROADCAST::80_03_TRACK,Ross Video,Furio SE + VR100,Furio SE dolly + VR100,1,,,manufacturer,ross.furio-se
+broadcast,80_BROADCAST::80_01_CAMERAS,Sony / Canon,HDC-3500 + CJ15ex4.3B,HDC-3500 + CJ15ex4.3B,2,7.19,14.38,manufacturer,canon.cj15ex4.3b
+broadcast,80_BROADCAST::80_04_PROMPTERS,Autocue,Conference prompter (17″),"Conference prompter (17″), stand + monitor + glass",2,,,secondary,autocue.conference
+broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,Confidence monitor 55″ on floor stand (generic),2,,,generic,
+broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,FOH confidence screen 85″ (generic),2,,,generic,
+broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,Screen drop pipes (pair),2,,,generic,
 seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,1000,,,generic,generic.chair-stack

@@ -6,6 +6,7 @@ import { LeftPanel } from './LeftPanel';
 import { RightPanel } from './RightPanel';
 import { useStore, type CameraView } from './store';
 import { Toolbar } from './Toolbar';
+import { CameraShot } from './CameraShot';
 
 export function App() {
   const [toast, setToast] = useState<string | null>(null);
@@ -32,12 +33,22 @@ export function App() {
           { value: 'side', label: 'Side', title: '3' }, { value: 'plan', label: 'Plan', title: '4' }, { value: 'iso', label: 'Iso', title: '5' }, { value: 'house', label: 'House', title: '6 · stage and audience' },
         ]} />
         <button className="icon-btn" title="Frame stage" onClick={() => setView(view)}><Icon.frame /></button>
+        <CameraButton />
       </div>
+      <CameraShot />
       <Hud />
       <DragInfo />
       {toast && <div className="toast glass">{toast}</div>}
     </div>
   );
+}
+
+/** look through the first broadcast camera */
+function CameraButton() {
+  const cams = useStore((s) => s.scene.report.broadcast?.cameras.length ?? 0);
+  const setShot = useStore((s) => s.setShot);
+  if (!cams) return null;
+  return <button className="icon-btn" title="Camera view — look through the broadcast cameras" onClick={() => setShot({ cam: 'cam1', shot: 'mcu', focal: null })}><Icon.camera /></button>;
 }
 
 function Hud() {

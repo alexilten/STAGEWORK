@@ -1,5 +1,5 @@
 import { CameraControls, Environment, Grid, Html, Lightformer, Line } from '@react-three/drei';
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { EffectComposer, N8AO, SMAA } from '@react-three/postprocessing';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -10,6 +10,7 @@ import { StageModel } from './StageModel';
 import { DragController } from './DragController';
 import { Gizmo } from './Gizmo';
 import type { Annotation } from '../core/engine/types';
+import { resolveShot, shotFrame } from '../ui/shot';
 
 /** World is mm, Z-up (see core/schema.ts). three.js is Y-up metres → one wrapping transform. */
 const WORLD_ROTATION = new THREE.Euler(-Math.PI / 2, 0, 0);
@@ -155,11 +156,16 @@ function viewFor(view: CameraView, b: SceneGraph['bounds']) {
 function CameraRig({ scene }: { scene: SceneGraph }) {
   const ref = useRef<CameraControls>(null!);
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
+  const size = useThree((s) => s.size);
   const view = useStore((s) => s.view);
   const nonce = useStore((s) => s.viewNonce);
+  const shot = useStore((s) => s.shot);
   const boundsKey = useMemo(() => JSON.stringify(view === 'house' ? scene.houseBounds : scene.bounds), [scene, view]);
   const first = useRef(true);
   useEffect(() => {
+    camera.clearViewOffset();
+    camera.near = 0.5;
+    camera.aspect = size.width / size.height;
     const v = viewFor(view, view === 'house' ? scene.houseBounds : scene.bounds);
     const animate = !first.current;
     first.current = false;
@@ -170,12 +176,35 @@ function CameraRig({ scene }: { scene: SceneGraph }) {
   }, [view, nonce]);
   // keep the orbit target centred on the stage as it changes size, without moving the camera abruptly
   useEffect(() => {
-    if (first.current) return;
+    if (first.current || shot) return;
     const v = viewFor(view, view === 'house' ? scene.houseBounds : scene.bounds);
     ref.current?.setTarget(v.target.x, v.target.y, v.target.z, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boundsKey]);
-  return <CameraControls ref={ref} makeDefault minDistance={2} maxDistance={400} maxPolarAngle={Math.PI * 0.495} smoothTime={0.35} draggingSmoothTime={0.08} dollyToCursor />;
+
+  // looking through a broadcast camera: eye at the lens front, aimed at the framing, lens-true field of view
+  const rs = useMemo(() => (shot ? resolveShot(scene, shot) : null), [scene, shot]);
+  const prevShot = useRef<string | null>(null);
+  useEffect(() => {
+    if (!rs) { prevShot.current = null; return; }
+    const e = toThree(rs.cam.eye), t = toThree(rs.target);
+    const animate = prevShot.current === rs.cam.id;
+    prevShot.current = rs.cam.id;
+    ref.current?.setLookAt(e.x, e.y, e.z, t.x, t.y, t.z, animate);
+  }, [rs]);
+  useFrame(() => {
+    if (!rs) return;
+    // the 16:9 frame sits inside the canvas: render the true camera into it and extend the frustum around it
+    const f = shotFrame(size.width, size.height);
+    const vfov = 2 * Math.atan(5.4 / 2 / rs.focal) * (180 / Math.PI);
+    if (camera.fov !== vfov || camera.view?.offsetX !== -f.x || camera.view?.fullWidth !== f.w || camera.view?.height !== size.height) {
+      camera.fov = vfov;
+      camera.near = 0.05;
+      camera.aspect = f.w / f.h;
+      camera.setViewOffset(f.w, f.h, -f.x, -f.y, size.width, size.height);
+    }
+  });
+  return <CameraControls ref={ref} makeDefault enabled={!shot} minDistance={shot ? 0.01 : 2} maxDistance={400} maxPolarAngle={shot ? Math.PI : Math.PI * 0.495} smoothTime={0.35} draggingSmoothTime={0.08} dollyToCursor />;
 }
 
 /** While dragging: centreline, stage front and deck-top datum, so moves read against the stage. */

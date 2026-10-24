@@ -3,6 +3,7 @@ import { resolveScene, type SceneGraph } from '../core/engine/scene';
 import type { SystemKey } from '../core/engine/types';
 import { DEFAULT_PRESET, getPreset } from '../core/presets';
 import type { Project } from '../core/schema';
+import type { Shot } from './shot';
 
 export type ViewMode = 'presentation' | 'technical';
 export type CameraView = 'perspective' | 'front' | 'side' | 'plan' | 'iso' | 'house';
@@ -19,6 +20,7 @@ export const ALL_LAYERS: { key: SystemKey; label: string; rhino: string }[] = [
   { key: 'audio', label: 'Audio', rhino: '50' },
   { key: 'scenic', label: 'Scenic', rhino: '60' },
   { key: 'seating', label: 'Audience seating', rhino: '70' },
+  { key: 'broadcast', label: 'Broadcast', rhino: '80' },
   { key: 'dimensions', label: 'Dimensions', rhino: '90_01' },
   { key: 'reference', label: 'Reference', rhino: '00' },
 ];
@@ -49,6 +51,9 @@ interface State {
   setMode: (m: ViewMode) => void;
   setView: (v: CameraView) => void;
   setActiveWall: (id: string) => void;
+  /** looking through a broadcast camera (null = normal orbit view) */
+  shot: Shot | null;
+  setShot: (s: Shot | null) => void;
   addWall: () => void;
   duplicateWall: (id: string) => void;
   removeWall: (id: string) => void;
@@ -64,7 +69,7 @@ const urlPreset = typeof window !== 'undefined' ? new URLSearchParams(window.loc
 const initial = (urlPreset ? getPreset(urlPreset) : DEFAULT_PRESET).build();
 const layersFor = (mode: ViewMode): Record<SystemKey, boolean> => ({
   decking: true, supports: mode === 'technical', finishes: true, ledCabinets: true, ledSupports: true,
-  rigging: true, lighting: true, audio: true, scenic: true, seating: true, dimensions: mode === 'technical', reference: true,
+  rigging: true, lighting: true, audio: true, scenic: true, seating: true, broadcast: true, dimensions: mode === 'technical', reference: true,
 });
 
 export const useStore = create<State>((set, get) => ({
@@ -111,7 +116,9 @@ export const useStore = create<State>((set, get) => ({
   setHover: (g) => set({ hover: g }),
   toggleLayer: (k) => set({ layers: { ...get().layers, [k]: !get().layers[k] } }),
   setMode: (m) => set({ mode: m, layers: { ...get().layers, dimensions: m === 'technical', supports: m === 'technical' ? true : get().layers.supports } }),
-  setView: (v) => set({ view: v, viewNonce: get().viewNonce + 1 }),
+  setView: (v) => set({ view: v, viewNonce: get().viewNonce + 1, shot: null }),
+  shot: null,
+  setShot: (s) => set({ shot: s, ...(s ? {} : { viewNonce: get().viewNonce + 1 }) }),
   setActiveWall: (id) => set({ activeWall: id, selection: { group: `led:${id}` } }),
   addWall: () => {
     const id = uniqueWallId(get().project);
