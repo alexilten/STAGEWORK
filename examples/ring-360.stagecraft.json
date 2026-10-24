@@ -1,0 +1,211 @@
+{
+  "schema": "stagecraft.project",
+  "version": 1,
+  "name": "360° Ring",
+  "presetId": "ring-360",
+  "units": "metric",
+  "stage": {
+    "width": 7315.200000000001,
+    "depth": 7315.200000000001,
+    "height": 914.4000000000001,
+    "deckSystemId": "generic.deck-8x4",
+    "finish": "black",
+    "fascia": true,
+    "shape": "round"
+  },
+  "ledWalls": [
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 3000,
+      "offsetX": 0,
+      "upstageGap": 10342.399999999998,
+      "curveDeg": 0,
+      "id": "ring",
+      "name": "360° LED ring",
+      "width": 87964.5943005142,
+      "height": 6000,
+      "base": "floor",
+      "radius": 14000,
+      "header": false
+    }
+  ],
+  "rigging": {
+    "trussId": "prolyte.h30v",
+    "header": {
+      "enabled": false,
+      "clearance": 600,
+      "overhang": 500,
+      "maxHoistSpacing": 6000
+    },
+    "front": {
+      "enabled": false,
+      "distance": 6000,
+      "trim": 8500,
+      "width": 14000
+    }
+  },
+  "lighting": {
+    "enabled": true,
+    "fixtureId": "martin.mac-aura-xb",
+    "count": 0,
+    "electrics": {
+      "count": 0,
+      "perBatten": 8,
+      "firstAt": 1000,
+      "spacing": 1500,
+      "trim": 7000
+    },
+    "booms": {
+      "enabled": false,
+      "perBoom": 4,
+      "height": 4000
+    }
+  },
+  "presenter": {
+    "visible": true
+  },
+  "seating": {
+    "enabled": false,
+    "layout": "block",
+    "count": 1000,
+    "chairId": "generic.chair-stack",
+    "frontDistance": 3050,
+    "rowPitch": 915,
+    "seatPitch": 560,
+    "aisleWidth": 1070,
+    "seatsPerBlock": 14
+  },
+  "audio": {
+    "enabled": true,
+    "mainSpeakerId": "dbaudio.j8",
+    "mainsPerSide": 6,
+    "trim": 8500,
+    "spread": 7000,
+    "splayPerBox": 2,
+    "subSpeakerId": "dbaudio.j-sub",
+    "subs": 4,
+    "subMode": "ground",
+    "fillSpeakerId": "generic.fill",
+    "frontFills": 0,
+    "monitorSpeakerId": "generic.wedge",
+    "monitors": 2,
+    "layout": "quad",
+    "quadRadius": 6500,
+    "hangsPerPosition": 1
+  },
+  "scenic": {
+    "portal": {
+      "enabled": false,
+      "margin": 300,
+      "legWidth": 1200,
+      "headerHeight": 1200,
+      "thickness": 150,
+      "finish": "white"
+    },
+    "masking": {
+      "enabled": false,
+      "pairs": 2,
+      "legWidth": 1830,
+      "height": 6000
+    },
+    "drape": {
+      "enabled": false
+    }
+  },
+  "broadcast": {
+    "enabled": false,
+    "foh": {
+      "cameras": 2,
+      "placement": "auto",
+      "distance": 25000,
+      "standing": false
+    },
+    "sideCams": true,
+    "rail": {
+      "enabled": true,
+      "length": 9000,
+      "prompter": false
+    },
+    "handheld": true,
+    "prompters": {
+      "presidential": true,
+      "dsm": "stand",
+      "dsmCount": 2,
+      "foh": "truss"
+    }
+  },
+  "audience": {
+    "standing": {
+      "enabled": false,
+      "shape": "front",
+      "width": 30000,
+      "depth": 25000,
+      "radius": 24000,
+      "pit": 1800,
+      "density": 2,
+      "barricade": true
+    },
+    "stands": [
+      {
+        "kind": "arc",
+        "x": 0,
+        "y": 0,
+        "width": 20000,
+        "yawDeg": 0,
+        "cx": 0,
+        "cy": 3657.6000000000004,
+        "r0": 6200,
+        "a0": 0,
+        "a1": 360,
+        "rowRise": 300,
+        "rowPitch": 950,
+        "base": 0,
+        "id": "rings",
+        "name": "Seating rings",
+        "rows": 6
+      }
+    ]
+  },
+  "structure": {
+    "roof": {
+      "enabled": false,
+      "system": "stageco.roof-25x10",
+      "span": 25000,
+      "wings": true,
+      "wingImag": true
+    },
+    "grid": {
+      "enabled": true,
+      "width": 8000,
+      "depth": 8000,
+      "trim": 9000,
+      "spacing": 2600
+    },
+    "delays": {
+      "enabled": false,
+      "count": 2,
+      "distance": 45000,
+      "spread": 22000,
+      "height": 14000
+    },
+    "truss": []
+  },
+  "show": {
+    "booth": {
+      "enabled": false,
+      "x": 0,
+      "y": 2400,
+      "width": 2400,
+      "decks": 4
+    },
+    "blocks": [],
+    "dome": {
+      "enabled": false,
+      "diameter": 26500,
+      "springing": 2000,
+      "openingDeg": 0,
+      "cx": 0,
+      "cy": 0
+    }
+  }
+}

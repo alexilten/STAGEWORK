@@ -48,24 +48,32 @@ export function trussSectionParts(sys: TrussSystem, L: number): Part[] {
   return parts;
 }
 
+/** sections (longest first) that make up a free member of length `target` */
+export function pickTrussSections(sys: TrussSystem, target: number) {
+  return symmetricOrder(pickSections(target, sys.sections.map((s) => s.length)));
+}
+
 export function buildTrussRun(
   sys: TrussSystem, hoist: Hoist,
-  opts: { id: string; name: string; target: number; center: Vec3; maxHoistSpacing: number; group: string },
+  opts: { id: string; name: string; target: number; center: Vec3; maxHoistSpacing: number; group: string; yaw?: number; layer?: '30_RIGGING::30_01_TRUSS' | '30_RIGGING::30_05_GRID' },
 ) {
+  const yaw = opts.yaw ?? 0, ux = Math.cos(yaw), uy = Math.sin(yaw);
+  /** a point `d` along the run from its centre */
+  const at = (d: number): [number, number] => [opts.center[0] + ux * d, opts.center[1] + uy * d];
   const lengths = sys.sections.map((s) => s.length);
   const picked = pickSections(opts.target, lengths);
   const sections = symmetricOrder(picked);
   const length = sections.reduce((a, b) => a + b, 0);
   const blocks = new Map<string, BlockDef>();
   const objects: SceneObject[] = [];
-  let x = opts.center[0] - length / 2;
+  let x = -length / 2;
   sections.forEach((L, i) => {
     const key = trussBlockKey(sys, L);
     if (!blocks.has(key)) blocks.set(key, { key, description: `${sys.manufacturer} ${sys.model} — ${L} mm section`, catalogId: sys.id, parts: trussSectionParts(sys, L) });
     const spec = sys.sections.find((s) => s.length === L);
     objects.push({
-      id: `TRUSS.${opts.id}.S${String(i + 1).padStart(2, '0')}`, label: `${sys.model} ${L / 1000} m`, layer: '30_RIGGING::30_01_TRUSS', system: 'rigging', group: opts.group,
-      block: key, position: [x + L / 2, opts.center[1], opts.center[2]], rotationZ: 0,
+      id: `TRUSS.${opts.id}.S${String(i + 1).padStart(2, '0')}`, label: `${sys.model} ${L / 1000} m`, layer: opts.layer ?? '30_RIGGING::30_01_TRUSS', system: 'rigging', group: opts.group,
+      block: key, position: [...at(x + L / 2), opts.center[2]], rotationZ: yaw,
       meta: { catalogId: sys.id, length: L, weightKg: spec?.weightKg ?? null, lengthVerified: spec?.verified ?? false, connection: sys.connection, run: opts.name },
     });
     x += L;
@@ -85,10 +93,10 @@ export function buildTrussRun(
     ],
   });
   for (let i = 0; i < n; i++) {
-    const hx = opts.center[0] - span / 2 + (span * i) / (n - 1);
+    const d = -span / 2 + (span * i) / (n - 1);
     objects.push({
       id: `HOIST.${opts.id}.${String(i + 1).padStart(2, '0')}`, label: hoist.model, layer: '30_RIGGING::30_02_HOISTS', system: 'rigging', group: opts.group,
-      block: hKey, position: [hx, opts.center[1], opts.center[2] + sys.height], rotationZ: 0,
+      block: hKey, position: [...at(d), opts.center[2] + sys.height], rotationZ: yaw,
       meta: { catalogId: hoist.id, capacityKg: hoist.capacityKg, verification: hoist.verification },
     });
   }

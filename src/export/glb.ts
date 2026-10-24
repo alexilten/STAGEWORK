@@ -42,6 +42,12 @@ function materialTable(finish: StageFinish, scenic: StageFinish): Record<Materia
     platform: { name: 'SC_Camera_Platform', rgb: [30, 30, 32], metal: 0, rough: 0.9 },
     glass: { name: 'SC_Prompter_Glass', rgb: [200, 214, 224], metal: 0, rough: 0.05, alpha: 0.25 },
     screen: { name: 'SC_Monitor_Screen', rgb: [12, 16, 26], metal: 0.1, rough: 0.2, emissive: [0.05, 0.08, 0.14] },
+    crowd: { name: 'SC_Crowd_Figure', rgb: [128, 132, 146], metal: 0, rough: 0.9 },
+    barricade: { name: 'SC_Barricade_Steel', rgb: [150, 152, 158], metal: 0.7, rough: 0.4 },
+    stand: { name: 'SC_Seating_Stand', rgb: [92, 94, 100], metal: 0.2, rough: 0.7 },
+    structure: { name: 'SC_Ground_Support_Steel', rgb: [110, 112, 118], metal: 0.8, rough: 0.4 },
+    roofSkin: { name: 'SC_Roof_Skin', rgb: [228, 228, 230], metal: 0, rough: 0.8, alpha: 0.45 },
+    booth: { name: 'SC_DJ_Booth', rgb: [22, 22, 24], metal: 0.3, rough: 0.5 },
   };
 }
 
@@ -211,7 +217,7 @@ export function exportGlb(scene: SceneGraph, projectName: string, opts: GlbOptio
     materials.push({ name: 'SC_LED_Content', pbrMetallicRoughness: { baseColorFactor: [0, 0, 0, 1], metallicFactor: 0, roughnessFactor: 0.3 }, emissiveTexture: { index: 0 }, emissiveFactor: [1, 1, 1] });
     const contentMat = materials.length - 1;
     const walls = new Map<string, SceneObject[]>();
-    for (const o of objects) if (o.system === 'ledCabinets' && o.block) (walls.get(o.group) ?? walls.set(o.group, []).get(o.group)!).push(o);
+    for (const o of objects) if (o.system === 'ledCabinets' && o.block && !o.tilt) (walls.get(o.group) ?? walls.set(o.group, []).get(o.group)!).push(o);
     for (const [group, cabs] of walls) {
       const pos: number[] = [], nrm: number[] = [], uv: number[] = [], idx: number[] = [];
       for (const o of cabs) {

@@ -74,7 +74,9 @@ describe('Test 5 — Rhino export reopens with correct structure', () => {
 });
 
 describe('Test 6 — exported geometry matches the live scene', () => {
-  it.each(PRESETS.map((p) => p.id))('%s: world-space bounding boxes match the scene graph', (id) => {
+  it.each(PRESETS.map((p) => p.id))('%s: world-space bounding boxes match the scene graph', async (id) => {
+    // a fresh openNURBS module per show: stadium-size files fill the 32-bit wasm heap if read one after another
+    const rh = await rhino3dm();
     const project = getPreset(id).build();
     const scene = resolveScene(project);
     const info = inspect3dm(rh, exportRhino(rh, scene, project));
@@ -90,10 +92,11 @@ describe('Test 6 — exported geometry matches the live scene', () => {
     for (const L of scene.report.led) {
       const cabs = info.objects.filter((o) => o.user['stagecraft.group'] === `led:${L.id}` && o.layer === '20_LED::20_01_CABINETS');
       expect(cabs).toHaveLength(L.count);
+      if (L.surface !== 'wall') continue; // floor / ceiling / dome: placement is checked per instance above
       const minZ = Math.min(...cabs.map((c) => c.bbox.min[2])), maxZ = Math.max(...cabs.map((c) => c.bbox.max[2]));
       expect(minZ).toBeCloseTo(L.origin[2], 3);
       expect(maxZ - minZ).toBeCloseTo(L.rows * L.cabinet.height, 3);
-      if (L.curveDeg === 0) {
+      if (L.curveDeg === 0 && L.planar) {
         const minX = Math.min(...cabs.map((c) => c.bbox.min[0])), maxX = Math.max(...cabs.map((c) => c.bbox.max[0]));
         expect(maxX - minX).toBeCloseTo(L.cols * L.cabinet.width, 3);
       }
@@ -101,8 +104,13 @@ describe('Test 6 — exported geometry matches the live scene', () => {
     // stage deck top
     const decks = info.objects.filter((o) => o.layer === '10_STAGE::10_01_DECKING');
     expect(Math.max(...decks.map((d) => d.bbox.max[2]))).toBeCloseTo(scene.report.stage.height.resolved, 3);
+    const main = scene.report.stage.areas.filter((a) => a.kind === 'main');
     const minX = Math.min(...decks.map((d) => d.bbox.min[0])), maxX = Math.max(...decks.map((d) => d.bbox.max[0]));
-    expect(maxX - minX).toBeCloseTo(scene.report.stage.width.resolved, 3);
+    const areaX = Math.max(...scene.report.stage.areas.map((a) => a.maxX)) - Math.min(...scene.report.stage.areas.map((a) => a.minX));
+    const expected = main.length ? Math.max(scene.report.stage.width.resolved, areaX) : areaX;
+    // a round deck's Rhino bounding box is the loose (control-polygon) box of its curved outline
+    if (scene.report.stage.areas.some((a) => a.round)) { expect(maxX - minX).toBeGreaterThanOrEqual(expected - 1); expect(maxX - minX).toBeLessThan(expected * 1.06); }
+    else expect(maxX - minX).toBeCloseTo(expected, 3);
   });
 });
 

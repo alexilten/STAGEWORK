@@ -5,6 +5,9 @@ import { resolveAudio, type AudioReport, type DeckLip } from './audio';
 import { resolveLighting, type LightingPositionsReport } from './lighting';
 import { resolveScenic, type ScenicReport } from './scenic';
 import { resolveBroadcast, type BroadcastReport } from './broadcast';
+import { resolveAudience, type AudienceReport } from './audience';
+import { resolveStructure, type StructureReport } from './structure';
+import { resolveShow, type ShowReport } from './show';
 import type { Project } from '../schema';
 import { resolveDeck, type DeckLayout } from './deck';
 import { resolveLedWall, type LedLayout } from './led';
@@ -23,6 +26,9 @@ export interface ProductionReport {
   lightingPositions: LightingPositionsReport | null;
   scenic: ScenicReport | null;
   broadcast: BroadcastReport | null;
+  audience: AudienceReport | null;
+  structure: StructureReport | null;
+  show: ShowReport | null;
 }
 
 export interface SceneGraph {
@@ -79,9 +85,17 @@ export function resolveScene(project: Project): SceneGraph {
     // conflicts
     const L = r.layout;
     const wallFrontMin = L.origin[1] - L.sagitta;
-    const onDeck = wallFrontMin < D && Math.abs(L.origin[0]) - L.chord / 2 < W / 2;
+    const onDeck = L.planar && wallFrontMin < D && Math.abs(L.origin[0]) - L.chord / 2 < W / 2;
     if (onDeck && L.origin[2] < H - 0.5) warnings.push({ level: 'error', code: 'led.collision.deck', target: `led:${L.id}`, message: `${L.name} intersects the stage deck — raise it or move it upstage.` });
-    if (L.chord > W + 0.5 && Math.abs(L.origin[0]) < 1) warnings.push({ level: 'info', code: 'led.wider', target: `led:${L.id}`, message: `${L.name} is wider than the stage by ${Math.round(L.chord - W)} mm.` });
+    if (L.planar && L.chord > W + 0.5 && Math.abs(L.origin[0]) < 1) warnings.push({ level: 'info', code: 'led.wider', target: `led:${L.id}`, message: `${L.name} is wider than the stage by ${Math.round(L.chord - W)} mm.` });
+  }
+
+  // ── Show elements: DJ booth, scenic blocks, LED dome
+  let show: ShowReport | null = null;
+  const sh = project.show;
+  if (sh && (sh.booth.enabled || sh.blocks.length || sh.dome.enabled)) {
+    const r = resolveShow(sh, { deckTopAt });
+    show = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings); led.push(...r.led);
   }
 
   // ── Rigging
@@ -89,8 +103,10 @@ export function resolveScene(project: Project): SceneGraph {
   const hoist = HOISTS[0];
   const truss: TrussRun[] = [];
   const { header, front } = project.rigging;
+  const planar = led.filter((L) => L.planar);
+  const noHeader = new Set(project.ledWalls.filter((w) => w.header === false).map((w) => w.id));
   if (header.enabled) {
-    for (const L of led) {
+    for (const L of planar.filter((l) => !noHeader.has(l.id))) {
       const yC = L.origin[1] - L.sagitta / 2 + L.cabinet.depth / 2;
       const bottom = L.top + ledBarH + header.clearance;
       const r = buildTrussRun(trussSys, hoist, {
@@ -135,10 +151,22 @@ export function resolveScene(project: Project): SceneGraph {
   if (project.lighting.enabled && (project.lighting.electrics.count > 0 || project.lighting.booms.enabled)) {
     const r = resolveLighting(project.lighting, (id) => getCatalogItem<Fixture>(id, 'fixture'), trussSys, hoist, {
       stageWidth: W, stageDepth: D, stageTop: H, deckTopAt,
-      led: led.map((L) => ({ name: L.name, minY: L.origin[1] - L.sagitta, maxY: L.origin[1] + L.cabinet.depth, top: L.top })),
+      led: planar.map((L) => ({ name: L.name, minY: L.origin[1] - L.sagitta, maxY: L.origin[1] + L.cabinet.depth, top: L.top })),
     });
     lightingPositions = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings);
   }
+
+  // ── Ground support, mother grid, delay towers, free truss
+  let structure: StructureReport | null = null;
+  const stp = project.structure;
+  if (stp && (stp.roof.enabled || stp.grid.enabled || stp.delays.enabled || stp.truss.length)) {
+    const r = resolveStructure(stp, {
+      stageWidth: W, stageDepth: D, stageTop: H, centre: [0, D / 2], truss: trussSys, hoist,
+      mainSpeaker: project.audio?.enabled ? getCatalogItem<Speaker>(project.audio.mainSpeakerId, 'speaker') : null, mainsY: -1000,
+    });
+    structure = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings);
+  }
+  const centreStage = deck.layout.shape === 'round' || deck.layout.shape === 'cross';
 
   // ── Presenter scale figure (1.75 m)
   const py = Math.min(D * 0.38, 2400);
@@ -172,6 +200,15 @@ export function resolveScene(project: Project): SceneGraph {
     }
   }
 
+  // ── Standing floor, barricade and raked stands
+  let audience: AudienceReport | null = null;
+  const au = project.audience;
+  if (au && (au.standing.enabled || au.stands.length)) {
+    const chair = getCatalogItem<Chair>(project.seating.chairId, 'chair');
+    const r = resolveAudience(au, { areas: deck.layout.areas, lipY: lip.y(0), stageWidth: W, stageDepth: D, stageTop: H, centreStage, seating: project.seating, chair });
+    audience = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings);
+  }
+
   // ── Audio
   let audio: AudioReport | null = null;
   if (project.audio?.enabled) {
@@ -200,7 +237,7 @@ export function resolveScene(project: Project): SceneGraph {
   let scenic: ScenicReport | null = null;
   const sc = project.scenic;
   if (sc && (sc.portal.enabled || sc.masking.enabled || sc.drape.enabled)) {
-    const r = resolveScenic(sc, { stageWidth: W, stageDepth: D, stageTop: H, deckTopAt, led });
+    const r = resolveScenic(sc, { stageWidth: W, stageDepth: D, stageTop: H, deckTopAt, led: planar });
     scenic = r.report; objects.push(...r.objects); annotations.push(...r.annotations); warnings.push(...r.warnings);
   }
 
@@ -213,7 +250,7 @@ export function resolveScene(project: Project): SceneGraph {
     { id: 'CL.STAGE', kind: 'line', layer: '90_TECHNICAL::90_02_CENTERLINES', from: [0, -3000, 0], to: [0, D + 3000, 0], label: 'Centreline' },
     { id: 'REF.STAGE.FRONT', kind: 'line', layer: '90_TECHNICAL::90_03_REFERENCE', from: [-W / 2 - 2000, 0, 0], to: [W / 2 + 2000, 0, 0], label: 'Stage front (Y=0)' },
   );
-  for (const L of led) {
+  for (const L of planar) {
     const x0 = L.origin[0] - L.chord / 2, x1 = L.origin[0] + L.chord / 2, y = L.origin[1] - L.sagitta;
     const tag = L.id.toUpperCase();
     annotations.push(
@@ -233,15 +270,33 @@ export function resolveScene(project: Project): SceneGraph {
   if (deck.layout.apron) min[1] = Math.min(min[1], -deck.layout.apron.depth);
   if (lightingPositions) { max[2] = Math.max(max[2], project.lighting.electrics.trim + 500); max[0] = Math.max(max[0], W / 2 + 900); min[0] = Math.min(min[0], -W / 2 - 900); }
   if (audio) { const sp = audio.spread + 1500; min[0] = Math.min(min[0], -sp); max[0] = Math.max(max[0], sp); max[2] = Math.max(max[2], audio.trim + 500); min[1] = Math.min(min[1], -1500); }
-  for (const L of led) {
+  for (const L of planar) {
     min[0] = Math.min(min[0], L.origin[0] - L.chord / 2); max[0] = Math.max(max[0], L.origin[0] + L.chord / 2);
     max[1] = Math.max(max[1], L.origin[1] + L.cabinet.depth); max[2] = Math.max(max[2], L.top);
+  }
+  // rings, yawed walls, floors and ceilings: from their cabinets
+  const nonPlanar = new Set(led.filter((L) => !L.planar).map((L) => `led:${L.id}`));
+  for (const o of objects) if (o.system === 'ledCabinets' && nonPlanar.has(o.group)) {
+    min[0] = Math.min(min[0], o.position[0] - 600); max[0] = Math.max(max[0], o.position[0] + 600);
+    min[1] = Math.min(min[1], o.position[1] - 600); max[1] = Math.max(max[1], o.position[1] + 600);
+    max[2] = Math.max(max[2], o.position[2] + 1200);
   }
   if (scenic?.maskingLegs && sc) { const mx = W / 2 + (sc.masking.legWidth * 2) / 3; min[0] = Math.min(min[0], -mx); max[0] = Math.max(max[0], mx); max[2] = Math.max(max[2], H + sc.masking.height); }
   if (scenic?.drape) { max[1] = Math.max(max[1], D + 2000); max[2] = Math.max(max[2], scenic.drape.height); }
   for (const t of truss) { min[0] = Math.min(min[0], t.center[0] - t.length / 2); max[0] = Math.max(max[0], t.center[0] + t.length / 2); max[2] = Math.max(max[2], t.bottom + 290); }
 
+  if (structure?.roof) { const r = structure.roof; min[0] = Math.min(min[0], r.minX); max[0] = Math.max(max[0], r.maxX); min[1] = Math.min(min[1], r.minY); max[1] = Math.max(max[1], r.maxY); max[2] = Math.max(max[2], r.spec.height + 2000); }
+  if (structure?.grid) { const g = structure.grid; min[0] = Math.min(min[0], -g.width / 2 - 600); max[0] = Math.max(max[0], g.width / 2 + 600); max[2] = Math.max(max[2], g.trim + 1500); }
+  if (show?.dome) { const R = show.dome.diameter / 2, d = project.show!.dome; min[0] = Math.min(min[0], d.cx - R); max[0] = Math.max(max[0], d.cx + R); min[1] = Math.min(min[1], d.cy - R); max[1] = Math.max(max[1], d.cy + R); max[2] = Math.max(max[2], d.springing + R); }
+  if (audio?.layout === 'quad') { const q = (project.audio.quadRadius ?? 10000) + 2000; min[0] = Math.min(min[0], -q); max[0] = Math.max(max[0], q); min[1] = Math.min(min[1], D / 2 - q); max[1] = Math.max(max[1], D / 2 + q); }
+
   const hmin: [number, number, number] = [...min], hmax: [number, number, number] = [...max];
+  // audience extents (standing floor, stands, delay towers) from their objects
+  for (const o of objects) if (o.system === 'seating' && !o.block?.startsWith('SC_CHAIR') || o.group === 'structure:delays') {
+    hmin[0] = Math.min(hmin[0], o.position[0] - 500); hmax[0] = Math.max(hmax[0], o.position[0] + 500);
+    hmin[1] = Math.min(hmin[1], o.position[1] - 500); hmax[1] = Math.max(hmax[1], o.position[1] + 500);
+    if (o.parts) for (const pt of o.parts) if (pt.kind === 'prism') for (const [x, y] of pt.points) { hmin[0] = Math.min(hmin[0], x); hmax[0] = Math.max(hmax[0], x); hmin[1] = Math.min(hmin[1], y); hmax[1] = Math.max(hmax[1], y); }
+  }
   if (seating?.count) {
     hmin[0] = Math.min(hmin[0], seating.min[0]); hmin[1] = Math.min(hmin[1], seating.min[1]);
     hmax[0] = Math.max(hmax[0], seating.max[0]); hmax[1] = Math.max(hmax[1], seating.max[1]);
@@ -251,7 +306,7 @@ export function resolveScene(project: Project): SceneGraph {
 
   return {
     objects, blocks, annotations, warnings,
-    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions, scenic, broadcast },
+    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions, scenic, broadcast, audience, structure, show },
     bounds: { min, max },
     houseBounds: { min: hmin, max: hmax },
   };

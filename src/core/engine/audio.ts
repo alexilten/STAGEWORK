@@ -13,6 +13,9 @@ import type { BlockDef, Part, SceneObject, Vec3, Warning } from './types';
  */
 
 export interface AudioReport {
+  layout: 'lr' | 'quad';
+  /** number of flown main / out-fill hangs */
+  hangs: number;
   mainsPerSide: number;
   main: Speaker;
   sub: Speaker | null;
@@ -37,7 +40,7 @@ const DEG = Math.PI / 180;
 /** height to lift a box pitched about its bottom-centre so its lowest edge rests on the surface */
 const restLift = (sp: Speaker, tilt: number) => (sp.depth / 2) * Math.abs(Math.sin(tilt));
 
-function speakerBlock(sp: Speaker, key: string): BlockDef {
+export function speakerBlock(sp: Speaker, key: string): BlockDef {
   const w = sp.width / 2, d = sp.depth / 2, h = sp.height;
   // cabinet body + a recessed grille on the front face (−Y)
   const parts: Part[] = [
@@ -47,13 +50,13 @@ function speakerBlock(sp: Speaker, key: string): BlockDef {
   return { key, description: `${sp.manufacturer} ${sp.model}`, catalogId: sp.id, parts };
 }
 
-const blockKey = (sp: Speaker) => `SC_SPKR_${sp.id}`.replace(/[^\w]+/g, '_').toUpperCase();
+export const speakerBlockKey = (sp: Speaker) => `SC_SPKR_${sp.id}`.replace(/[^\w]+/g, '_').toUpperCase();
 
 export function resolveAudio(p: AudioParams, getSpeaker: (id: string) => Speaker, ctx: AudioContext) {
   const objects: SceneObject[] = [];
   const blocks = new Map<string, BlockDef>();
   const warnings: Warning[] = [];
-  const add = (sp: Speaker) => { const k = blockKey(sp); if (!blocks.has(k)) blocks.set(k, speakerBlock(sp, k)); return k; };
+  const add = (sp: Speaker) => { const k = speakerBlockKey(sp); if (!blocks.has(k)) blocks.set(k, speakerBlock(sp, k)); return k; };
   let weight = 0, weightKnown = true;
   const tally = (sp: Speaker, n: number) => { if (sp.weightKg == null) weightKnown = false; else weight += sp.weightKg * n; };
 
@@ -63,27 +66,52 @@ export function resolveAudio(p: AudioParams, getSpeaker: (id: string) => Speaker
   const trim = Math.max(ctx.stageTop + main.height * mainsPerSide, p.trim);
   const splay = Math.min(p.splayPerBox, main.splayRange?.[1] ?? 4);
 
-  // ── main hangs, house left (−X) and right (+X)
+  // ── main hangs: house left (−X) / right (+X), or four positions round a centre stage
   const mainKey = add(main);
-  for (const side of [-1, 1] as const) {
-    const hx = side * spread;
-    const hy = ctx.downstageY - main.depth / 2 - 300; // just downstage of the deck
+  /** a hang of `n` boxes whose top-front point is at (hx, hy, trim), facing along yaw (0 = the audience at −Y) */
+  const hang = (tag: string, label: string, group: string, hx: number, hy: number, yaw: number, n: number) => {
+    const c = Math.cos(yaw), sn = Math.sin(yaw);
     let top: Vec3 = [hx, hy, trim];
     let ang = 0; // pitch from straight down, grows toward the audience
-    for (let i = 0; i < mainsPerSide; i++) {
-      const dir: Vec3 = [0, -Math.sin(ang), -Math.cos(ang)];
+    for (let i = 0; i < n; i++) {
+      const ly = -Math.sin(ang), lz = -Math.cos(ang);
+      const dir: Vec3 = [-sn * ly, c * ly, lz];
       const center: Vec3 = [top[0] + dir[0] * main.height / 2, top[1] + dir[1] * main.height / 2, top[2] + dir[2] * main.height / 2];
       objects.push({
-        id: `SPK.MAIN.${side < 0 ? 'L' : 'R'}.${String(i + 1).padStart(2, '0')}`,
-        label: `${main.model} — ${side < 0 ? 'house left' : 'house right'} #${i + 1}`,
-        layer: '50_AUDIO::50_01_MAINS', system: 'audio', group: `audio:main:${side < 0 ? 'l' : 'r'}`,
-        block: mainKey, position: [center[0], center[1], center[2]], rotationZ: 0, tilt: ang,
-        meta: { catalogId: main.id, weightKg: main.weightKg, hang: side < 0 ? 'House left' : 'House right', box: i + 1, splayDeg: +(ang / DEG).toFixed(1) },
+        id: `SPK.${tag}.${String(i + 1).padStart(2, '0')}`, label: `${main.model} — ${label} #${i + 1}`,
+        layer: '50_AUDIO::50_01_MAINS', system: 'audio', group,
+        block: mainKey, position: center, rotationZ: yaw, tilt: ang,
+        meta: { catalogId: main.id, weightKg: main.weightKg, hang: label, box: i + 1, splayDeg: +(ang / DEG).toFixed(1) },
       });
       top = [top[0] + dir[0] * main.height, top[1] + dir[1] * main.height, top[2] + dir[2] * main.height];
       ang += splay * DEG;
     }
-    tally(main, mainsPerSide);
+    tally(main, n);
+  };
+  const layout = p.layout ?? 'lr';
+  let hangs = 0;
+  if (layout === 'quad') {
+    // four positions on the diagonals, each with hangs side by side, all facing out from the stage centre
+    const R = Math.max(ctx.stageWidth / 2 + 1500, p.quadRadius ?? 10000);
+    const per = Math.max(1, Math.round(p.hangsPerPosition ?? 3));
+    const cy = ctx.stageDepth / 2;
+    ['NE', 'NW', 'SW', 'SE'].forEach((q, k) => {
+      const t = ((45 + 90 * k) * Math.PI) / 180;
+      const yaw = t + Math.PI / 2; // local −Y points away from the centre
+      for (let j = 0; j < per; j++) {
+        const o = (j - (per - 1) / 2) * 1500; // side by side along the tangent
+        hang(`MAIN.${q}${j + 1}`, `${q} hang ${j + 1}`, `audio:main:${q.toLowerCase()}`, R * Math.cos(t) - Math.sin(t) * o, cy + R * Math.sin(t) + Math.cos(t) * o, yaw + (j - (per - 1) / 2) * 0.35, mainsPerSide);
+        hangs++;
+      }
+    });
+  } else {
+    for (const side of [-1, 1] as const) {
+      hang(`MAIN.${side < 0 ? 'L' : 'R'}`, side < 0 ? 'house left' : 'house right', `audio:main:${side < 0 ? 'l' : 'r'}`, side * spread, ctx.downstageY - main.depth / 2 - 300, 0, mainsPerSide);
+      hangs++;
+      // side / out-fill hang: outboard and turned out toward the side seating
+      const nOut = Math.max(0, Math.round(p.outfills ?? 0));
+      if (nOut > 0) { hang(`OUT.${side < 0 ? 'L' : 'R'}`, side < 0 ? 'out-fill left' : 'out-fill right', `audio:main:${side < 0 ? 'l' : 'r'}`, side * (spread + 2800), ctx.downstageY + 1500, side * 0.6, nOut); hangs++; }
+    }
   }
   if (trim - mainsPerSide * main.height < ctx.stageTop)
     warnings.push({ level: 'info', code: 'audio.trim', target: 'audio:main:l', message: `The main hang reaches near the deck — raise the trim or reduce the box count for sightlines.` });
@@ -99,7 +127,9 @@ export function resolveAudio(p: AudioParams, getSpeaker: (id: string) => Speaker
     for (const side of [-1, 1] as const) {
       const n = Math.min(perSide, nSub - placed);
       for (let i = 0; i < n; i++) {
-        const pos: Vec3 = p.subMode === 'flown'
+        const pos: Vec3 = layout === 'quad'
+          ? [side * (ctx.stageWidth / 4), ctx.stageDepth / 2 + (i - (n - 1) / 2) * (sub.width + 50), Math.max(0, ctx.stageTop - sub.height - 150)] // under the centre stage
+          : p.subMode === 'flown'
           ? [side * spread, ctx.downstageY - sub.depth / 2 - 300, trim + 200 + i * sub.height]
           : [side * (ctx.stageWidth / 2 + sub.width / 2 + 400), ctx.downstageY - sub.depth / 2 - 200, i * sub.height];
         objects.push({
@@ -162,7 +192,7 @@ export function resolveAudio(p: AudioParams, getSpeaker: (id: string) => Speaker
   warnings.push({ level: 'info', code: 'audio.review', target: 'audio:main:l', message: 'Loudspeaker positions are for planning. Array splay, coverage, SPL and rigging loads require the audio vendor’s prediction software and a rigging engineer.' });
 
   const report: AudioReport = {
-    mainsPerSide, main, sub, subs: nSub, subMode: p.subMode, fill, frontFills: nFill, monitor, monitors: nMon,
+    layout, hangs, mainsPerSide, main, sub, subs: nSub, subMode: p.subMode, fill, frontFills: nFill, monitor, monitors: nMon,
     trim, spread, weightKg: weightKnown ? +weight.toFixed(1) : null,
   };
   return { report, objects, blocks: [...blocks.values()], warnings };

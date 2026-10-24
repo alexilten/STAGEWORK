@@ -1,0 +1,381 @@
+{
+  "schema": "stagecraft.project",
+  "version": 1,
+  "name": "DJ Monolith",
+  "presetId": "dj-monolith",
+  "units": "metric",
+  "stage": {
+    "width": 29260.800000000003,
+    "depth": 12192,
+    "height": 1524,
+    "deckSystemId": "generic.deck-8x4",
+    "finish": "black",
+    "fascia": true
+  },
+  "ledWalls": [
+    {
+      "cabinetId": "roe.bm4-matte",
+      "elevation": 135,
+      "offsetX": 0,
+      "upstageGap": -11892,
+      "curveDeg": 0,
+      "id": "floor",
+      "name": "LED floor",
+      "width": 25603.2,
+      "height": 3048,
+      "surface": "floor",
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 0,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "back",
+      "name": "Vertical backdrop",
+      "width": 9600,
+      "height": 18000,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 0,
+      "offsetX": 0,
+      "upstageGap": -9192,
+      "curveDeg": 0,
+      "id": "monof",
+      "name": "Monolith front",
+      "width": 6000,
+      "height": 4000,
+      "base": "deck",
+      "yawDeg": 0,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 0,
+      "offsetX": 3000,
+      "upstageGap": -6192,
+      "curveDeg": 0,
+      "id": "monor",
+      "name": "Monolith right",
+      "width": 6000,
+      "height": 4000,
+      "base": "deck",
+      "yawDeg": 90,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 0,
+      "offsetX": 3.6739403974420595e-13,
+      "upstageGap": -3192,
+      "curveDeg": 0,
+      "id": "monob",
+      "name": "Monolith back",
+      "width": 6000,
+      "height": 4000,
+      "base": "deck",
+      "yawDeg": 180,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 0,
+      "offsetX": -3000,
+      "upstageGap": -6192,
+      "curveDeg": 0,
+      "id": "monol",
+      "name": "Monolith left",
+      "width": 6000,
+      "height": 4000,
+      "base": "deck",
+      "yawDeg": -90,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 0,
+      "offsetX": -11000,
+      "upstageGap": -6992,
+      "curveDeg": 0,
+      "id": "twlf",
+      "name": "Tower left front",
+      "width": 3600,
+      "height": 15600,
+      "base": "deck",
+      "yawDeg": 0,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 0,
+      "offsetX": -9200,
+      "upstageGap": -5192,
+      "curveDeg": 0,
+      "id": "twlr",
+      "name": "Tower left right",
+      "width": 3600,
+      "height": 15600,
+      "base": "deck",
+      "yawDeg": 90,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 0,
+      "offsetX": -11000,
+      "upstageGap": -3392,
+      "curveDeg": 0,
+      "id": "twlb",
+      "name": "Tower left back",
+      "width": 3600,
+      "height": 15600,
+      "base": "deck",
+      "yawDeg": 180,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 0,
+      "offsetX": -12800,
+      "upstageGap": -5192,
+      "curveDeg": 0,
+      "id": "twll",
+      "name": "Tower left left",
+      "width": 3600,
+      "height": 15600,
+      "base": "deck",
+      "yawDeg": -90,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 0,
+      "offsetX": 11000,
+      "upstageGap": -6992,
+      "curveDeg": 0,
+      "id": "twrf",
+      "name": "Tower right front",
+      "width": 3600,
+      "height": 15600,
+      "base": "deck",
+      "yawDeg": 0,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 0,
+      "offsetX": 12800,
+      "upstageGap": -5192,
+      "curveDeg": 0,
+      "id": "twrr",
+      "name": "Tower right right",
+      "width": 3600,
+      "height": 15600,
+      "base": "deck",
+      "yawDeg": 90,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 0,
+      "offsetX": 11000,
+      "upstageGap": -3392,
+      "curveDeg": 0,
+      "id": "twrb",
+      "name": "Tower right back",
+      "width": 3600,
+      "height": 15600,
+      "base": "deck",
+      "yawDeg": 180,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 0,
+      "offsetX": 9200,
+      "upstageGap": -5192,
+      "curveDeg": 0,
+      "id": "twrl",
+      "name": "Tower right left",
+      "width": 3600,
+      "height": 15600,
+      "base": "deck",
+      "yawDeg": -90,
+      "header": false
+    }
+  ],
+  "rigging": {
+    "trussId": "prolyte.h30v",
+    "header": {
+      "enabled": false,
+      "clearance": 600,
+      "overhang": 500,
+      "maxHoistSpacing": 6000
+    },
+    "front": {
+      "enabled": false,
+      "distance": 6000,
+      "trim": 8500,
+      "width": 14000
+    }
+  },
+  "lighting": {
+    "enabled": true,
+    "fixtureId": "martin.mac-aura-xb",
+    "count": 0,
+    "electrics": {
+      "count": 1,
+      "perBatten": 12,
+      "firstAt": 2000,
+      "spacing": 3000,
+      "trim": 14000,
+      "fixtureId": "robe.megapointe"
+    },
+    "booms": {
+      "enabled": false,
+      "perBoom": 4,
+      "height": 4000
+    }
+  },
+  "presenter": {
+    "visible": false
+  },
+  "seating": {
+    "enabled": false,
+    "layout": "block",
+    "count": 1000,
+    "chairId": "generic.chair-stack",
+    "frontDistance": 3050,
+    "rowPitch": 915,
+    "seatPitch": 560,
+    "aisleWidth": 1070,
+    "seatsPerBlock": 14
+  },
+  "audio": {
+    "enabled": true,
+    "mainSpeakerId": "dbaudio.j8",
+    "mainsPerSide": 14,
+    "trim": 15000,
+    "spread": 17500,
+    "splayPerBox": 2,
+    "subSpeakerId": "dbaudio.j-sub",
+    "subs": 16,
+    "subMode": "ground",
+    "fillSpeakerId": "generic.fill",
+    "frontFills": 6,
+    "monitorSpeakerId": "generic.wedge",
+    "monitors": 2
+  },
+  "scenic": {
+    "portal": {
+      "enabled": false,
+      "margin": 300,
+      "legWidth": 1200,
+      "headerHeight": 1200,
+      "thickness": 150,
+      "finish": "white"
+    },
+    "masking": {
+      "enabled": false,
+      "pairs": 2,
+      "legWidth": 1830,
+      "height": 6000
+    },
+    "drape": {
+      "enabled": false
+    }
+  },
+  "broadcast": {
+    "enabled": false,
+    "foh": {
+      "cameras": 2,
+      "placement": "auto",
+      "distance": 25000,
+      "standing": false
+    },
+    "sideCams": true,
+    "rail": {
+      "enabled": true,
+      "length": 9000,
+      "prompter": false
+    },
+    "handheld": true,
+    "prompters": {
+      "presidential": true,
+      "dsm": "stand",
+      "dsmCount": 2,
+      "foh": "truss"
+    }
+  },
+  "audience": {
+    "standing": {
+      "enabled": true,
+      "shape": "front",
+      "width": 52000,
+      "depth": 40000,
+      "radius": 0,
+      "pit": 1800,
+      "density": 2,
+      "barricade": true
+    },
+    "stands": []
+  },
+  "structure": {
+    "roof": {
+      "enabled": false,
+      "system": "stageco.roof-25x10",
+      "span": 25000,
+      "wings": true,
+      "wingImag": true
+    },
+    "grid": {
+      "enabled": false,
+      "width": 20000,
+      "depth": 12000,
+      "trim": 12000,
+      "spacing": 3000
+    },
+    "delays": {
+      "enabled": false,
+      "count": 2,
+      "distance": 45000,
+      "spread": 22000,
+      "height": 14000
+    },
+    "truss": []
+  },
+  "show": {
+    "booth": {
+      "enabled": true,
+      "x": 0,
+      "y": 6000,
+      "width": 2600,
+      "decks": 4,
+      "z": 5524
+    },
+    "blocks": [
+      {
+        "id": "core",
+        "name": "Monolith core",
+        "x": 0,
+        "y": 6000,
+        "z": 1524,
+        "width": 5700,
+        "depth": 5700,
+        "height": 4000,
+        "yawDeg": 0
+      }
+    ],
+    "dome": {
+      "enabled": false,
+      "diameter": 26500,
+      "springing": 2000,
+      "openingDeg": 0,
+      "cx": 0,
+      "cy": 0
+    }
+  }
+}

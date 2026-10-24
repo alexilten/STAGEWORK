@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SystemKey } from '../core/engine/types';
-import { PRESETS } from '../core/presets';
 import { parseProject } from '../core/schema';
 import { export3dm, exportBom, exportGlbFile, exportProject, loadRhino } from '../export/browser';
 import { getCatalogItem, type LedCabinet } from '../core/catalog';
-import { deleteUserPreset, listUserPresets, loadUserPreset, saveUserPreset } from './userPresets';
+import { PresetPicker } from './PresetPicker';
 import { Segmented } from './controls';
 import { Icon } from './icons';
 import { MediaButton } from './MediaButton';
@@ -14,7 +13,6 @@ import { projectForSave, useStore } from './store';
 export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
   const project = useStore((s) => s.project);
   const edit = useStore((s) => s.edit);
-  const loadPreset = useStore((s) => s.loadPreset);
   const load = useStore((s) => s.load);
   const undo = useStore((s) => s.undo);
   const redo = useStore((s) => s.redo);
@@ -24,7 +22,6 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
   const setMode = useStore((s) => s.setMode);
   const fileRef = useRef<HTMLInputElement>(null);
   const [exportOpen, setExportOpen] = useState(false);
-  const [userPresets, setUserPresets] = useState(listUserPresets);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -82,24 +79,7 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
         <input className="project-name" value={project.name} onChange={(e) => edit((p) => { p.name = e.target.value; }, 'name')} spellCheck={false} />
       </div>
       <div className="tb-group">
-        <div className="select tb-select">
-          <select value={project.presetId ?? ''} title="Start from a preset" onChange={(e) => {
-            const v = e.target.value;
-            if (v === '__save') { setUserPresets(saveUserPreset(project)); onToast(`Saved “${project.name}” as a preset in this browser`); return; }
-            if (v.startsWith('__del:')) { setUserPresets(deleteUserPreset(v.slice(6))); onToast('Preset removed'); return; }
-            if (v.startsWith('user:')) { const u = userPresets.find((x) => `user:${x.id}` === v); if (u) { load({ ...loadUserPreset(u), presetId: v }); } return; }
-            loadPreset(v);
-          }}>
-            {!project.presetId && <option value="">Custom</option>}
-            <optgroup label="Presets">{PRESETS.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</optgroup>
-            {userPresets.length > 0 && <optgroup label="My presets">{userPresets.map((u) => <option key={u.id} value={`user:${u.id}`}>{u.name}</option>)}</optgroup>}
-            <optgroup label="Manage">
-              <option value="__save">Save current as preset</option>
-              {userPresets.map((u) => <option key={u.id} value={`__del:${u.id}`}>Remove “{u.name}”</option>)}
-            </optgroup>
-          </select>
-          <span className="chev"><Icon.chevron /></span>
-        </div>
+        <PresetPicker onToast={onToast} />
         <MediaButton onToast={onToast} />
         <span className="tb-sep" />
         <button className="icon-btn" onClick={undo} disabled={!canUndo} title="Undo (⌘Z)"><Icon.undo /></button>

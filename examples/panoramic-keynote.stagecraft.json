@@ -49,7 +49,7 @@
     "fixtureId": "martin.mac-aura-xb",
     "count": 14,
     "electrics": {
-      "count": 3,
+      "count": 2,
       "perBatten": 12,
       "firstAt": 1000,
       "spacing": 1500,
@@ -130,6 +130,61 @@
       "dsm": "stand",
       "dsmCount": 2,
       "foh": "truss"
+    }
+  },
+  "audience": {
+    "standing": {
+      "enabled": false,
+      "shape": "front",
+      "width": 30000,
+      "depth": 25000,
+      "radius": 24000,
+      "pit": 1800,
+      "density": 2,
+      "barricade": true
+    },
+    "stands": []
+  },
+  "structure": {
+    "roof": {
+      "enabled": false,
+      "system": "stageco.roof-25x10",
+      "span": 25000,
+      "wings": true,
+      "wingImag": true
+    },
+    "grid": {
+      "enabled": false,
+      "width": 20000,
+      "depth": 12000,
+      "trim": 12000,
+      "spacing": 3000
+    },
+    "delays": {
+      "enabled": false,
+      "count": 2,
+      "distance": 45000,
+      "spread": 22000,
+      "height": 14000
+    },
+    "truss": []
+  },
+  "show": {
+    "booth": {
+      "enabled": false,
+      "x": 0,
+      "y": 2400,
+      "width": 2400,
+      "decks": 4
+    },
+    "blocks": [],
+    "dome": {
+      "enabled": false,
+      "diameter": 26500,
+      "springing": 2000,
+      "openingDeg": 0,
+      "cx": 0,
+      "cy": 0
     }
   }
 }

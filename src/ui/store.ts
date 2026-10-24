@@ -15,11 +15,12 @@ export const ALL_LAYERS: { key: SystemKey; label: string; rhino: string }[] = [
   { key: 'finishes', label: 'Fascia & finishes', rhino: '10_04' },
   { key: 'ledCabinets', label: 'LED cabinets', rhino: '20_01' },
   { key: 'ledSupports', label: 'LED support', rhino: '20_02' },
-  { key: 'rigging', label: 'Rigging', rhino: '30' },
+  { key: 'rigging', label: 'Rigging', rhino: '30_01' },
+  { key: 'structure', label: 'Ground support', rhino: '30_04' },
   { key: 'lighting', label: 'Lighting', rhino: '40' },
   { key: 'audio', label: 'Audio', rhino: '50' },
   { key: 'scenic', label: 'Scenic', rhino: '60' },
-  { key: 'seating', label: 'Audience seating', rhino: '70' },
+  { key: 'seating', label: 'Audience', rhino: '70' },
   { key: 'broadcast', label: 'Broadcast', rhino: '80' },
   { key: 'dimensions', label: 'Dimensions', rhino: '90_01' },
   { key: 'reference', label: 'Reference', rhino: '00' },
@@ -69,7 +70,7 @@ const urlPreset = typeof window !== 'undefined' ? new URLSearchParams(window.loc
 const initial = (urlPreset ? getPreset(urlPreset) : DEFAULT_PRESET).build();
 const layersFor = (mode: ViewMode): Record<SystemKey, boolean> => ({
   decking: true, supports: mode === 'technical', finishes: true, ledCabinets: true, ledSupports: true,
-  rigging: true, lighting: true, audio: true, scenic: true, seating: true, broadcast: true, dimensions: mode === 'technical', reference: true,
+  rigging: true, structure: true, lighting: true, audio: true, scenic: true, seating: true, broadcast: true, dimensions: mode === 'technical', reference: true,
 });
 
 export const useStore = create<State>((set, get) => ({

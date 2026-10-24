@@ -1,0 +1,206 @@
+{
+  "schema": "stagecraft.project",
+  "version": 1,
+  "name": "Club 360",
+  "presetId": "club-360",
+  "units": "metric",
+  "stage": {
+    "width": 4876.8,
+    "depth": 4876.8,
+    "height": 1219.2,
+    "deckSystemId": "generic.deck-8x4",
+    "finish": "black",
+    "fascia": true,
+    "shape": "round"
+  },
+  "ledWalls": [
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 6000,
+      "offsetX": 0,
+      "upstageGap": 3561.5999999999995,
+      "curveDeg": 0,
+      "id": "inner",
+      "name": "Inner LED ring",
+      "width": 37699.11184307752,
+      "height": 1200,
+      "base": "floor",
+      "radius": -6000,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 7500,
+      "offsetX": 0,
+      "upstageGap": 7561.599999999999,
+      "curveDeg": 0,
+      "id": "outer",
+      "name": "Outer LED ring",
+      "width": 62831.853071795864,
+      "height": 1200,
+      "base": "floor",
+      "radius": -10000,
+      "header": false
+    }
+  ],
+  "rigging": {
+    "trussId": "prolyte.h30v",
+    "header": {
+      "enabled": false,
+      "clearance": 600,
+      "overhang": 500,
+      "maxHoistSpacing": 6000
+    },
+    "front": {
+      "enabled": false,
+      "distance": 6000,
+      "trim": 8500,
+      "width": 14000
+    }
+  },
+  "lighting": {
+    "enabled": true,
+    "fixtureId": "martin.mac-aura-xb",
+    "count": 0,
+    "electrics": {
+      "count": 0,
+      "perBatten": 8,
+      "firstAt": 1000,
+      "spacing": 1500,
+      "trim": 7000
+    },
+    "booms": {
+      "enabled": false,
+      "perBoom": 4,
+      "height": 4000
+    }
+  },
+  "presenter": {
+    "visible": false
+  },
+  "seating": {
+    "enabled": false,
+    "layout": "block",
+    "count": 1000,
+    "chairId": "generic.chair-stack",
+    "frontDistance": 3050,
+    "rowPitch": 915,
+    "seatPitch": 560,
+    "aisleWidth": 1070,
+    "seatsPerBlock": 14
+  },
+  "audio": {
+    "enabled": true,
+    "mainSpeakerId": "dbaudio.j8",
+    "mainsPerSide": 8,
+    "trim": 8800,
+    "spread": 7000,
+    "splayPerBox": 2,
+    "subSpeakerId": "dbaudio.j-sub",
+    "subs": 8,
+    "subMode": "ground",
+    "fillSpeakerId": "generic.fill",
+    "frontFills": 0,
+    "monitorSpeakerId": "generic.wedge",
+    "monitors": 2,
+    "layout": "quad",
+    "quadRadius": 13000,
+    "hangsPerPosition": 1
+  },
+  "scenic": {
+    "portal": {
+      "enabled": false,
+      "margin": 300,
+      "legWidth": 1200,
+      "headerHeight": 1200,
+      "thickness": 150,
+      "finish": "white"
+    },
+    "masking": {
+      "enabled": false,
+      "pairs": 2,
+      "legWidth": 1830,
+      "height": 6000
+    },
+    "drape": {
+      "enabled": false
+    }
+  },
+  "broadcast": {
+    "enabled": false,
+    "foh": {
+      "cameras": 2,
+      "placement": "auto",
+      "distance": 25000,
+      "standing": false
+    },
+    "sideCams": true,
+    "rail": {
+      "enabled": true,
+      "length": 9000,
+      "prompter": false
+    },
+    "handheld": true,
+    "prompters": {
+      "presidential": true,
+      "dsm": "stand",
+      "dsmCount": 2,
+      "foh": "truss"
+    }
+  },
+  "audience": {
+    "standing": {
+      "enabled": true,
+      "shape": "surround",
+      "width": 0,
+      "depth": 0,
+      "radius": 17000,
+      "pit": 1200,
+      "density": 2,
+      "barricade": true
+    },
+    "stands": []
+  },
+  "structure": {
+    "roof": {
+      "enabled": false,
+      "system": "stageco.roof-25x10",
+      "span": 25000,
+      "wings": true,
+      "wingImag": true
+    },
+    "grid": {
+      "enabled": true,
+      "width": 26000,
+      "depth": 26000,
+      "trim": 9000,
+      "spacing": 4300
+    },
+    "delays": {
+      "enabled": false,
+      "count": 2,
+      "distance": 45000,
+      "spread": 22000,
+      "height": 14000
+    },
+    "truss": []
+  },
+  "show": {
+    "booth": {
+      "enabled": true,
+      "x": 0,
+      "y": 2438.4,
+      "width": 2400,
+      "decks": 3
+    },
+    "blocks": [],
+    "dome": {
+      "enabled": false,
+      "diameter": 26500,
+      "springing": 2000,
+      "openingDeg": 0,
+      "cx": 0,
+      "cy": 0
+    }
+  }
+}

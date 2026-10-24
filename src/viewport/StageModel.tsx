@@ -70,7 +70,7 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
   return (
     <group>
       {batches.map((b) => <InstancedBatch key={b.key + mode} batch={b} mode={mode} finish={finish} scenicFinish={scenicFinish} />)}
-      {leds.map(({ L, objects }) => <LedFaces key={L.id} id={L.id} cols={L.cols} rows={L.rows} w={L.cabinet.width} h={L.cabinet.height} objects={objects} mode={mode} media={media} />)}
+      {leds.map(({ L, objects }) => <LedFaces key={L.id} id={L.id} cols={L.cols} rows={L.rows} w={L.cabinet.width} h={L.cabinet.height} objects={objects} mode={mode} media={L.surface === 'wall' ? media : null} />)}
     </group>
   );
 }

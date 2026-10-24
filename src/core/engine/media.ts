@@ -44,7 +44,9 @@ export const mainWall = (led: LedLayout[]) =>
 /** world X range of a wall's front face */
 const xRange = (L: LedLayout): [number, number] => [L.origin[0] - L.chord / 2, L.origin[0] + L.chord / 2];
 
-export function resolveMediaCanvas(led: LedLayout[], aspect: number, fit: MediaParams['fit']): MediaCanvas | null {
+export function resolveMediaCanvas(all: LedLayout[], aspect: number, fit: MediaParams['fit']): MediaCanvas | null {
+  // content maps onto upright walls; LED floors and ceilings keep their own look
+  const led = all.filter((L) => (L.surface ?? 'wall') === 'wall');
   const M = mainWall(led);
   if (!M || !(aspect > 0)) return null;
   const cx = M.origin[0], cz = (M.origin[2] + M.top) / 2;

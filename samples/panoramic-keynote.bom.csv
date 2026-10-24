@@ -6,13 +6,13 @@ finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck left,1,,,gene
 finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck right,1,,,generic,
 ledCabinets,20_LED::20_01_CABINETS,ROE Visual,Black Pearl BP2 V2,Black Pearl BP2 V2 cabinet,576,9.35,5385.6,secondary,roe.bp2v2
 ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 2-wide (generic),24,,,generic,
-rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 0.71 m",62,,,secondary,prolyte.h30v
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 0.71 m",45,,,secondary,prolyte.h30v
 rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 1.5 m",1,,,secondary,prolyte.h30v
-rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",14,,,secondary,prolyte.h30v
-rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,22,,,generic,generic.hoist-1t
-rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2 m",4,14.49,57.96,secondary,prolyte.h30v
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",13,,,secondary,prolyte.h30v
+rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,18,,,generic,generic.hoist-1t
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2 m",3,14.49,43.47,secondary,prolyte.h30v
 lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,14,6.5,91,secondary,martin.mac-aura-xb
-lighting,40_LIGHTING::40_01_FIXTURES,GLP,impression X4 Bar 20,GLP impression X4 Bar 20,36,16,576,manufacturer,glp.impression-x4-bar-20
+lighting,40_LIGHTING::40_01_FIXTURES,GLP,impression X4 Bar 20,GLP impression X4 Bar 20,24,16,384,manufacturer,glp.impression-x4-bar-20
 audio,50_AUDIO::50_01_MAINS,d&b audiotechnik,J8 (line array),J8 (line array) — house left #1,28,60,1680,manufacturer,dbaudio.j8
 audio,50_AUDIO::50_02_SUBS,d&b audiotechnik,J-SUB (cardioid sub),J-SUB (cardioid sub) — left #1,6,106,636,manufacturer,dbaudio.j-sub
 audio,50_AUDIO::50_03_FILLS,Generic,Front-fill point source,Front-fill point source — front fill #1,6,15,90,generic,generic.fill

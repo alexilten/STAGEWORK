@@ -10,7 +10,8 @@ export type MaterialKey =
   | 'chairSeat' | 'chairFrame'
   | 'speaker' | 'speakerGrille'
   | 'scenicFlat' | 'drape'
-  | 'camera' | 'platform' | 'glass' | 'screen';
+  | 'camera' | 'platform' | 'glass' | 'screen'
+  | 'crowd' | 'barricade' | 'stand' | 'structure' | 'roofSkin' | 'booth';
 
 export type Part =
   | { kind: 'box'; min: Vec3; max: Vec3; mat: MaterialKey }
@@ -23,16 +24,16 @@ export type LayerPath =
   | '00_REFERENCE'
   | '10_STAGE::10_01_DECKING' | '10_STAGE::10_02_RISERS' | '10_STAGE::10_03_SUPPORTS' | '10_STAGE::10_04_FINISHES'
   | '20_LED::20_01_CABINETS' | '20_LED::20_02_SUPPORTS' | '20_LED::20_03_TRIM'
-  | '30_RIGGING::30_01_TRUSS' | '30_RIGGING::30_02_HOISTS' | '30_RIGGING::30_03_HARDWARE'
+  | '30_RIGGING::30_01_TRUSS' | '30_RIGGING::30_02_HOISTS' | '30_RIGGING::30_03_HARDWARE' | '30_RIGGING::30_04_GROUND_SUPPORT' | '30_RIGGING::30_05_GRID'
   | '40_LIGHTING::40_01_FIXTURES' | '40_LIGHTING::40_02_ACCESSORIES' | '40_LIGHTING::40_03_POSITIONS'
-  | '50_AUDIO::50_01_MAINS' | '50_AUDIO::50_02_SUBS' | '50_AUDIO::50_03_FILLS' | '50_AUDIO::50_04_MONITORS'
-  | '60_SCENIC::60_01_PORTAL' | '60_SCENIC::60_02_MASKING' | '60_SCENIC::60_03_DRAPES'
-  | '70_AUDIENCE::70_01_SEATING' | '70_AUDIENCE::70_02_LAYOUT'
+  | '50_AUDIO::50_01_MAINS' | '50_AUDIO::50_02_SUBS' | '50_AUDIO::50_03_FILLS' | '50_AUDIO::50_04_MONITORS' | '50_AUDIO::50_05_DELAYS'
+  | '60_SCENIC::60_01_PORTAL' | '60_SCENIC::60_02_MASKING' | '60_SCENIC::60_03_DRAPES' | '60_SCENIC::60_04_ELEMENTS' | '60_SCENIC::60_05_DJ_BOOTH'
+  | '70_AUDIENCE::70_01_SEATING' | '70_AUDIENCE::70_02_LAYOUT' | '70_AUDIENCE::70_03_STANDING' | '70_AUDIENCE::70_04_BARRICADE' | '70_AUDIENCE::70_05_STANDS'
   | '80_BROADCAST::80_01_CAMERAS' | '80_BROADCAST::80_02_PLATFORMS' | '80_BROADCAST::80_03_TRACK' | '80_BROADCAST::80_04_PROMPTERS' | '80_BROADCAST::80_05_CREW'
   | '90_TECHNICAL::90_01_DIMENSIONS' | '90_TECHNICAL::90_02_CENTERLINES' | '90_TECHNICAL::90_03_REFERENCE';
 
 /** UI layer toggles; several Rhino sub-layers can map to one toggle */
-export type SystemKey = 'decking' | 'supports' | 'finishes' | 'ledCabinets' | 'ledSupports' | 'rigging' | 'lighting' | 'audio' | 'scenic' | 'seating' | 'broadcast' | 'dimensions' | 'reference';
+export type SystemKey = 'decking' | 'supports' | 'finishes' | 'ledCabinets' | 'ledSupports' | 'rigging' | 'structure' | 'lighting' | 'audio' | 'scenic' | 'seating' | 'broadcast' | 'dimensions' | 'reference';
 
 export interface BlockDef {
   key: string; // Rhino block name

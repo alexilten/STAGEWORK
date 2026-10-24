@@ -1,0 +1,520 @@
+{
+  "schema": "stagecraft.project",
+  "version": 1,
+  "name": "Geometric Truss Mainstage",
+  "presetId": "edm-geometric",
+  "units": "metric",
+  "stage": {
+    "width": 30480,
+    "depth": 13411.2,
+    "height": 1828.8000000000002,
+    "deckSystemId": "generic.deck-8x4",
+    "finish": "black",
+    "fascia": true
+  },
+  "ledWalls": [
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 1500,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "d1",
+      "name": "Diamond row 1",
+      "width": 2000,
+      "height": 1500,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 3000,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "d2",
+      "name": "Diamond row 2",
+      "width": 5000,
+      "height": 1500,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 4500,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "d3",
+      "name": "Diamond row 3",
+      "width": 8000,
+      "height": 1500,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 6000,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "d4",
+      "name": "Diamond row 4",
+      "width": 11000,
+      "height": 1500,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 7500,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "d5",
+      "name": "Diamond row 5",
+      "width": 8000,
+      "height": 1500,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 9000,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "d6",
+      "name": "Diamond row 6",
+      "width": 5000,
+      "height": 1500,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 10500,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "d7",
+      "name": "Diamond row 7",
+      "width": 2000,
+      "height": 1500,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 600,
+      "offsetX": -14500,
+      "upstageGap": -2500,
+      "curveDeg": 0,
+      "id": "sl",
+      "name": "Side LED left",
+      "width": 7800,
+      "height": 10800,
+      "yawDeg": 20,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 600,
+      "offsetX": 14500,
+      "upstageGap": -2500,
+      "curveDeg": 0,
+      "id": "sr",
+      "name": "Side LED right",
+      "width": 7800,
+      "height": 10800,
+      "yawDeg": -20,
+      "header": false
+    }
+  ],
+  "rigging": {
+    "trussId": "prolyte.h30v",
+    "header": {
+      "enabled": false,
+      "clearance": 600,
+      "overhang": 500,
+      "maxHoistSpacing": 6000
+    },
+    "front": {
+      "enabled": false,
+      "distance": 6000,
+      "trim": 8500,
+      "width": 14000
+    }
+  },
+  "lighting": {
+    "enabled": true,
+    "fixtureId": "martin.mac-aura-xb",
+    "count": 0,
+    "electrics": {
+      "count": 3,
+      "perBatten": 12,
+      "firstAt": 2000,
+      "spacing": 3500,
+      "trim": 15000,
+      "fixtureId": "glp.impression-x4-bar-20"
+    },
+    "booms": {
+      "enabled": false,
+      "perBoom": 4,
+      "height": 4000
+    }
+  },
+  "presenter": {
+    "visible": false
+  },
+  "seating": {
+    "enabled": false,
+    "layout": "block",
+    "count": 1000,
+    "chairId": "generic.chair-stack",
+    "frontDistance": 3050,
+    "rowPitch": 915,
+    "seatPitch": 560,
+    "aisleWidth": 1070,
+    "seatsPerBlock": 14
+  },
+  "audio": {
+    "enabled": true,
+    "mainSpeakerId": "dbaudio.j8",
+    "mainsPerSide": 16,
+    "trim": 16000,
+    "spread": 22000,
+    "splayPerBox": 2,
+    "subSpeakerId": "dbaudio.j-sub",
+    "subs": 20,
+    "subMode": "ground",
+    "fillSpeakerId": "generic.fill",
+    "frontFills": 6,
+    "monitorSpeakerId": "generic.wedge",
+    "monitors": 4
+  },
+  "scenic": {
+    "portal": {
+      "enabled": false,
+      "margin": 300,
+      "legWidth": 1200,
+      "headerHeight": 1200,
+      "thickness": 150,
+      "finish": "white"
+    },
+    "masking": {
+      "enabled": false,
+      "pairs": 2,
+      "legWidth": 1830,
+      "height": 6000
+    },
+    "drape": {
+      "enabled": false
+    }
+  },
+  "broadcast": {
+    "enabled": false,
+    "foh": {
+      "cameras": 2,
+      "placement": "auto",
+      "distance": 25000,
+      "standing": false
+    },
+    "sideCams": true,
+    "rail": {
+      "enabled": true,
+      "length": 9000,
+      "prompter": false
+    },
+    "handheld": true,
+    "prompters": {
+      "presidential": true,
+      "dsm": "stand",
+      "dsmCount": 2,
+      "foh": "truss"
+    }
+  },
+  "audience": {
+    "standing": {
+      "enabled": true,
+      "shape": "front",
+      "width": 64000,
+      "depth": 48000,
+      "radius": 0,
+      "pit": 2000,
+      "density": 2,
+      "barricade": true
+    },
+    "stands": []
+  },
+  "structure": {
+    "roof": {
+      "enabled": false,
+      "system": "stageco.roof-25x10",
+      "span": 25000,
+      "wings": true,
+      "wingImag": true
+    },
+    "grid": {
+      "enabled": false,
+      "width": 20000,
+      "depth": 12000,
+      "trim": 12000,
+      "spacing": 3000
+    },
+    "delays": {
+      "enabled": false,
+      "count": 2,
+      "distance": 45000,
+      "spread": 22000,
+      "height": 14000
+    },
+    "truss": [
+      {
+        "id": "dia1",
+        "from": [
+          -8500,
+          14311.2,
+          8578.8
+        ],
+        "to": [
+          0,
+          14311.2,
+          14578.8
+        ]
+      },
+      {
+        "id": "dia2",
+        "from": [
+          0,
+          14311.2,
+          14578.8
+        ],
+        "to": [
+          8500,
+          14311.2,
+          8578.8
+        ]
+      },
+      {
+        "id": "dia3",
+        "from": [
+          8500,
+          14311.2,
+          8578.8
+        ],
+        "to": [
+          0,
+          14311.2,
+          2578.7999999999993
+        ]
+      },
+      {
+        "id": "dia4",
+        "from": [
+          0,
+          14311.2,
+          2578.7999999999993
+        ],
+        "to": [
+          -8500,
+          14311.2,
+          8578.8
+        ]
+      },
+      {
+        "id": "dia5",
+        "from": [
+          -11500,
+          14311.2,
+          8578.8
+        ],
+        "to": [
+          0,
+          14311.2,
+          16378.8
+        ]
+      },
+      {
+        "id": "dia6",
+        "from": [
+          0,
+          14311.2,
+          16378.8
+        ],
+        "to": [
+          11500,
+          14311.2,
+          8578.8
+        ]
+      },
+      {
+        "id": "dia7",
+        "from": [
+          11500,
+          14311.2,
+          8578.8
+        ],
+        "to": [
+          0,
+          14311.2,
+          778.7999999999993
+        ]
+      },
+      {
+        "id": "dia8",
+        "from": [
+          0,
+          14311.2,
+          778.7999999999993
+        ],
+        "to": [
+          -11500,
+          14311.2,
+          8578.8
+        ]
+      },
+      {
+        "id": "arml1",
+        "from": [
+          -19000,
+          12411.2,
+          3328.8
+        ],
+        "to": [
+          -23000,
+          12411.2,
+          4828.8
+        ]
+      },
+      {
+        "id": "arml2",
+        "from": [
+          -21500,
+          11611.2,
+          6528.8
+        ],
+        "to": [
+          -25500,
+          11611.2,
+          8028.8
+        ]
+      },
+      {
+        "id": "arml3",
+        "from": [
+          -24000,
+          10811.2,
+          9728.8
+        ],
+        "to": [
+          -28000,
+          10811.2,
+          11228.8
+        ]
+      },
+      {
+        "id": "arml4",
+        "from": [
+          -26500,
+          10011.2,
+          12928.8
+        ],
+        "to": [
+          -30500,
+          10011.2,
+          14428.8
+        ]
+      },
+      {
+        "id": "armr1",
+        "from": [
+          19000,
+          12411.2,
+          3328.8
+        ],
+        "to": [
+          23000,
+          12411.2,
+          4828.8
+        ]
+      },
+      {
+        "id": "armr2",
+        "from": [
+          21500,
+          11611.2,
+          6528.8
+        ],
+        "to": [
+          25500,
+          11611.2,
+          8028.8
+        ]
+      },
+      {
+        "id": "armr3",
+        "from": [
+          24000,
+          10811.2,
+          9728.8
+        ],
+        "to": [
+          28000,
+          10811.2,
+          11228.8
+        ]
+      },
+      {
+        "id": "armr4",
+        "from": [
+          26500,
+          10011.2,
+          12928.8
+        ],
+        "to": [
+          30500,
+          10011.2,
+          14428.8
+        ]
+      },
+      {
+        "id": "rakel",
+        "from": [
+          -11500,
+          14311.2,
+          8578.8
+        ],
+        "to": [
+          -27000,
+          9911.2,
+          16828.8
+        ]
+      },
+      {
+        "id": "raker",
+        "from": [
+          11500,
+          14311.2,
+          8578.8
+        ],
+        "to": [
+          27000,
+          9911.2,
+          16828.8
+        ]
+      }
+    ]
+  },
+  "show": {
+    "booth": {
+      "enabled": true,
+      "x": 0,
+      "y": 3000,
+      "width": 3000,
+      "decks": 4
+    },
+    "blocks": [],
+    "dome": {
+      "enabled": false,
+      "diameter": 26500,
+      "springing": 2000,
+      "openingDeg": 0,
+      "cx": 0,
+      "cy": 0
+    }
+  }
+}

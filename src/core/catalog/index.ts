@@ -98,6 +98,23 @@ export const LED_CABINETS: LedCabinet[] = [
     curveConcaveMaxDeg: null, curveConvexMaxDeg: null,
     sources: [{ label: 'Generic fine-pitch 16:9 cabinet format' }],
   },
+  {
+    id: 'roe.bm4-matte',
+    category: 'led-cabinet',
+    manufacturer: 'ROE Visual',
+    model: 'Black Marble BM4 Matte (LED floor)',
+    verification: 'manufacturer',
+    width: 609.6, height: 609.6, depth: 135,
+    pixelPitch: 4.76, pixelsW: 128, pixelsH: 128,
+    weightKg: 17.5, powerMaxW: 290,
+    curveConcaveMaxDeg: null, curveConvexMaxDeg: null,
+    floorLoadKgM2: 2000,
+    sources: [
+      { label: 'ROE Visual — Black Marble BM4 product page', url: 'https://roevisual.com/products/black-marble-bm4', accessed: ACCESS2,
+        note: 'BM4-Matte: 609.6 × 609.6 × 135 mm, 17.5 kg, 4.76 mm, 128 × 128 px, 290 W max; max load 2000 kg/m²' },
+    ],
+    notes: ['Walkable LED floor tile; lay it on a level sub-floor or deck.'],
+  },
 ];
 
 /* ───────────────────────────── Staging ───────────────────────────── */
