@@ -1,9 +1,15 @@
 System,Rhino layer,Manufacturer,Model,Item,Qty,Unit weight (kg),Total weight (kg),Verification,Catalogue id
-decking,10_STAGE::10_01_DECKING,Generic,Steel-frame platform 8′ × 4′,8′ × 4′ platform,35,,,generic,generic.deck-8x4
-supports,10_STAGE::10_03_SUPPORTS,Generic,Steel-frame platform 8′ × 4′,Platform leg,140,,,generic,generic.deck-8x4
-finishes,10_STAGE::10_04_FINISHES,Generic,—,Stage fascia — front,1,,,generic,
-finishes,10_STAGE::10_04_FINISHES,Generic,—,Stage fascia — house left,1,,,generic,
-finishes,10_STAGE::10_04_FINISHES,Generic,—,Stage fascia — house right,1,,,generic,
+decking,10_STAGE::10_01_DECKING,Generic,Steel-frame platform 8′ × 4′,8′ × 4′ platform,47,,,generic,generic.deck-8x4
+supports,10_STAGE::10_03_SUPPORTS,Generic,Steel-frame platform 8′ × 4′,Platform leg,188,,,generic,generic.deck-8x4
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck front,2,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck left,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck right,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — runway left,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — runway right,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — b-stage front,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — b-stage back,2,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — b-stage left,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — b-stage right,1,,,generic,
 ledCabinets,20_LED::20_01_CABINETS,ROE Visual,Black Pearl BP2 V2,Black Pearl BP2 V2 cabinet,330,9.35,3085.5,secondary,roe.bp2v2
 ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 2-wide (generic),14,,,generic,
 ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 1-wide (generic),2,,,generic,

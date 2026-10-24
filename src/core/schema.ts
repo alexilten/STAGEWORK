@@ -16,6 +16,22 @@ export const PROJECT_VERSION = 1;
 
 export type StageFinish = 'black' | 'white' | 'graphite' | 'oak';
 
+export type StageShape = 'rect' | 'thrust' | 'runway' | 'rounded';
+
+/** A raised platform on top of the main deck (band riser, upstage level, presenter step-up). */
+export interface RiserParams {
+  id: string;
+  name: string;
+  width: Mm;
+  depth: Mm;
+  /** riser top above the main deck top */
+  height: Mm;
+  /** centre offset from the stage centreline */
+  x: Mm;
+  /** downstage edge of the riser, measured upstage from the main deck's downstage edge */
+  y: Mm;
+}
+
 export interface StageParams {
   /** design intent; the resolved width snaps to whole deck modules */
   width: Mm;
@@ -25,7 +41,21 @@ export interface StageParams {
   deckSystemId: string;
   finish: StageFinish;
   fascia: boolean;
+  shape?: StageShape;
+  /** thrust: a wide centre extension into the audience */
+  thrust?: { width: Mm; depth: Mm };
+  /** runway: a narrow walkway into the audience, optionally ending in a B-stage */
+  runway?: { width: Mm; length: Mm; endWidth: Mm; endDepth: Mm };
+  /** rounded front: custom-built curved apron across the deck front; depth at the centreline */
+  apron?: { depth: Mm };
+  risers?: RiserParams[];
 }
+
+export const DEFAULT_SHAPES = {
+  thrust: { width: 4877, depth: 3658 },
+  runway: { width: 2438, length: 7315, endWidth: 4877, endDepth: 3658 },
+  apron: { depth: 1500 },
+};
 
 export interface LedWallParams {
   id: string;

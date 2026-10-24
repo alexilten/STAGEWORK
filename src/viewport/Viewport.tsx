@@ -89,7 +89,8 @@ export function selectionDims(group: string, scene: SceneGraph): Annotation[] {
   const r = scene.report;
   const H = r.stage.height.resolved;
   const dimsWith = (prefix: string) => scene.annotations.filter((a) => a.kind === 'dim' && a.id.startsWith(prefix));
-  if (group === 'stage') return dimsWith('DIM.STAGE.');
+  if (group === 'stage') return [...dimsWith('DIM.STAGE.'), ...dimsWith('DIM.THRUST.'), ...dimsWith('DIM.RUNWAY.'), ...dimsWith('DIM.BSTAGE.'), ...dimsWith('DIM.APRON.')];
+  if (group.startsWith('riser:')) return dimsWith(`DIM.RISER_${group.slice(6).toUpperCase()}.`);
   if (group === 'seating') return dimsWith('DIM.SEAT.');
   const L = r.led.find((l) => `led:${l.id}` === group);
   if (L) {

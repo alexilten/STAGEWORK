@@ -81,7 +81,38 @@ export interface SeatingReport {
 
 interface Seat { x: number; y: number; rot: number; section: number; row: number }
 
-export interface SeatingContext { stageWidth: Mm; stageDepth: Mm }
+type Rect = { minX: number; maxX: number; minY: number; maxY: number };
+export interface SeatingContext {
+  stageWidth: Mm;
+  stageDepth: Mm;
+  /** floor-level deck areas (main, thrust, runway, apron) the audience keeps clear of */
+  keepOut?: Rect[];
+  /** curved apron depth in front of the main deck */
+  apronDepth?: Mm;
+}
+
+/**
+ * Does a seat (front edge centre at x, yFront; facing +Y) keep clear of every deck area?
+ * Directly in front of a deck edge it needs `frontClear`; beside or behind one, an aisle width.
+ */
+function seatClear(ctx: SeatingContext, p: SeatingParams, chair: Chair, x: number, yFront: number, frontClear: number) {
+  const hw = chair.width / 2;
+  const rects = ctx.keepOut ?? [{ minX: -ctx.stageWidth / 2, maxX: ctx.stageWidth / 2, minY: 0, maxY: ctx.stageDepth }];
+  for (const r of rects) {
+    const cx = (r.minX + r.maxX) / 2, hwR = (r.maxX - r.minX) / 2;
+    const dx = Math.abs(x - cx) - hwR - hw;
+    const gapFront = r.minY - yFront;
+    const gapBehind = yFront - chair.depth - r.maxY;
+    if (dx < 0) {
+      if (gapBehind >= p.aisleWidth - 0.5) continue;
+      if (gapFront < frontClear - 0.5) return false;
+    } else {
+      const gy = Math.max(0, gapFront, gapBehind);
+      if (Math.hypot(dx, gy) < p.aisleWidth - 0.5) return false;
+    }
+  }
+  return true;
+}
 
 export function chairBlock(chair: Chair): BlockDef {
   const { width: w, depth: d, height: h, seatHeight: sh } = chair;
@@ -105,40 +136,36 @@ function trimLastRow(seats: Seat[], n: number) {
 
 const roundUp = (v: number, step: number) => Math.ceil(v / step - 1e-9) * step;
 
-function straight(p: SeatingParams, chair: Chair, perSection: number, sections: number, rowPitch: Mm) {
+function straight(p: SeatingParams, chair: Chair, ctx: SeatingContext, perSection: number, sections: number, rowPitch: Mm) {
   const cd = chair.depth;
-  const across = perSection * sections;
-  const rows = Math.ceil(p.count / across);
   const sw = perSection * p.seatPitch;
   const width = sections * sw + (sections - 1) * p.aisleWidth;
+  const y0 = -p.frontDistance - (ctx.apronDepth ?? 0);
   const out: Seat[] = [];
-  for (let r = 0; r < rows; r++) {
-    const yFront = -p.frontDistance - r * rowPitch - Math.floor(r / CROSS_AISLE_EVERY) * p.aisleWidth;
+  let r = 0;
+  for (; out.length < p.count && r < 400; r++) {
+    const yFront = y0 - r * rowPitch - Math.floor(r / CROSS_AISLE_EVERY) * p.aisleWidth;
     const row: Seat[] = [];
     for (let s = 0; s < sections; s++)
-      for (let k = 0; k < perSection; k++)
-        row.push({ x: -width / 2 + s * (sw + p.aisleWidth) + (k + 0.5) * p.seatPitch, y: yFront - cd / 2, rot: 0, section: s, row: r });
+      for (let k = 0; k < perSection; k++) {
+        const x = -width / 2 + s * (sw + p.aisleWidth) + (k + 0.5) * p.seatPitch;
+        if (seatClear(ctx, p, chair, x, yFront, p.frontDistance)) row.push({ x, y: yFront - cd / 2, rot: 0, section: s, row: r });
+      }
     const left = p.count - out.length;
     out.push(...(left < row.length ? trimLastRow(row, left) : row));
   }
-  const cross = Math.floor((rows - 1) / CROSS_AISLE_EVERY);
-  return { seats: out, rows, width, depth: (rows - 1) * rowPitch + cd + cross * p.aisleWidth };
+  return { seats: out, rows: r, width };
 }
 
 function radial(p: SeatingParams, chair: Chair, ctx: SeatingContext, perSection: number, rowPitch: Mm) {
   const cd = chair.depth;
   const fy = ctx.stageDepth / 2; // focus on the middle of the deck
   const half = (RADIAL_HALF_ANGLE_DEG * Math.PI) / 180;
-  const sideClear = p.aisleWidth; // curved rows keep at least an aisle width from the deck
-  /** plan distance from a point to the deck rectangle (negative inside) */
-  const clearOf = (x: number, y: number) => {
-    const dx = Math.abs(x) - ctx.stageWidth / 2, dy = Math.max(-y, y - ctx.stageDepth);
-    if (dx <= 0 && dy <= 0) return Math.max(dx, dy);
-    return Math.hypot(Math.max(0, dx), Math.max(0, dy));
-  };
   const out: Seat[] = [];
   let r = 0, sectionsMax = 0, zoneSectors = 0;
-  const R0 = fy + p.frontDistance;
+  const R0 = fy + p.frontDistance + (ctx.apronDepth ?? 0);
+  // curved rows come closer to the deck towards their ends; they always keep at least an aisle width
+  const frontClear = Math.min(p.frontDistance, p.aisleWidth);
   while (out.length < p.count && r < 400) {
     const zone = Math.floor(r / CROSS_AISLE_EVERY);
     const R = R0 + r * rowPitch + zone * p.aisleWidth;
@@ -161,7 +188,7 @@ function radial(p: SeatingParams, chair: Chair, ctx: SeatingContext, perSection:
       for (let k = 0; k < n; k++) {
         const th = mid + (k - (n - 1) / 2) * step;
         const xf = R * Math.sin(th), yf = fy - R * Math.cos(th);
-        if (clearOf(xf, yf) < Math.min(p.frontDistance, sideClear) - 0.5) continue;
+        if (!seatClear(ctx, p, chair, xf, yf, frontClear)) continue;
         const rc = R + cd / 2;
         row.push({ x: rc * Math.sin(th), y: fy - rc * Math.cos(th), rot: th, section: s, row: r });
       }
@@ -192,7 +219,7 @@ export function resolveSeating(p: SeatingParams, chair: Chair, ctx: SeatingConte
       if (!best || score < best.score) best = { n, pitch, score };
     }
     rowPitch = best!.pitch;
-    const s = straight(params, chair, best!.n, 1, rowPitch);
+    const s = straight(params, chair, ctx, best!.n, 1, rowPitch);
     seats = s.seats; rows = s.rows;
   } else if (p.layout === 'block') {
     let best: { b: number; score: number } | null = null;
@@ -203,7 +230,7 @@ export function resolveSeating(p: SeatingParams, chair: Chair, ctx: SeatingConte
       if (!best || score < best.score) best = { b, score };
     }
     sections = best!.b;
-    const s = straight(params, chair, perSection, sections, rowPitch);
+    const s = straight(params, chair, ctx, perSection, sections, rowPitch);
     seats = s.seats; rows = s.rows;
   } else {
     const s = radial(params, chair, ctx, perSection, rowPitch);
@@ -243,18 +270,22 @@ export function resolveSeating(p: SeatingParams, chair: Chair, ctx: SeatingConte
   const xs = seats.map((s) => s.x), ys = seats.map((s) => s.y);
   const min: [number, number] = [Math.min(...xs) - chair.width / 2, Math.min(...ys) - chair.depth / 2];
   const max: [number, number] = [Math.max(...xs) + chair.width / 2, Math.max(...ys) + chair.depth / 2];
+  // front distance: on the centreline, from the front-most deck edge to the first seat
+  const rects = ctx.keepOut ?? [{ minX: -ctx.stageWidth / 2, maxX: ctx.stageWidth / 2, minY: 0, maxY: ctx.stageDepth }];
+  const edgeY = Math.min(0, ...rects.filter((r) => r.minX <= 0 && r.maxX >= 0).map((r) => r.minY));
   const centre = seats.filter((s) => Math.abs(s.x) < p.seatPitch * 2);
-  const front = seats.length ? -Math.max(...(centre.length ? centre : seats).map((s) => s.y + chair.depth / 2)) : 0;
+  const firstY = seats.length ? Math.max(...(centre.length ? centre : seats).map((s) => s.y + chair.depth / 2)) : 0;
+  const front = edgeY - firstY;
 
   const annotations: Annotation[] = seats.length ? [
-    { id: 'DIM.SEAT.FRONT', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [p.seatPitch * 1.5, 0, 0], to: [p.seatPitch * 1.5, -front, 0], value: front, label: 'Stage to front row' },
-    { id: 'DIM.SEAT.DEPTH', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [min[0] - 900, min[1], 0], to: [min[0] - 900, -front, 0], value: -front - min[1], label: 'Seating depth' },
+    { id: 'DIM.SEAT.FRONT', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [p.seatPitch * 1.5, edgeY, 0], to: [p.seatPitch * 1.5, firstY, 0], value: front, label: 'Stage to front row' },
+    { id: 'DIM.SEAT.DEPTH', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [min[0] - 900, min[1], 0], to: [min[0] - 900, firstY, 0], value: firstY - min[1], label: 'Seating depth' },
     { id: 'DIM.SEAT.WIDTH', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [min[0], min[1] - 900, 0], to: [max[0], min[1] - 900, 0], value: max[0] - min[0], label: 'Seating width' },
   ] : [];
 
   const report: SeatingReport = {
     layout: p.layout, requested: p.count, count: seats.length, rows, sections, longestRow,
-    rowPitch, rowClear, maxSeatsPerRow: limit, width: max[0] - min[0], depth: -front - min[1], frontDistance: front,
+    rowPitch, rowClear, maxSeatsPerRow: limit, width: max[0] - min[0], depth: firstY - min[1], frontDistance: front,
     wheelchairSpaces: ws, chair, min, max,
   };
   return { report, block, objects, annotations, warnings };

@@ -11,6 +11,7 @@
  *  • LED cabinets get an emissive front-face primitive so media surfaces read in renderers.
  */
 import type { SceneGraph } from '../core/engine/scene';
+import { ShapeUtils, Vector2 } from 'three';
 import type { MaterialKey, Part, SceneObject, SystemKey } from '../core/engine/types';
 import type { StageFinish } from '../core/schema';
 import { APP_VERSION } from './rhino';
@@ -83,6 +84,26 @@ function cylPrim(from: number[], to: number[], r: number, out: Prim, seg = 16) {
     for (let k = 0; k < seg; k++) sign > 0 ? out.indices.push(c0, c0 + 1 + k, c0 + 2 + k) : out.indices.push(c0, c0 + 2 + k, c0 + 1 + k);
   }
 }
+/** Extruded plan polygon: flat-shaded sides plus triangulated caps. */
+function prismPrim(points: [number, number][], z0: number, z1: number, out: Prim) {
+  const pts = ShapeUtils.isClockWise(points.map(([x, y]) => new Vector2(x, y))) ? [...points].reverse() : points;
+  const n = pts.length;
+  for (let i = 0; i < n; i++) {
+    const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % n];
+    const len = Math.hypot(bx - ax, by - ay) || 1;
+    const nx = (by - ay) / len, ny = -(bx - ax) / len; // outward for CCW
+    const b = out.positions.length / 3;
+    out.positions.push(ax, ay, z0, bx, by, z0, bx, by, z1, ax, ay, z1);
+    for (let k = 0; k < 4; k++) out.normals.push(nx, ny, 0);
+    out.indices.push(b, b + 1, b + 2, b, b + 2, b + 3);
+  }
+  const tris = ShapeUtils.triangulateShape(pts.map(([x, y]) => new Vector2(x, y)), []);
+  for (const [z, nz] of [[z0, -1], [z1, 1]] as const) {
+    const b = out.positions.length / 3;
+    for (const [x, y] of pts) { out.positions.push(x, y, z); out.normals.push(0, 0, nz); }
+    for (const [i, j, k] of tris) nz > 0 ? out.indices.push(b + i, b + j, b + k) : out.indices.push(b + i, b + k, b + j);
+  }
+}
 const cross = (a: number[], b: number[]) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
 export interface GlbOptions { systems?: SystemKey[]; finish?: StageFinish }
@@ -122,7 +143,7 @@ export function exportGlb(scene: SceneGraph, projectName: string, opts: GlbOptio
   const buildMesh = (name: string, parts: Part[], ledFace?: { w: number; h: number }) => {
     const byMat = new Map<MaterialKey | 'ledFace', Prim>();
     const get = (k: MaterialKey | 'ledFace') => byMat.get(k) ?? byMat.set(k, { positions: [], normals: [], indices: [] }).get(k)!;
-    for (const p of parts) p.kind === 'box' ? boxPrim(p.min, p.max, get(p.mat)) : cylPrim(p.from, p.to, p.r, get(p.mat));
+    for (const p of parts) p.kind === 'box' ? boxPrim(p.min, p.max, get(p.mat)) : p.kind === 'prism' ? prismPrim(p.points, p.z0, p.z1, get(p.mat)) : cylPrim(p.from, p.to, p.r, get(p.mat));
     if (ledFace) boxPrim([-ledFace.w / 2 + 2, -3, 2], [ledFace.w / 2 - 2, -0.5, ledFace.h - 2], get('ledFace'));
     const primitives = [...byMat].map(([k, prim]) => {
       const pos = new Float32Array(prim.positions);

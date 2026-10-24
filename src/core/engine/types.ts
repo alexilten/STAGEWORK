@@ -11,7 +11,9 @@ export type MaterialKey =
 
 export type Part =
   | { kind: 'box'; min: Vec3; max: Vec3; mat: MaterialKey }
-  | { kind: 'cyl'; from: Vec3; to: Vec3; r: Mm; mat: MaterialKey };
+  | { kind: 'cyl'; from: Vec3; to: Vec3; r: Mm; mat: MaterialKey }
+  /** plan polygon (counter-clockwise, XY) extruded from z0 to z1 */
+  | { kind: 'prism'; points: [number, number][]; z0: Mm; z1: Mm; mat: MaterialKey };
 
 /** Rhino layer paths (see docs/ARCHITECTURE.md §Rhino layer hierarchy) */
 export type LayerPath =

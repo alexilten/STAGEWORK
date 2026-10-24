@@ -18,6 +18,10 @@ export function gizmoFor(group: string, scene: SceneGraph): { anchor: Vec3; axes
     const T = r.truss.find((t) => t.id === 'FOH');
     return T ? { anchor: [T.center[0], T.center[1], T.bottom], axes: ['y', 'z'] } : null;
   }
+  if (group.startsWith('riser:')) {
+    const A = r.stage.areas.find((a) => a.group === group);
+    return A ? { anchor: [(A.minX + A.maxX) / 2, (A.minY + A.maxY) / 2, A.top + 30], axes: ['x', 'y'] } : null;
+  }
   if (group === 'seating' && r.seating?.count) return { anchor: [0, -r.seating.frontDistance - 400, 0], axes: ['y'] };
   return null;
 }

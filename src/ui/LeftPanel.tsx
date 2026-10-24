@@ -1,6 +1,7 @@
 import { CHAIRS, DECK_SYSTEMS, FIXTURES, LED_CABINETS, getCatalogItem, type DeckSystem, type LedCabinet } from '../core/catalog';
 import { SEAT_COUNT } from '../core/engine/seating';
-import { DEFAULT_SEATING, type SeatingLayout, type StageFinish } from '../core/schema';
+import { useState } from 'react';
+import { DEFAULT_SEATING, DEFAULT_SHAPES, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
 import { formatLength } from '../core/units';
 import { LengthControl, NumberControl, Section, Segmented, Select, Toggle, VerificationBadge } from './controls';
 import { useStore } from './store';
@@ -57,7 +58,10 @@ export function LeftPanel() {
             </div>
           </div>
           <Toggle label="Fascia" checked={project.stage.fascia} onChange={(v) => edit((p) => { p.stage.fascia = v; })} />
+          <ShapeControls />
         </Section>
+
+        <RiserSection />
 
         <Section title="LED media" summary={L ? `${project.ledWalls.length} surface${project.ledWalls.length === 1 ? '' : 's'} · ${scene.report.led.reduce((a, l) => a + l.count, 0)} cabinets` : 'none'}>
           <div className="surface-tabs">
@@ -191,6 +195,120 @@ function AudienceSection() {
         <span>{chair.width}×{chair.depth} mm chair</span>
         {r && <span>{r.wheelchairSpaces} wheelchair spaces (ADA)</span>}
       </div>
+    </Section>
+  );
+}
+
+const SHAPES: { value: StageShape; label: string; hint: string }[] = [
+  { value: 'rect', label: 'Straight', hint: 'Straight-front end stage.' },
+  { value: 'thrust', label: 'Thrust', hint: 'A wide centre extension into the audience, built from the same platforms.' },
+  { value: 'runway', label: 'Runway', hint: 'A walkway into the house with an optional B-stage at the end. Platforms run lengthwise.' },
+  { value: 'rounded', label: 'Rounded', hint: 'A curved apron across the front. The apron is custom carpentry, not hire decking.' },
+];
+
+function ShapeControls() {
+  const project = useStore((s) => s.project);
+  const st = useStore((s) => s.scene.report.stage);
+  const edit = useStore((s) => s.edit);
+  const u = project.units;
+  const deck = getCatalogItem<DeckSystem>(project.stage.deckSystemId, 'deck');
+  const S = deck.short;
+  const shape = project.stage.shape ?? 'rect';
+  const area = (k: string) => st.areas.find((a) => a.kind === k);
+  const thrust = { ...DEFAULT_SHAPES.thrust, ...project.stage.thrust };
+  const runway = { ...DEFAULT_SHAPES.runway, ...project.stage.runway };
+  const apron = { ...DEFAULT_SHAPES.apron, ...project.stage.apron };
+  const T = area('thrust'), R = area('runway'), B = area('bstage');
+  const dim = (a?: { minX: number; maxX: number; minY: number; maxY: number }) => (a ? `${formatLength(a.maxX - a.minX, u)} × ${formatLength(a.maxY - a.minY, u)}` : '');
+  return (<>
+    <div className="ctl">
+      <div className="ctl-row"><span className="ctl-label">Shape</span></div>
+      <Segmented value={shape} onChange={(v) => edit((p) => { p.stage.shape = v; })} options={SHAPES.map((o) => ({ value: o.value, label: o.label, title: o.hint }))} />
+      <div className="ctl-hint">{SHAPES.find((o) => o.value === shape)!.hint}</div>
+    </div>
+    {shape === 'thrust' && (<>
+      <LengthControl label="Thrust width" units={u} value={thrust.width} resolved={undefined} min={S} max={st.width.resolved} step={S}
+        hint={T ? <>{T.cols} modules · {dim(T)}</> : undefined}
+        onChange={(v) => edit((p) => { p.stage.thrust = { ...thrust, width: v }; }, 'stage.thrust.w')} />
+      <LengthControl label="Thrust depth" units={u} value={thrust.depth} min={S} max={S * 12} step={S}
+        hint={T ? <>{T.rows} platform rows</> : undefined}
+        onChange={(v) => edit((p) => { p.stage.thrust = { ...thrust, depth: v }; }, 'stage.thrust.d')} />
+    </>)}
+    {shape === 'runway' && (<>
+      <LengthControl label="Runway width" units={u} value={runway.width} min={S} max={S * 4} step={S}
+        hint={R ? <>{R.cols} module{R.cols > 1 ? 's' : ''} wide</> : undefined}
+        onChange={(v) => edit((p) => { p.stage.runway = { ...runway, width: v }; }, 'stage.runway.w')} />
+      <LengthControl label="Runway length" units={u} value={runway.length} min={S * 2} max={S * 30} step={S}
+        hint={R ? <>{formatLength(R.maxY - R.minY, u)} into the house</> : undefined}
+        onChange={(v) => edit((p) => { p.stage.runway = { ...runway, length: v }; }, 'stage.runway.l')} />
+      <Toggle label="B-stage at the end" checked={runway.endWidth > 0 && runway.endDepth > 0}
+        onChange={(on) => edit((p) => { p.stage.runway = { ...runway, endWidth: on ? DEFAULT_SHAPES.runway.endWidth : 0, endDepth: on ? DEFAULT_SHAPES.runway.endDepth : 0 }; })} />
+      {B && (<>
+        <LengthControl label="B-stage width" units={u} value={runway.endWidth} min={S} max={S * 12} step={S} hint={dim(B)}
+          onChange={(v) => edit((p) => { p.stage.runway = { ...runway, endWidth: v }; }, 'stage.runway.ew')} />
+        <LengthControl label="B-stage depth" units={u} value={runway.endDepth} min={S} max={S * 8} step={S}
+          onChange={(v) => edit((p) => { p.stage.runway = { ...runway, endDepth: v }; }, 'stage.runway.ed')} />
+      </>)}
+    </>)}
+    {shape === 'rounded' && (
+      <LengthControl label="Apron depth" units={u} value={apron.depth} min={300} max={Math.max(600, st.width.resolved / 2)} step={50}
+        hint={st.apron ? <>Arc across the full {formatLength(st.width.resolved, u)} front</> : undefined}
+        onChange={(v) => edit((p) => { p.stage.apron = { depth: v }; }, 'stage.apron')} />
+    )}
+  </>);
+}
+
+function RiserSection() {
+  const project = useStore((s) => s.project);
+  const st = useStore((s) => s.scene.report.stage);
+  const edit = useStore((s) => s.edit);
+  const select = useStore((s) => s.select);
+  const sel = useStore((s) => s.selection);
+  const u = project.units;
+  const deck = getCatalogItem<DeckSystem>(project.stage.deckSystemId, 'deck');
+  const S = deck.short;
+  const risers = project.stage.risers ?? [];
+  const [picked, setPicked] = useState<string | null>(null);
+  const fromSel = sel?.group.startsWith('riser:') ? sel.group.slice(6) : null;
+  const ri = Math.max(0, risers.findIndex((r) => r.id === (fromSel ?? picked)));
+  const r = risers[ri];
+  const A = r ? st.areas.find((a) => a.group === `riser:${r.id}`) : undefined;
+  const pick = (id: string) => { setPicked(id); select({ group: `riser:${id}` }); };
+  const add = () => {
+    let n = risers.length + 1;
+    while (risers.some((x) => x.id === `r${n}`)) n++;
+    const id = `r${n}`;
+    edit((p) => {
+      p.stage.risers = [...(p.stage.risers ?? []), { id, name: `Riser ${n}`, width: S * 4, depth: S * 2, height: deck.minHeight + deck.heightStep * 2, x: 0, y: Math.max(0, st.depth.resolved - S * 2) }];
+    });
+    pick(id);
+  };
+  const set = (patch: Partial<NonNullable<typeof r>>, key?: string) => edit((p) => { p.stage.risers![ri] = { ...p.stage.risers![ri], ...patch }; }, key);
+  return (
+    <Section title="Risers" defaultOpen={risers.length > 0} summary={risers.length ? `${risers.length} riser${risers.length > 1 ? 's' : ''}` : 'none'}>
+      <div className="surface-tabs">
+        {risers.map((x) => <button key={x.id} className={x.id === r?.id ? 'on' : ''} onClick={() => pick(x.id)}>{x.name}</button>)}
+        <button className="add" onClick={add} title="Add a riser on the deck">+</button>
+      </div>
+      {!r && <p className="muted small">Raised platforms on the deck: band risers, an upstage level, a presenter step-up.</p>}
+      {r && A && (<>
+        <div className="ctl surface-head">
+          <input className="name-input" value={r.name} spellCheck={false} onChange={(e) => set({ name: e.target.value }, `riser.${r.id}.name`)} />
+          <button className="text-btn danger" onClick={() => { edit((p) => { p.stage.risers = (p.stage.risers ?? []).filter((x) => x.id !== r.id); }); select(null); }}>Remove</button>
+        </div>
+        <p className="muted small drag-hint">Select it in the viewport and drag, or use the arrow handles. It snaps to the deck seams.</p>
+        <LengthControl label="Width" units={u} value={r.width} min={S} max={st.width.resolved} step={S} hint={<>{A.cols} modules</>}
+          onChange={(v) => set({ width: v }, `riser.${r.id}.w`)} />
+        <LengthControl label="Depth" units={u} value={r.depth} min={S} max={st.depth.resolved} step={S} hint={<>{A.rows} platform rows</>}
+          onChange={(v) => set({ depth: v }, `riser.${r.id}.d`)} />
+        <LengthControl label="Height above deck" units={u} value={r.height} min={deck.minHeight} max={deck.maxHeight} step={deck.heightStep}
+          hint={<>Top at {formatLength(A.top, u, { precise: true })} above the floor</>}
+          onChange={(v) => set({ height: v }, `riser.${r.id}.h`)} />
+        <LengthControl label="Offset from centre" units={u} value={r.x} min={-st.width.resolved / 2} max={st.width.resolved / 2} step={S / 2}
+          onChange={(v) => set({ x: v }, `riser.${r.id}.x`)} />
+        <LengthControl label="Upstage of deck edge" units={u} value={r.y} min={0} max={st.depth.resolved - S} step={S}
+          onChange={(v) => set({ y: v }, `riser.${r.id}.y`)} />
+      </>)}
     </Section>
   );
 }

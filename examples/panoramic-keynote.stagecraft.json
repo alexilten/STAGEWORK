@@ -10,7 +10,11 @@
     "height": 914.4000000000001,
     "deckSystemId": "generic.deck-8x4",
     "finish": "white",
-    "fascia": true
+    "fascia": true,
+    "shape": "rounded",
+    "apron": {
+      "depth": 1800
+    }
   },
   "ledWalls": [
     {
