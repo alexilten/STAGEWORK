@@ -1,7 +1,7 @@
 import { CHAIRS, DECK_SYSTEMS, FIXTURES, LED_CABINETS, SPEAKERS, getCatalogItem, type DeckSystem, type LedCabinet, type Speaker } from '../core/catalog';
 import { SEAT_COUNT } from '../core/engine/seating';
 import { useState } from 'react';
-import { DEFAULT_AUDIO, DEFAULT_SEATING, DEFAULT_SHAPES, type AudioParams, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
+import { DEFAULT_AUDIO, DEFAULT_SCENIC, DEFAULT_SEATING, type ScenicParams, DEFAULT_SHAPES, type AudioParams, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
 import { formatLength } from '../core/units';
 import { LengthControl, NumberControl, Section, Segmented, Select, Toggle, VerificationBadge } from './controls';
 import { useStore } from './store';
@@ -164,6 +164,7 @@ export function LeftPanel() {
         </Section>
 
         <AudioSection />
+        <ScenicSection />
 
         <Section title="Scenic" defaultOpen={false} summary="Round 3">
           <p className="muted small">Scenic panels, portals and architectural frames arrive in a later round. The <code>60_SCENIC</code> Rhino layer is already reserved in every export.</p>
@@ -373,6 +374,45 @@ function AudioSection() {
       <NumberControl label="Front fills" value={a.frontFills} min={0} max={16} step={1} disabled={off} onChange={(v) => set((x) => { x.frontFills = v; }, 'audio.fills')} />
       <NumberControl label="Stage wedges" value={a.monitors} min={0} max={16} step={1} disabled={off} onChange={(v) => set((x) => { x.monitors = v; }, 'audio.mons')} />
       {r?.weightKg != null && <div className="cab-meta"><VerificationBadge v={main.verification} /><span>{(r.weightKg / 1000).toFixed(2)} t total</span></div>}
+    </Section>
+  );
+}
+
+function ScenicSection() {
+  const project = useStore((s) => s.project);
+  const r = useStore((s) => s.scene.report.scenic);
+  const edit = useStore((s) => s.edit);
+  const u = project.units;
+  const sc = project.scenic ?? DEFAULT_SCENIC;
+  const set = (fn: (x: ScenicParams) => void, key?: string) => edit((p) => { p.scenic ??= structuredClone(DEFAULT_SCENIC); fn(p.scenic); }, key);
+  const P = sc.portal, M = sc.masking;
+  const summary = [P.enabled && 'portal', M.enabled && `${M.pairs * 2} legs`, sc.drape.enabled && 'drape'].filter(Boolean).join(' · ') || 'off';
+  return (
+    <Section title="Scenic" defaultOpen={false} summary={summary}>
+      <Toggle label="Portal around the main screen" checked={P.enabled} onChange={(v) => set((x) => { x.portal.enabled = v; })} />
+      {P.enabled && (<>
+        <LengthControl label="Margin around screen" units={u} value={P.margin} min={0} max={2000} step={50}
+          hint={r?.portal ? <>Opening {formatLength(r.portal.opening.width, u)} × {formatLength(r.portal.opening.height, u)}</> : 'Frames the main screen'}
+          onChange={(v) => set((x) => { x.portal.margin = v; }, 'scn.margin')} />
+        <LengthControl label="Leg width" units={u} value={P.legWidth} min={300} max={4000} step={50} onChange={(v) => set((x) => { x.portal.legWidth = v; }, 'scn.leg')} />
+        <LengthControl label="Header height" units={u} value={P.headerHeight} min={300} max={4000} step={50} onChange={(v) => set((x) => { x.portal.headerHeight = v; }, 'scn.head')} />
+        <div className="ctl">
+          <div className="ctl-row"><span className="ctl-label">Portal finish</span></div>
+          <div className="swatches">
+            {(['white', 'graphite', 'black', 'oak'] as StageFinish[]).map((f) => (
+              <button key={f} title={f} className={`swatch ${f} ${P.finish === f ? 'on' : ''}`} onClick={() => set((x) => { x.portal.finish = f; })} />
+            ))}
+          </div>
+        </div>
+      </>)}
+      <div className="sub-label">Soft goods</div>
+      <Toggle label="Masking legs (sides)" checked={M.enabled} onChange={(v) => set((x) => { x.masking.enabled = v; })} />
+      {M.enabled && (<>
+        <NumberControl label="Pairs" value={M.pairs} min={1} max={5} step={1} hint="Down each side of the deck, facing the house" onChange={(v) => set((x) => { x.masking.pairs = v; }, 'scn.pairs')} />
+        <LengthControl label="Leg width" units={u} value={M.legWidth} min={600} max={4000} step={50} onChange={(v) => set((x) => { x.masking.legWidth = v; }, 'scn.mw')} />
+        <LengthControl label="Height above deck" units={u} value={M.height} min={2000} max={12000} step={100} onChange={(v) => set((x) => { x.masking.height = v; }, 'scn.mh')} />
+      </>)}
+      <Toggle label="Upstage drape" checked={sc.drape.enabled} onChange={(v) => set((x) => { x.drape.enabled = v; })} />
     </Section>
   );
 }

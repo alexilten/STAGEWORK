@@ -42,6 +42,7 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
   const layers = useStore((s) => s.layers);
   const mode = useStore((s) => s.mode);
   const finish = useStore((s) => s.project.stage.finish);
+  const scenicFinish = useStore((s) => s.project.scenic?.portal.finish ?? 'white');
   const visible = useMemo(() => scene.objects.filter((o) => layers[o.system]), [scene, layers]);
 
   // group visible objects into instanced batches: one per (block|unique object, part)
@@ -66,20 +67,20 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
 
   return (
     <group>
-      {batches.map((b) => <InstancedBatch key={b.key + mode} batch={b} mode={mode} finish={finish} />)}
+      {batches.map((b) => <InstancedBatch key={b.key + mode} batch={b} mode={mode} finish={finish} scenicFinish={scenicFinish} />)}
       {leds.map(({ L, objects }) => <LedFaces key={L.id} id={L.id} cols={L.cols} rows={L.rows} w={L.cabinet.width} h={L.cabinet.height} objects={objects} mode={mode} media={media} />)}
     </group>
   );
 }
 
-function InstancedBatch({ batch, mode, finish }: { batch: Batch; mode: ViewMode; finish: StageFinish }) {
+function InstancedBatch({ batch, mode, finish, scenicFinish }: { batch: Batch; mode: ViewMode; finish: StageFinish; scenicFinish: StageFinish }) {
   const ref = useRef<THREE.InstancedMesh>(null!);
   const material = useMemo(() => makeEdgeMaterial(), []);
   const selection = useStore((s) => s.selection);
   const hover = useStore((s) => s.hover);
   const select = useStore((s) => s.select);
   const setHover = useStore((s) => s.setHover);
-  const look = lookFor(batch.part.mat as MaterialKey, mode, finish);
+  const look = lookFor(batch.part.mat as MaterialKey, mode, finish, scenicFinish);
   const n = batch.objects.length;
   const geom = useMemo(() => {
     const p = batch.part;

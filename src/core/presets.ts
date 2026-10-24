@@ -1,5 +1,5 @@
 import { ft } from './units';
-import { DEFAULT_AUDIO, DEFAULT_LIGHTING_POSITIONS, DEFAULT_SEATING, PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project } from './schema';
+import { DEFAULT_AUDIO, DEFAULT_LIGHTING_POSITIONS, DEFAULT_SCENIC, DEFAULT_SEATING, PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project } from './schema';
 
 export interface Preset {
   id: string;
@@ -26,6 +26,7 @@ function base(name: string, presetId: string): Project {
     presenter: { visible: true },
     seating: { ...DEFAULT_SEATING },
     audio: { ...DEFAULT_AUDIO },
+    scenic: structuredClone(DEFAULT_SCENIC),
   };
 }
 
@@ -63,6 +64,7 @@ export const PRESETS: Preset[] = [
       p.lighting.count = 12;
       p.lighting.electrics = { ...p.lighting.electrics, fixtureId: 'robe.megapointe' };
       p.lighting.booms = { enabled: true, perBoom: 3, height: 4500, fixtureId: 'chauvet.maverick-storm-1-wash' };
+      p.scenic!.masking.enabled = true; p.scenic!.drape.enabled = true;
       p.ledWalls = [
         wall({ id: 'main', name: 'Hero wall', width: 10000, height: 5500, elevation: 900 }),
         wall({ id: 'left', name: 'Reveal left', width: 2500, height: 5500, elevation: 900, offsetX: -6750, upstageGap: -1500 }),
@@ -97,7 +99,8 @@ export const PRESETS: Preset[] = [
       p.lighting.count = 8; p.lighting.fixtureId = 'etc.s4-led-s3-lustr';
       p.seating = { ...p.seating, layout: 'radial', count: 500, frontDistance: 2450 };
       p.stage.risers = [{ id: 'r1', name: 'Chat riser', width: ft(12), depth: ft(8), height: ft(1), x: 0, y: ft(4) }];
-      p.ledWalls = [wall({ id: 'main', name: 'Backdrop wall', width: 9000, height: 4500, elevation: 1000 })];
+      p.ledWalls = [wall({ id: 'main', name: 'Backdrop wall', width: 7500, height: 4500, elevation: 1000 })];
+      p.scenic!.portal = { ...p.scenic!.portal, enabled: true, margin: 300, legWidth: 600, headerHeight: 900 };
       return p;
     },
   },

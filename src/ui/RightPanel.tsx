@@ -79,6 +79,7 @@ function Production() {
           <Metric label="Truss" value={`${sections} sections`} sub={`${formatLength(trussLen, u)} · ${hoists} hoists`} />
           {r.seating && <Metric label="Seats" value={r.seating.count.toLocaleString()} sub={`${r.seating.rows} rows · ${r.seating.wheelchairSpaces} wheelchair`} />}
           {r.audio && <Metric label="PA" value={`${r.audio.mainsPerSide}/side`} sub={`${r.audio.subs} subs · ${r.audio.frontFills} fills · ${r.audio.monitors} wedges`} />}
+          {r.scenic && <Metric label="Scenic" value={[r.scenic.portal && 'Portal', r.scenic.maskingLegs && `${r.scenic.maskingLegs} legs`, r.scenic.drape && 'Drape'].filter(Boolean).join(' · ')} sub={r.scenic.portal ? `Opening ${formatLength(r.scenic.portal.opening.width, u)} × ${formatLength(r.scenic.portal.opening.height, u)}` : 'Soft goods'} />}
           {r.lightingPositions && <Metric label="LX positions" value={`${r.lightingPositions.electrics} electrics`} sub={`${r.lightingPositions.booms} booms · ${r.lightingPositions.fixtureTotal} fixtures`} />}
         </div>
         {r.led.map((l) => (
@@ -174,6 +175,9 @@ function groupTitle(g: string, scene: SceneGraph) {
   if (g.startsWith('elx:')) return `Electric ${g.slice(4)}`;
   if (g === 'boom:l') return 'Lighting boom — house left';
   if (g === 'boom:r') return 'Lighting boom — house right';
+  if (g === 'scenic:portal') return 'Portal';
+  if (g === 'scenic:masking') return 'Masking legs';
+  if (g === 'scenic:drape') return 'Upstage drape';
   if (g.startsWith('riser:')) return scene.report.stage.areas.find((a) => a.group === g)?.label ?? 'Riser';
   if (g === 'truss:front') return 'Front light truss';
   if (g.startsWith('truss:header:')) return `${scene.report.led.find((l) => `truss:header:${l.id}` === g)?.name ?? ''} header truss`;
@@ -210,6 +214,16 @@ function GroupRows({ group, scene, u }: { group: string; scene: SceneGraph; u: D
       <Row k="Type" v={group.startsWith('elx') ? 'Overhead electric' : 'Side boom'} />
       <p className="muted small">Positions and counts are planning inputs; the lighting designer sets focus and plot.</p>
     </>);
+  }
+  if (group.startsWith('scenic:') && r.scenic) {
+    const S = r.scenic;
+    if (group === 'scenic:portal' && S.portal) return (<>
+      <Row k="Opening" v={`${formatLength(S.portal.opening.width, u)} × ${formatLength(S.portal.opening.height, u)}`} />
+      <Row k="Outside" v={`${formatLength(S.portal.outer.width, u)} × ${formatLength(S.portal.outer.height, u)}`} />
+      <p className="muted small">Hard flats, custom carpentry. Sized from the main screen; bracing and fixing are the scenic builder's.</p>
+    </>);
+    if (group === 'scenic:masking') return (<><Row k="Legs" v={`${S.maskingLegs} (${S.maskingLegs / 2} pairs)`} /><p className="muted small">Soft goods drawn flat; fullness and pipes not modelled.</p></>);
+    if (group === 'scenic:drape' && S.drape) return <Row k="Size" v={`${formatLength(S.drape.width, u)} × ${formatLength(S.drape.height, u)}`} />;
   }
   const RA = group.startsWith('riser:') ? r.stage.areas.find((a) => a.group === group) : undefined;
   if (RA) return (<>
