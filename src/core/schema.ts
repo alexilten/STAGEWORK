@@ -83,8 +83,18 @@ export interface RiggingParams {
 export interface LightingParams {
   enabled: boolean;
   fixtureId: string;
+  /** front-of-house fixtures on the front truss */
   count: number;
+  /** overhead electrics: horizontal lighting battens over the stage */
+  electrics: { count: number; perBatten: number; firstAt: Mm; spacing: Mm; trim: Mm };
+  /** vertical side booms, house left and right */
+  booms: { enabled: boolean; perBoom: number; height: Mm };
 }
+
+export const DEFAULT_LIGHTING_POSITIONS = {
+  electrics: { count: 3, perBatten: 8, firstAt: 1500, spacing: 2000, trim: 7000 },
+  booms: { enabled: false, perBoom: 4, height: 4000 },
+};
 
 export type SeatingLayout = 'block' | 'grid' | 'radial';
 
@@ -170,5 +180,7 @@ export function parseProject(text: string): Project {
   // additive fields from later rounds: fill defaults rather than bumping the version
   if (!data.seating) data.seating = { ...DEFAULT_SEATING, enabled: false };
   if (!data.audio) data.audio = { ...DEFAULT_AUDIO };
+  if (!data.lighting.electrics) data.lighting.electrics = { ...DEFAULT_LIGHTING_POSITIONS.electrics };
+  if (!data.lighting.booms) data.lighting.booms = { ...DEFAULT_LIGHTING_POSITIONS.booms };
   return data as Project;
 }

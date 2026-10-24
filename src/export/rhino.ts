@@ -29,7 +29,7 @@ export const LAYER_TREE: { name: string; color: [number, number, number]; childr
   { name: '10_STAGE', color: [60, 60, 60], children: ['10_01_DECKING', '10_02_RISERS', '10_03_SUPPORTS', '10_04_FINISHES'] },
   { name: '20_LED', color: [0, 112, 201], children: ['20_01_CABINETS', '20_02_SUPPORTS', '20_03_TRIM'] },
   { name: '30_RIGGING', color: [205, 120, 0], children: ['30_01_TRUSS', '30_02_HOISTS', '30_03_HARDWARE'] },
-  { name: '40_LIGHTING', color: [200, 30, 90], children: ['40_01_FIXTURES', '40_02_ACCESSORIES'] },
+  { name: '40_LIGHTING', color: [200, 30, 90], children: ['40_01_FIXTURES', '40_02_ACCESSORIES', '40_03_POSITIONS'] },
   { name: '50_AUDIO', color: [120, 70, 190], children: ['50_01_MAINS', '50_02_SUBS', '50_03_FILLS', '50_04_MONITORS'] },
   { name: '60_SCENIC', color: [40, 150, 100], children: [] },
   { name: '70_AUDIENCE', color: [110, 110, 130], children: ['70_01_SEATING', '70_02_LAYOUT'] },

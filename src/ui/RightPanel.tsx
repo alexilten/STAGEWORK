@@ -79,6 +79,7 @@ function Production() {
           <Metric label="Truss" value={`${sections} sections`} sub={`${formatLength(trussLen, u)} · ${hoists} hoists`} />
           {r.seating && <Metric label="Seats" value={r.seating.count.toLocaleString()} sub={`${r.seating.rows} rows · ${r.seating.wheelchairSpaces} wheelchair`} />}
           {r.audio && <Metric label="PA" value={`${r.audio.mainsPerSide}/side`} sub={`${r.audio.subs} subs · ${r.audio.frontFills} fills · ${r.audio.monitors} wedges`} />}
+          {r.lightingPositions && <Metric label="LX positions" value={`${r.lightingPositions.electrics} electrics`} sub={`${r.lightingPositions.booms} booms · ${r.lightingPositions.fixtureTotal} fixtures`} />}
         </div>
         {r.led.map((l) => (
           <div className="sub-card" key={l.id}>
@@ -170,6 +171,9 @@ function groupTitle(g: string, scene: SceneGraph) {
   if (g === 'audio:sub') return 'Subwoofers';
   if (g === 'audio:fill') return 'Front fills';
   if (g === 'audio:monitor') return 'Stage monitors';
+  if (g.startsWith('elx:')) return `Electric ${g.slice(4)}`;
+  if (g === 'boom:l') return 'Lighting boom — house left';
+  if (g === 'boom:r') return 'Lighting boom — house right';
   if (g.startsWith('riser:')) return scene.report.stage.areas.find((a) => a.group === g)?.label ?? 'Riser';
   if (g === 'truss:front') return 'Front light truss';
   if (g.startsWith('truss:header:')) return `${scene.report.led.find((l) => `truss:header:${l.id}` === g)?.name ?? ''} header truss`;
@@ -198,6 +202,14 @@ function GroupRows({ group, scene, u }: { group: string; scene: SceneGraph; u: D
     if (group === 'audio:sub') return (<><Row k="Subs" v={`${A.subs} × ${A.sub?.model ?? ''}`} /><Row k="Arrangement" v={A.subMode === 'ground' ? 'Ground-stacked' : 'Flown'} /></>);
     if (group === 'audio:fill') return <Row k="Front fills" v={`${A.frontFills} × ${A.fill?.model ?? ''}`} />;
     if (group === 'audio:monitor') return <Row k="Wedges" v={`${A.monitors} × ${A.monitor?.model ?? ''}`} />;
+  }
+  if ((group.startsWith('elx:') || group.startsWith('boom:')) && r.lightingPositions) {
+    const fixCount = scene.objects.filter((o) => o.group === group && o.system === 'lighting' && o.block?.startsWith('SC_FIX')).length;
+    return (<>
+      <Row k="Fixtures" v={String(fixCount)} />
+      <Row k="Type" v={group.startsWith('elx') ? 'Overhead electric' : 'Side boom'} />
+      <p className="muted small">Positions and counts are planning inputs; the lighting designer sets focus and plot.</p>
+    </>);
   }
   const RA = group.startsWith('riser:') ? r.stage.areas.find((a) => a.group === group) : undefined;
   if (RA) return (<>

@@ -44,8 +44,9 @@ Done:
 - **Audio** (`src/core/engine/audio.ts`, `50_AUDIO` layers): flown main L/R line-array hangs with a nominal progressive J-rake (object `tilt` added to the model + all three exporters), subwoofers (ground-stacked or flown), downstage front-fills and stage-monitor wedges. Real d&b J8 / J-SUB data (manufacturer-verified) plus a generic fill and wedge. Panel, inspector, production readout, BOM, drag + gizmo on each hang (spread + trim). Labelled: splay, coverage and rigging loads are the audio vendor's.
 - The app is published at https://alexilten.github.io/STAGEWORK/ on every push to main.
 
+- **Lighting positions** (`src/core/engine/lighting.ts`, `40_03_POSITIONS`): overhead electrics (horizontal battens over the stage, each with a fixture count) and vertical side booms whose fixtures aim inboard (using the new object tilt + yaw). Panel, inspector, production readout and exporters.
+
 Next:
-- Lighting positions: overhead electrics (battens over the stage) and side booms, with arrangement presets.
 Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, expanded LED/lighting catalogue (Robe, Ayrton, Claypaky, ETC, Chauvet), lighting positions & arrangement presets, audio (line arrays, fills), scenic panels/portals, richer warnings (sightlines, trim vs. venue height).
 
 ## Round 4 — interoperability

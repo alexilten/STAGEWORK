@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import rhino3dm from 'rhino3dm';
 import { resolveScene } from '../src/core/engine/scene';
 import { getPreset } from '../src/core/presets';
-import type { Project } from '../src/core/schema';
+import { parseProject, type Project } from '../src/core/schema';
 import { ft } from '../src/core/units';
 import { exportRhino, type RhinoModule } from '../src/export/rhino';
 import { inspect3dm } from '../src/export/inspect3dm';
@@ -179,5 +179,40 @@ describe('Audio', () => {
     // a raked box is wider in Y than an upright cabinet depth → the tilt made it into the file
     const low = mains.reduce((a, b) => (b.bbox.min[2] < a.bbox.min[2] ? b : a));
     expect(low.bbox.max[1] - low.bbox.min[1]).toBeGreaterThan(570);
+  });
+});
+
+describe('Lighting positions', () => {
+  const lp = (mut?: (p: Project) => void) => resolveScene(project((p) => { p.lighting.electrics = { count: 3, perBatten: 8, firstAt: 1500, spacing: 2000, trim: 7000 }; p.lighting.booms = { enabled: true, perBoom: 4, height: 4000 }; mut?.(p); }));
+  const g = (s: ReturnType<typeof resolveScene>, group: string) => s.objects.filter((o) => o.group === group);
+
+  it('builds the requested electrics with fixtures, on the lighting layers', () => {
+    const s = lp();
+    const r = s.report.lightingPositions!;
+    expect(r.electrics).toBe(3);
+    const e2fix = g(s, 'elx:2').filter((o) => o.block?.startsWith('SC_FIX'));
+    expect(e2fix).toHaveLength(8);
+    expect(e2fix.every((o) => o.layer === '40_LIGHTING::40_01_FIXTURES')).toBe(true);
+    expect(g(s, 'elx:2').some((o) => o.layer === '40_LIGHTING::40_03_POSITIONS')).toBe(true);
+  });
+
+  it('builds two booms whose fixtures aim inboard (horizontal, yawed across the stage)', () => {
+    const s = lp();
+    expect(s.report.lightingPositions!.booms).toBe(2);
+    const bl = g(s, 'boom:l').filter((o) => o.block?.startsWith('SC_FIX'));
+    expect(bl).toHaveLength(4);
+    expect(bl.every((o) => Math.abs((o.tilt ?? 0) - Math.PI / 2) < 1e-9)).toBe(true);
+    expect(bl.every((o) => Math.abs(o.rotationZ + Math.PI / 2) < 1e-9)).toBe(true); // house-left boom yaws to -90°
+    const br = g(s, 'boom:r').filter((o) => o.block?.startsWith('SC_FIX'));
+    expect(br.every((o) => Math.abs(o.rotationZ - Math.PI / 2) < 1e-9)).toBe(true);
+  });
+
+  it('warns on a low electrics trim and keeps old projects loading', () => {
+    expect(lp((p) => { p.lighting.electrics.trim = p.stage.height + 1000; }).warnings.some((w) => w.code === 'light.elx.trim')).toBe(true);
+    const old = JSON.parse(JSON.stringify(project()));
+    delete old.lighting.electrics; delete old.lighting.booms;
+    const loaded = parseProject(JSON.stringify(old));
+    expect(loaded.lighting.electrics.count).toBeGreaterThan(0);
+    expect(resolveScene(loaded).report.lightingPositions).toBeTruthy();
   });
 });

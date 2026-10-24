@@ -54,7 +54,19 @@
   "lighting": {
     "enabled": true,
     "fixtureId": "martin.mac-aura-xb",
-    "count": 8
+    "count": 8,
+    "electrics": {
+      "count": 3,
+      "perBatten": 8,
+      "firstAt": 1500,
+      "spacing": 2000,
+      "trim": 7000
+    },
+    "booms": {
+      "enabled": false,
+      "perBoom": 4,
+      "height": 4000
+    }
   },
   "presenter": {
     "visible": true

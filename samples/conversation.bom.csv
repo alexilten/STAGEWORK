@@ -13,8 +13,10 @@ finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — chat riser right,1,,,ge
 ledCabinets,20_LED::20_01_CABINETS,ROE Visual,Black Pearl BP2 V2,Black Pearl BP2 V2 cabinet,162,9.35,1514.7,secondary,roe.bp2v2
 ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 2-wide (generic),9,,,generic,
 rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 1 m",1,,,secondary,prolyte.h30v
-rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",6,,,secondary,prolyte.h30v
-rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,6,,,generic,generic.hoist-1t
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",9,,,secondary,prolyte.h30v
+rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,15,,,generic,generic.hoist-1t
 rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2 m",1,14.49,14.49,secondary,prolyte.h30v
-lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,8,6.5,52,secondary,martin.mac-aura-xb
+lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,32,6.5,208,secondary,martin.mac-aura-xb
+lighting,40_LIGHTING::40_03_POSITIONS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 0.71 m",18,,,secondary,prolyte.h30v
+lighting,40_LIGHTING::40_03_POSITIONS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2.5 m",3,,,secondary,prolyte.h30v
 seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,500,,,generic,generic.chair-stack

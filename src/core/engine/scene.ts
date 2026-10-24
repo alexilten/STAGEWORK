@@ -2,6 +2,7 @@ import { CHAIRS, DECK_SYSTEMS, FIXTURES, HOISTS, LED_CABINETS, SPEAKERS, TRUSS_S
 import type { Chair, DeckSystem, Fixture, Hoist, LedCabinet, Speaker, TrussSystem } from '../catalog';
 import { resolveSeating, type SeatingReport } from './seating';
 import { resolveAudio, type AudioReport } from './audio';
+import { resolveLighting, type LightingPositionsReport } from './lighting';
 import type { Project } from '../schema';
 import { resolveDeck, type DeckLayout } from './deck';
 import { resolveLedWall, type LedLayout } from './led';
@@ -17,6 +18,7 @@ export interface ProductionReport {
   hoist: Hoist;
   seating: SeatingReport | null;
   audio: AudioReport | null;
+  lightingPositions: LightingPositionsReport | null;
 }
 
 export interface SceneGraph {
@@ -111,6 +113,14 @@ export function resolveScene(project: Project): SceneGraph {
     fixtures = { fixture: fx, count: n };
   }
 
+  // ── Lighting positions (overhead electrics + side booms)
+  let lightingPositions: LightingPositionsReport | null = null;
+  if (project.lighting.enabled && (project.lighting.electrics.count > 0 || project.lighting.booms.enabled)) {
+    const fx = getCatalogItem<Fixture>(project.lighting.fixtureId, 'fixture');
+    const r = resolveLighting(project.lighting, fx, trussSys, hoist, { stageWidth: W, stageDepth: D, stageTop: H });
+    lightingPositions = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings);
+  }
+
   // ── Presenter scale figure (1.75 m)
   if (project.presenter.visible) {
     const py = Math.min(D * 0.38, 2400);
@@ -176,6 +186,7 @@ export function resolveScene(project: Project): SceneGraph {
     max[0] = Math.max(max[0], a.maxX); max[2] = Math.max(max[2], a.top);
   }
   if (deck.layout.apron) min[1] = Math.min(min[1], -deck.layout.apron.depth);
+  if (lightingPositions) { max[2] = Math.max(max[2], project.lighting.electrics.trim + 500); max[0] = Math.max(max[0], W / 2 + 900); min[0] = Math.min(min[0], -W / 2 - 900); }
   if (audio) { const sp = audio.spread + 1500; min[0] = Math.min(min[0], -sp); max[0] = Math.max(max[0], sp); max[2] = Math.max(max[2], audio.trim + 500); min[1] = Math.min(min[1], -1500); }
   for (const L of led) {
     min[0] = Math.min(min[0], L.origin[0] - L.chord / 2); max[0] = Math.max(max[0], L.origin[0] + L.chord / 2);
@@ -191,7 +202,7 @@ export function resolveScene(project: Project): SceneGraph {
 
   return {
     objects, blocks, annotations, warnings,
-    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio },
+    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions },
     bounds: { min, max },
     houseBounds: { min: hmin, max: hmax },
   };

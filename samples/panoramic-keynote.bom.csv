@@ -6,12 +6,12 @@ finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck left,1,,,gene
 finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck right,1,,,generic,
 ledCabinets,20_LED::20_01_CABINETS,ROE Visual,Black Pearl BP2 V2,Black Pearl BP2 V2 cabinet,576,9.35,5385.6,secondary,roe.bp2v2
 ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 2-wide (generic),24,,,generic,
-rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 0.71 m",11,,,secondary,prolyte.h30v
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 0.71 m",62,,,secondary,prolyte.h30v
 rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 1.5 m",1,,,secondary,prolyte.h30v
-rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",11,,,secondary,prolyte.h30v
-rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,10,,,generic,generic.hoist-1t
-rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2 m",1,14.49,14.49,secondary,prolyte.h30v
-lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,14,6.5,91,secondary,martin.mac-aura-xb
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 3 m",14,,,secondary,prolyte.h30v
+rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,22,,,generic,generic.hoist-1t
+rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 2 m",4,14.49,57.96,secondary,prolyte.h30v
+lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,38,6.5,247,secondary,martin.mac-aura-xb
 seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,2500,,,generic,generic.chair-stack
 audio,50_AUDIO::50_01_MAINS,d&b audiotechnik,J8 (line array),J8 (line array) — house left #1,28,60,1680,manufacturer,dbaudio.j8
 audio,50_AUDIO::50_02_SUBS,d&b audiotechnik,J-SUB (cardioid sub),J-SUB (cardioid sub) — left #1,6,106,636,manufacturer,dbaudio.j-sub
