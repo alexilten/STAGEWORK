@@ -35,6 +35,8 @@ Millimetres, Z up. Origin at floor level on the stage centreline at the downstag
 ## Docs
 - [Research](docs/RESEARCH.md) — stage design landscape, hardware catalogue, sources & verification status
 - [Architecture](docs/ARCHITECTURE.md) — data model, pipeline, technology decisions, Rhino export plan, risks
+![Preset library](docs/screenshots/31-preset-library.png)
+
 - [Preset library](docs/PRESETS.md) — the 21 presets, the engine features behind them, sources
 - [Roadmap & limitations](docs/ROADMAP.md)
 
