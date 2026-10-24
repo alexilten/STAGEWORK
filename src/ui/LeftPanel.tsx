@@ -132,12 +132,30 @@ export function LeftPanel() {
             onChange={(v) => edit((p) => { p.rigging.front.width = v; }, 'rig.width')} />
         </Section>
 
-        <Section title="Lighting" defaultOpen={false} summary={`${scene.report.fixtures?.count ?? 0} fixtures`}>
+        <Section title="Lighting" defaultOpen={false} summary={`${scene.report.fixtures?.count ?? 0} FOH · ${scene.report.lightingPositions?.fixtureTotal ?? 0} positions`}>
           <Toggle label="Front-of-house fixtures" checked={project.lighting.enabled} onChange={(v) => edit((p) => { p.lighting.enabled = v; })} />
           <Select label="Fixture" value={project.lighting.fixtureId} options={FIXTURES.map((f) => ({ value: f.id, label: `${f.manufacturer} ${f.model}` }))} onChange={(v) => edit((p) => { p.lighting.fixtureId = v; })} />
-          <NumberControl label="Count" value={project.lighting.count} min={0} max={30} step={1} disabled={!project.lighting.enabled || !project.rigging.front.enabled}
+          <NumberControl label="FOH count" value={project.lighting.count} min={0} max={30} step={1} disabled={!project.lighting.enabled || !project.rigging.front.enabled}
             hint={!project.rigging.front.enabled ? 'Enable the front truss to hang fixtures' : 'Evenly spaced on the front truss'}
             onChange={(v) => edit((p) => { p.lighting.count = v; }, 'light.count')} />
+          <div className="sub-label">Overhead electrics</div>
+          <NumberControl label="Battens" value={project.lighting.electrics.count} min={0} max={8} step={1} disabled={!project.lighting.enabled}
+            hint={scene.report.lightingPositions ? <>{scene.report.lightingPositions.electrics} over the stage · {scene.report.lightingPositions.electrics * scene.report.lightingPositions.perBatten} fixtures</> : 'Battens over the stage'}
+            onChange={(v) => edit((p) => { p.lighting.electrics.count = v; }, 'light.elx.n')} />
+          <NumberControl label="Fixtures per batten" value={project.lighting.electrics.perBatten} min={0} max={24} step={1} disabled={!project.lighting.enabled}
+            onChange={(v) => edit((p) => { p.lighting.electrics.perBatten = v; }, 'light.elx.m')} />
+          <LengthControl label="Electrics trim" units={u} value={project.lighting.electrics.trim} min={3000} max={14000} step={100} disabled={!project.lighting.enabled}
+            onChange={(v) => edit((p) => { p.lighting.electrics.trim = v; }, 'light.elx.trim')} />
+          <LengthControl label="First batten upstage" units={u} value={project.lighting.electrics.firstAt} min={0} max={8000} step={100} disabled={!project.lighting.enabled}
+            onChange={(v) => edit((p) => { p.lighting.electrics.firstAt = v; }, 'light.elx.first')} />
+          <LengthControl label="Batten spacing" units={u} value={project.lighting.electrics.spacing} min={500} max={5000} step={100} disabled={!project.lighting.enabled}
+            onChange={(v) => edit((p) => { p.lighting.electrics.spacing = v; }, 'light.elx.sp')} />
+          <div className="sub-label">Side booms</div>
+          <Toggle label="Side booms (L/R)" checked={project.lighting.booms.enabled} onChange={(v) => edit((p) => { p.lighting.booms.enabled = v; })} />
+          <NumberControl label="Fixtures per boom" value={project.lighting.booms.perBoom} min={0} max={12} step={1} disabled={!project.lighting.enabled || !project.lighting.booms.enabled}
+            onChange={(v) => edit((p) => { p.lighting.booms.perBoom = v; }, 'light.boom.m')} />
+          <LengthControl label="Boom height" units={u} value={project.lighting.booms.height} min={1500} max={7000} step={100} disabled={!project.lighting.enabled || !project.lighting.booms.enabled}
+            onChange={(v) => edit((p) => { p.lighting.booms.height = v; }, 'light.boom.h')} />
         </Section>
 
         <AudioSection />

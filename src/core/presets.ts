@@ -1,5 +1,5 @@
 import { ft } from './units';
-import { DEFAULT_AUDIO, DEFAULT_SEATING, PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project } from './schema';
+import { DEFAULT_AUDIO, DEFAULT_LIGHTING_POSITIONS, DEFAULT_SEATING, PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project } from './schema';
 
 export interface Preset {
   id: string;
@@ -22,7 +22,7 @@ function base(name: string, presetId: string): Project {
       header: { enabled: true, clearance: 600, overhang: 500, maxHoistSpacing: 6000 },
       front: { enabled: true, distance: 6000, trim: 8500, width: 14000 },
     },
-    lighting: { enabled: true, fixtureId: 'martin.mac-aura-xb', count: 10 },
+    lighting: { enabled: true, fixtureId: 'martin.mac-aura-xb', count: 10, electrics: { ...DEFAULT_LIGHTING_POSITIONS.electrics }, booms: { ...DEFAULT_LIGHTING_POSITIONS.booms } },
     presenter: { visible: true },
     seating: { ...DEFAULT_SEATING },
     audio: { ...DEFAULT_AUDIO },
@@ -79,6 +79,7 @@ export const PRESETS: Preset[] = [
       p.seating = { ...p.seating, layout: 'grid', count: 1500 };
       p.stage.shape = 'thrust'; p.stage.thrust = { width: ft(16), depth: ft(8) };
       p.audio = { ...DEFAULT_AUDIO, enabled: true, mainsPerSide: 10, trim: 8000, spread: 8500, subs: 4, frontFills: 5, monitors: 2 };
+      p.lighting.booms = { enabled: true, perBoom: 4, height: 4000 };
       p.ledWalls = [-1, 0, 1].map((k) => wall({ id: ['l', 'c', 'r'][k + 1], name: ['Left', 'Centre', 'Right'][k + 1] + ' screen', width: 5000, height: 3000, elevation: 1500, offsetX: k * 5750 }));
       return p;
     },
