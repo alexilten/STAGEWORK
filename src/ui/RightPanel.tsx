@@ -77,6 +77,7 @@ function Production() {
           <Metric label="Platforms" value={String(r.stage.primaryCount + r.stage.infillCount)} sub={`${r.stage.primaryCount} × ${r.stage.system.label}${r.stage.infillCount ? ` + ${r.stage.infillCount} × ${r.stage.system.infill.label}` : ''}`} />
           <Metric label="LED cabinets" value={String(cabinets)} sub={`${formatArea(ledArea, u)} · ${r.led.length} surface${r.led.length === 1 ? '' : 's'}`} />
           <Metric label="Truss" value={`${sections} sections`} sub={`${formatLength(trussLen, u)} · ${hoists} hoists`} />
+          {r.seating && <Metric label="Seats" value={r.seating.count.toLocaleString()} sub={`${r.seating.rows} rows · ${r.seating.wheelchairSpaces} wheelchair`} />}
         </div>
         {r.led.map((l) => (
           <div className="sub-card" key={l.id}>
@@ -138,7 +139,7 @@ function Inspector() {
           </>
         ) : (
           <>
-            {[...counts].map(([k, n]) => <Row key={k} k={k} v={`× ${n}`} />)}
+            {selection.group === 'seating' ? <Row k={sample.label.replace(/ \S+$/, '')} v={`× ${members.length.toLocaleString()}`} /> : [...counts].map(([k, n]) => <Row key={k} k={k} v={`× ${n}`} />)}
             <GroupRows group={selection.group} scene={scene} u={u} />
             <p className="muted small">Click again on a component to inspect it individually.</p>
           </>
@@ -162,6 +163,7 @@ function groupTitle(g: string, scene: SceneGraph) {
   if (g === 'stage') return 'Stage';
   if (g === 'presenter') return 'Presenter reference';
   if (g === 'fixtures') return 'Front-of-house lighting';
+  if (g === 'seating') return 'Audience seating';
   if (g === 'truss:front') return 'Front light truss';
   if (g.startsWith('truss:header:')) return `${scene.report.led.find((l) => `truss:header:${l.id}` === g)?.name ?? ''} header truss`;
   if (g.startsWith('led:')) return scene.report.led.find((l) => `led:${l.id}` === g)?.name ?? 'LED wall';
@@ -184,6 +186,19 @@ function GroupRows({ group, scene, u }: { group: string; scene: SceneGraph; u: D
     <Row k="Resolution" v={`${L.pixelsW} × ${L.pixelsH}`} />
     {L.curveDeg !== 0 && <Row k="Curve" v={`${L.curveDeg}° / joint · ${formatLength(L.sagitta, u, { precise: true })} sagitta`} />}
   </>);
+  if (group === 'seating' && r.seating) {
+    const S = r.seating;
+    return (<>
+      <Row k="Layout" v={`${S.layout} · ${S.sections} ${S.sections === 1 ? 'section' : 'blocks'}`} />
+      <Row k="Seats" v={`${S.count.toLocaleString()} in ${S.rows} rows`} />
+      <Row k="Footprint" v={`${formatLength(S.width, u)} × ${formatLength(S.depth, u)}`} />
+      <Row k="Front row" v={`${formatLength(S.frontDistance, u, { precise: true })} from deck`} />
+      <Row k="Row pitch / clear" v={`${formatLength(S.rowPitch, u, { precise: true })} / ${formatLength(S.rowClear, u, { precise: true })}`} />
+      <Row k="Longest block row" v={`${S.longestRow} seats (limit ${S.maxSeatsPerRow})`} />
+      <Row k="Wheelchair spaces" v={`${S.wheelchairSpaces} + ${S.wheelchairSpaces} companion`} />
+      <p className="muted small">Code checks follow IBC / IFC Chapter 10 and the 2010 ADA Standards. Egress and exits need venue / AHJ review.</p>
+    </>);
+  }
   const T = r.truss.find((t) => (group === 'truss:front' ? t.id === 'FOH' : `truss:header:${t.id.replace('HDR_', '').toLowerCase()}` === group));
   if (T) return (<>
     <Row k="Length" v={`${formatLength(T.length, u, { precise: true })} (target ${formatLength(T.target, u, { precise: true })})`} />
@@ -221,13 +236,17 @@ function CatalogRows({ id, u }: { id: string; u: DisplayUnits }) {
       <Row k="Power" v={c.powerMaxW != null ? `${c.powerMaxW} W max` : '—'} />
     </>);
     case 'hoist': return <Row k="Capacity" v={`${c.capacityKg} kg`} />;
+    case 'chair': return (<>
+      <Row k="Footprint" v={`${c.width} × ${c.depth} mm`} />
+      <Row k="Height / seat" v={`${c.height} / ${c.seatHeight} mm`} />
+    </>);
   }
 }
 
 function Warnings() {
   const warnings = useStore((s) => s.scene.warnings);
   const select = useStore((s) => s.select);
-  const shown = warnings.filter((w) => w.level !== 'info' || w.code === 'engineering' || w.code === 'deck.infill');
+  const shown = warnings.filter((w) => w.level !== 'info' || ['engineering', 'deck.infill', 'seating.ada', 'seating.sightline'].includes(w.code));
   if (!shown.length) return null;
   return (
     <section className="section open">

@@ -32,6 +32,7 @@ export const LAYER_TREE: { name: string; color: [number, number, number]; childr
   { name: '40_LIGHTING', color: [200, 30, 90], children: ['40_01_FIXTURES', '40_02_ACCESSORIES'] },
   { name: '50_AUDIO', color: [120, 70, 190], children: [] },
   { name: '60_SCENIC', color: [40, 150, 100], children: [] },
+  { name: '70_AUDIENCE', color: [110, 110, 130], children: ['70_01_SEATING', '70_02_LAYOUT'] },
   { name: '90_TECHNICAL', color: [230, 40, 40], children: ['90_01_DIMENSIONS', '90_02_CENTERLINES', '90_03_REFERENCE'] },
 ];
 
@@ -47,6 +48,8 @@ export const RHINO_MATERIALS: Record<MaterialKey, { name: string; rgb: [number, 
   hoist: { name: 'SC_Hoist', rgb: [30, 30, 32] },
   fixture: { name: 'SC_Fixture', rgb: [24, 24, 26] },
   presenter: { name: 'SC_Reference_Figure', rgb: [200, 196, 190] },
+  chairSeat: { name: 'SC_Chair_Seat', rgb: [34, 34, 37], gloss: 0.1 },
+  chairFrame: { name: 'SC_Chair_Frame_Steel', rgb: [150, 150, 155], gloss: 0.5 },
 };
 
 export interface RhinoExportOptions {

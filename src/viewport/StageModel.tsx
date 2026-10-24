@@ -6,6 +6,7 @@ import type { SceneGraph } from '../core/engine/scene';
 import type { StageFinish } from '../core/schema';
 import { useStore, type ViewMode } from '../ui/store';
 import { ACCENT, lookFor, makeEdgeMaterial, makeLedFaceMaterial } from './materials';
+import { beginDrag, isDragging } from './DragController';
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
 const CYL = new THREE.CylinderGeometry(1, 1, 1, 20, 1);
@@ -120,6 +121,7 @@ function InstancedBatch({ batch, mode, finish }: { batch: Batch; mode: ViewMode;
 
   const pick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
+    if (isDragging()) return;
     const o = batch.objects[e.instanceId ?? 0];
     if (!o) return;
     const s = useStore.getState().selection;
@@ -131,9 +133,19 @@ function InstancedBatch({ batch, mode, finish }: { batch: Batch; mode: ViewMode;
     <instancedMesh
       ref={ref}
       args={[geom, material, n]}
-      castShadow receiveShadow
+      castShadow={!batch.part.mat.startsWith('chair')} receiveShadow
       onClick={pick}
-      onPointerOver={(e) => { e.stopPropagation(); setHover(batch.objects[e.instanceId ?? 0]?.group ?? null); document.body.style.cursor = 'pointer'; }}
+      onPointerDown={(e) => {
+        const o = batch.objects[e.instanceId ?? 0];
+        if (o && beginDrag(o.group, { ray: e.ray, shiftKey: e.shiftKey })) e.stopPropagation();
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        const g = batch.objects[e.instanceId ?? 0]?.group ?? null;
+        setHover(g);
+        const sel = useStore.getState().selection;
+        document.body.style.cursor = sel && sel.group === g && (g?.startsWith('led:') || g === 'truss:front' || g === 'seating') ? 'grab' : 'pointer';
+      }}
       onPointerOut={() => { setHover(null); document.body.style.cursor = ''; }}
     />
   );

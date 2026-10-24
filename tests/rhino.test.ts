@@ -105,3 +105,17 @@ describe('Test 6 — exported geometry matches the live scene', () => {
     expect(maxX - minX).toBeCloseTo(scene.report.stage.width.resolved, 3);
   });
 });
+
+describe('Seating in Rhino', () => {
+  it('every seat is a named chair-block instance on 70_AUDIENCE with row / seat user text', () => {
+    const project = build((p) => { p.seating.layout = 'radial'; p.seating.count = 750; });
+    const scene = resolveScene(project);
+    const info = inspect3dm(rh, exportRhino(rh, scene, project));
+    const chairs = info.objects.filter((o) => o.layer === '70_AUDIENCE::70_01_SEATING');
+    expect(chairs).toHaveLength(750);
+    expect(chairs.every((c) => c.type === 'InstanceReference' && c.block === 'SC_CHAIR_GENERIC_CHAIR_STACK')).toBe(true);
+    expect(chairs[0].name).toBe('SEAT.A.1');
+    expect(chairs[0].user['stagecraft.row']).toBe('A');
+    expect(chairs[0].user['stagecraft.seat']).toBe('1');
+  });
+});

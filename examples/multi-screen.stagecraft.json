@@ -69,5 +69,16 @@
   },
   "presenter": {
     "visible": true
+  },
+  "seating": {
+    "enabled": true,
+    "layout": "grid",
+    "count": 1500,
+    "chairId": "generic.chair-stack",
+    "frontDistance": 3050,
+    "rowPitch": 915,
+    "seatPitch": 560,
+    "aisleWidth": 1070,
+    "seatsPerBlock": 14
   }
 }

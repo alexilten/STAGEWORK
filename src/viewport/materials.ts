@@ -11,7 +11,7 @@ const FINISH: Record<StageFinish, string> = { white: '#f2f1ee', black: '#1b1b1d'
 
 export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish): Look {
   if (mode === 'technical') {
-    const tone: Partial<Record<MaterialKey, string>> = { ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc' };
+    const tone: Partial<Record<MaterialKey, string>> = { chairSeat: '#e4e4e8', chairFrame: '#c7c7cc', ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc' };
     return { color: tone[key] ?? '#f7f7f8', metalness: 0, roughness: 0.9, edge: 1, edgeColor: '#5d5d63' };
   }
   switch (key) {
@@ -25,6 +25,8 @@ export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish): 
     case 'hoist': return { color: '#1f1f22', metalness: 0.4, roughness: 0.5, edge: 0 };
     case 'fixture': return { color: '#1d1d20', metalness: 0.35, roughness: 0.45, edge: 0 };
     case 'presenter': return { color: '#ebe8e3', metalness: 0, roughness: 0.85, edge: 0 };
+    case 'chairSeat': return { color: '#c9c9ce', metalness: 0, roughness: 0.7, edge: 0 };
+    case 'chairFrame': return { color: '#a3a3a9', metalness: 0.8, roughness: 0.35, edge: 0 };
   }
 }
 

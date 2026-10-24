@@ -1,5 +1,6 @@
-import { DECK_SYSTEMS, FIXTURES, LED_CABINETS, getCatalogItem, type DeckSystem, type LedCabinet } from '../core/catalog';
-import type { StageFinish } from '../core/schema';
+import { CHAIRS, DECK_SYSTEMS, FIXTURES, LED_CABINETS, getCatalogItem, type DeckSystem, type LedCabinet } from '../core/catalog';
+import { SEAT_COUNT } from '../core/engine/seating';
+import { DEFAULT_SEATING, type SeatingLayout, type StageFinish } from '../core/schema';
 import { formatLength } from '../core/units';
 import { LengthControl, NumberControl, Section, Segmented, Select, Toggle, VerificationBadge } from './controls';
 import { useStore } from './store';
@@ -14,6 +15,9 @@ export function LeftPanel() {
   const edit = useStore((s) => s.edit);
   const activeWall = useStore((s) => s.activeWall);
   const setActiveWall = useStore((s) => s.setActiveWall);
+  const addWall = useStore((s) => s.addWall);
+  const duplicateWall = useStore((s) => s.duplicateWall);
+  const removeWall = useStore((s) => s.removeWall);
   const u = project.units;
   const st = scene.report.stage;
   const deck = getCatalogItem<DeckSystem>(project.stage.deckSystemId, 'deck');
@@ -55,12 +59,21 @@ export function LeftPanel() {
           <Toggle label="Fascia" checked={project.stage.fascia} onChange={(v) => edit((p) => { p.stage.fascia = v; })} />
         </Section>
 
-        {wall && L && cab && (
-          <Section title="LED media" summary={`${L.cols} × ${L.rows} · ${L.count} cabinets`}>
-            {project.ledWalls.length > 1 && (
-              <Segmented size="sm" value={wall.id} onChange={setActiveWall}
-                options={project.ledWalls.map((w) => ({ value: w.id, label: w.name.replace(/ (wall|screen)$/i, '') }))} />
-            )}
+        <Section title="LED media" summary={L ? `${project.ledWalls.length} surface${project.ledWalls.length === 1 ? '' : 's'} · ${scene.report.led.reduce((a, l) => a + l.count, 0)} cabinets` : 'none'}>
+          <div className="surface-tabs">
+            {project.ledWalls.map((w) => (
+              <button key={w.id} className={w.id === wall?.id ? 'on' : ''} onClick={() => setActiveWall(w.id)}>{w.name.replace(/ (wall|screen)$/i, '')}</button>
+            ))}
+            <button className="add" onClick={addWall} title="Add an LED surface">+</button>
+          </div>
+          {!wall && <p className="muted small">No LED surfaces. Add one to start.</p>}
+          {wall && L && cab && (<>
+            <div className="ctl surface-head">
+              <input id="wall-name" className="name-input" value={wall.name} spellCheck={false} onChange={(e) => edit((p) => { p.ledWalls[wi].name = e.target.value; }, `led.${wall.id}.name`)} />
+              <button className="text-btn" onClick={() => duplicateWall(wall.id)}>Duplicate</button>
+              <button className="text-btn danger" onClick={() => removeWall(wall.id)}>Remove</button>
+            </div>
+            <p className="muted small drag-hint">Select the wall in the viewport, then drag it. Shift-drag moves it up/downstage, Alt turns off snapping, arrow keys nudge.</p>
             <Select label="Cabinet" value={wall.cabinetId}
               options={LED_CABINETS.map((c) => ({ value: c.id, label: `${c.manufacturer === 'Generic' ? '' : c.manufacturer + ' '}${c.model}`, badge: `${c.width}×${c.height}` }))}
               onChange={(v) => edit((p) => { p.ledWalls[wi].cabinetId = v; })} />
@@ -95,8 +108,10 @@ export function LeftPanel() {
             <NumberControl label="Curve per joint" value={L.curveDeg} min={0} max={curveMax || 1} step={0.5} suffix="°" disabled={!curveMax}
               hint={curveMax ? <>Concave · product limit {curveMax}° · sagitta {formatLength(L.sagitta, u, { precise: true })}</> : 'Curving not documented for this cabinet'}
               onChange={(v) => edit((p) => { p.ledWalls[wi].curveDeg = v; }, `led.${wall.id}.curve`)} />
-          </Section>
-        )}
+          </>)}
+        </Section>
+
+        <AudienceSection />
 
         <Section title="Rigging" defaultOpen={false} summary={`${scene.report.truss.reduce((a, t) => a + t.sections.length, 0)} truss sections`}>
           <Toggle label="LED header truss" checked={project.rigging.header.enabled} onChange={(v) => edit((p) => { p.rigging.header.enabled = v; })} />
@@ -126,5 +141,56 @@ export function LeftPanel() {
         </Section>
       </div>
     </aside>
+  );
+}
+
+const LAYOUTS: { value: SeatingLayout; label: string; hint: string }[] = [
+  { value: 'block', label: 'Block', hint: 'Theatre blocks with aisles between them and a cross aisle every 20 rows.' },
+  { value: 'grid', label: 'Grid', hint: 'Continental rows with side aisles only; row spacing widens with row length, as code requires.' },
+  { value: 'radial', label: 'Radial', hint: 'Curved rows focused on the stage, in a 90° fan with radial aisles.' },
+];
+
+function AudienceSection() {
+  const project = useStore((s) => s.project);
+  const r = useStore((s) => s.scene.report.seating);
+  const edit = useStore((s) => s.edit);
+  const select = useStore((s) => s.select);
+  const u = project.units;
+  const p = project.seating ?? { ...DEFAULT_SEATING, enabled: false };
+  const set = (fn: (s: typeof p) => void, key?: string) => edit((pr) => { pr.seating ??= { ...DEFAULT_SEATING, enabled: false }; fn(pr.seating); }, key);
+  const chair = CHAIRS.find((c) => c.id === p.chairId) ?? CHAIRS[0];
+  const layout = LAYOUTS.find((l) => l.value === p.layout)!;
+  const off = !p.enabled;
+  return (
+    <Section title="Audience" summary={p.enabled && r ? `${r.count.toLocaleString()} seats · ${layout.label.toLowerCase()}` : 'off'}>
+      <Toggle label="Seating" checked={p.enabled} onChange={(v) => set((s) => { s.enabled = v; })} />
+      <div className={`ctl ${off ? 'disabled' : ''}`}>
+        <Segmented value={p.layout} onChange={(v) => { set((s) => { s.layout = v; }); select({ group: 'seating' }); }} options={LAYOUTS.map((l) => ({ value: l.value, label: l.label, title: l.hint }))} />
+        <div className="ctl-hint">{layout.hint}</div>
+      </div>
+      <NumberControl label="Seats" value={p.count} min={SEAT_COUNT.min} max={SEAT_COUNT.max} step={SEAT_COUNT.step} disabled={off}
+        hint={r ? <>{r.rows} rows · {r.sections} {r.sections === 1 ? 'section' : 'blocks'} · {formatLength(r.width, u)} × {formatLength(r.depth, u)}</> : undefined}
+        onChange={(v) => set((s) => { s.count = v; }, 'seat.count')} />
+      <LengthControl label="Distance to stage" units={u} value={p.frontDistance} min={1500} max={10000} step={50} disabled={off}
+        hint="Deck edge to the front row, on the centreline"
+        onChange={(v) => set((s) => { s.frontDistance = v; }, 'seat.front')} />
+      <LengthControl label="Row spacing" units={u} value={p.rowPitch} min={760} max={1220} step={5} disabled={off}
+        hint={r ? <>{r.rowPitch !== p.rowPitch ? <>Widened to {formatLength(r.rowPitch, u, { precise: true })} for {r.longestRow}-seat rows · </> : null}{formatLength(r.rowClear, u, { precise: true })} clear · up to {r.maxSeatsPerRow} seats per row</> : 'Back to back'}
+        onChange={(v) => set((s) => { s.rowPitch = v; }, 'seat.row')} />
+      <LengthControl label="Seat spacing" units={u} value={p.seatPitch} min={chair.width} max={760} step={10} disabled={off}
+        hint="Centre to centre"
+        onChange={(v) => set((s) => { s.seatPitch = v; }, 'seat.pitch')} />
+      <LengthControl label="Aisle width" units={u} value={p.aisleWidth} min={900} max={2400} step={10} disabled={off}
+        onChange={(v) => set((s) => { s.aisleWidth = v; }, 'seat.aisle')} />
+      {p.layout !== 'grid' && (
+        <NumberControl label="Seats per block row" value={p.seatsPerBlock} min={6} max={30} step={1} disabled={off}
+          onChange={(v) => set((s) => { s.seatsPerBlock = v; }, 'seat.block')} />
+      )}
+      <div className="cab-meta">
+        <VerificationBadge v={chair.verification} />
+        <span>{chair.width}×{chair.depth} mm chair</span>
+        {r && <span>{r.wheelchairSpaces} wheelchair spaces (ADA)</span>}
+      </div>
+    </Section>
   );
 }

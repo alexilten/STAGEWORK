@@ -29,11 +29,12 @@ export function App() {
       <div className="viewbar glass">
         <Segmented<CameraView> size="sm" value={view} onChange={setView} options={[
           { value: 'perspective', label: 'Perspective', title: '1' }, { value: 'front', label: 'Front', title: '2' },
-          { value: 'side', label: 'Side', title: '3' }, { value: 'plan', label: 'Plan', title: '4' }, { value: 'iso', label: 'Iso', title: '5' },
+          { value: 'side', label: 'Side', title: '3' }, { value: 'plan', label: 'Plan', title: '4' }, { value: 'iso', label: 'Iso', title: '5' }, { value: 'house', label: 'House', title: '6 · stage and audience' },
         ]} />
         <button className="icon-btn" title="Frame stage" onClick={() => setView(view)}><Icon.frame /></button>
       </div>
       <Hud />
+      <DragInfo />
       {toast && <div className="toast glass">{toast}</div>}
     </div>
   );
@@ -49,8 +50,14 @@ function Hud() {
       <span>{scene.report.stage.primaryCount + scene.report.stage.infillCount} platforms</span>
       <span>{cabinets} cabinets</span>
       {L && <span>{L.pixelsW.toLocaleString()} × {L.pixelsH.toLocaleString()}</span>}
+      {scene.report.seating && <span>{scene.report.seating.count.toLocaleString()} seats</span>}
       <span>{scene.objects.length.toLocaleString()} objects</span>
       {errs > 0 && <span className="err">{errs} conflict{errs > 1 ? 's' : ''}</span>}
     </div>
   );
+}
+
+function DragInfo() {
+  const info = useStore((s) => s.dragInfo);
+  return info ? <div className="drag-info glass">{info}</div> : null;
 }

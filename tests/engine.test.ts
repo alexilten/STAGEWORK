@@ -141,3 +141,16 @@ describe('units', () => {
     expect(formatLength(12500, 'metric')).toBe('12.5 m');
   });
 });
+
+describe('LED surface management', () => {
+  it('a project with no LED surfaces still resolves and exports cleanly', () => {
+    const s = resolveScene(project((p) => { p.ledWalls = []; }));
+    expect(s.report.led).toHaveLength(0);
+    expect(s.objects.some((o) => o.system === 'ledCabinets')).toBe(false);
+  });
+  it('several surfaces each get their own header truss and cabinet group', () => {
+    const s = resolveScene(getPreset('multi-screen').build());
+    expect(s.report.led).toHaveLength(3);
+    expect(s.report.truss.filter((t) => t.id.startsWith('HDR_'))).toHaveLength(3);
+  });
+});

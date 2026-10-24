@@ -1,5 +1,5 @@
 import { ft } from '../units';
-import type { CatalogItem, DeckSystem, Fixture, Hoist, LedCabinet, TrussSystem } from './types';
+import type { CatalogItem, Chair, DeckSystem, Fixture, Hoist, LedCabinet, TrussSystem } from './types';
 export * from './types';
 
 const ACCESSED = '2026-10-23';
@@ -192,7 +192,21 @@ export const HOISTS: Hoist[] = [
   },
 ];
 
-export const CATALOG: CatalogItem[] = [...LED_CABINETS, ...DECK_SYSTEMS, ...TRUSS_SYSTEMS, ...FIXTURES, ...HOISTS];
+export const CHAIRS: Chair[] = [
+  {
+    id: 'generic.chair-stack',
+    category: 'chair',
+    manufacturer: 'Generic',
+    model: 'Stacking event chair',
+    verification: 'generic',
+    width: 460, depth: 540, height: 830, seatHeight: 450,
+    weightKg: null,
+    sources: [{ label: 'Representative envelope of common stacking / banquet chairs (≈18″ W × 21″ D × 33″ H); not a manufacturer SKU' }],
+    notes: ['Swap for the rental house chair before production — row spacing and clear width depend on the real chair depth.'],
+  },
+];
+
+export const CATALOG: CatalogItem[] = [...LED_CABINETS, ...DECK_SYSTEMS, ...TRUSS_SYSTEMS, ...FIXTURES, ...HOISTS, ...CHAIRS];
 
 export function getCatalogItem<T extends CatalogItem>(id: string, category: T['category']): T {
   const item = CATALOG.find((c) => c.id === id && c.category === category);

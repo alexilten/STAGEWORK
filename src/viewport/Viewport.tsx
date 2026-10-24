@@ -1,4 +1,4 @@
-import { CameraControls, ContactShadows, Environment, Grid, Html, Lightformer, Line } from '@react-three/drei';
+import { CameraControls, Environment, Grid, Html, Lightformer, Line } from '@react-three/drei';
 import { Canvas, useThree } from '@react-three/fiber';
 import { EffectComposer, N8AO, SMAA } from '@react-three/postprocessing';
 import { useEffect, useMemo, useRef } from 'react';
@@ -7,6 +7,9 @@ import type { SceneGraph } from '../core/engine/scene';
 import { formatLength } from '../core/units';
 import { useStore, type CameraView } from '../ui/store';
 import { StageModel } from './StageModel';
+import { DragController } from './DragController';
+import { Gizmo } from './Gizmo';
+import type { Annotation } from '../core/engine/types';
 
 /** World is mm, Z-up (see core/schema.ts). three.js is Y-up metres → one wrapping transform. */
 const WORLD_ROTATION = new THREE.Euler(-Math.PI / 2, 0, 0);
@@ -48,15 +51,22 @@ export function Viewport() {
 
       <group rotation={WORLD_ROTATION} scale={MM}>
         <StageModel scene={scene} />
-        {dims && <Dimensions scene={scene} />}
+        {dims ? <Dimensions items={scene.annotations} /> : <SelectionDims scene={scene} />}
+        <DragGuides scene={scene} />
+        <Gizmo />
       </group>
 
-      <ContactShadows position={[0, 0.001, -(b.min[1] + b.max[1]) / 2 * MM]} scale={span * 1.6} far={8} blur={2.6} opacity={tech ? 0.25 : 0.55} resolution={1024} color="#3a3a40" frames={Infinity} />
+      {/* shadow-catcher floor (ContactShadows accumulated stale shadows under postprocessing, which disables autoClear) */}
+      <mesh rotation-x={-Math.PI / 2} position={[0, 0, -(b.min[1] + b.max[1]) / 2 * MM]} receiveShadow>
+        <planeGeometry args={[span * 6, span * 6]} />
+        <shadowMaterial transparent opacity={tech ? 0.1 : 0.2} color="#23232b" />
+      </mesh>
       {tech && (
         <Grid position={[0, 0, 0]} args={[200, 200]} cellSize={1} sectionSize={5} cellThickness={0.5} sectionThickness={0.9}
           cellColor="#d9d9de" sectionColor="#bdbdc6" fadeDistance={70} fadeStrength={1.6} infiniteGrid />
       )}
       <CameraRig scene={scene} />
+      <DragController />
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <N8AO aoRadius={0.9} intensity={tech ? 1.2 : 2.4} distanceFalloff={0.6} halfRes color="#1a1a22" />
         <SMAA />
@@ -65,13 +75,48 @@ export function Viewport() {
   );
 }
 
-function Dimensions({ scene }: { scene: SceneGraph }) {
+/**
+ * Presentation mode keeps the model clean: dimensions appear only for the current selection,
+ * in a quieter style, plus the clearances that matter for it.
+ */
+function SelectionDims({ scene }: { scene: SceneGraph }) {
+  const sel = useStore((s) => s.selection);
+  const items = useMemo(() => (sel ? selectionDims(sel.group, scene) : []), [sel, scene]);
+  return items.length ? <Dimensions items={items} subtle /> : null;
+}
+
+export function selectionDims(group: string, scene: SceneGraph): Annotation[] {
+  const r = scene.report;
+  const H = r.stage.height.resolved;
+  const dimsWith = (prefix: string) => scene.annotations.filter((a) => a.kind === 'dim' && a.id.startsWith(prefix));
+  if (group === 'stage') return dimsWith('DIM.STAGE.');
+  if (group === 'seating') return dimsWith('DIM.SEAT.');
+  const L = r.led.find((l) => `led:${l.id}` === group);
+  if (L) {
+    const out = dimsWith(`DIM.LED.${L.id.toUpperCase()}.`);
+    const hdr = r.truss.find((t) => t.id === `HDR_${L.id.toUpperCase()}`);
+    const x = L.origin[0] + L.chord / 2 + 450, y = L.origin[1] - L.sagitta;
+    if (hdr) out.push({ id: `CLR.LED.${L.id}.HEADER`, kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [x, y, L.top], to: [x, y, hdr.bottom], value: hdr.bottom - L.top, label: 'Clearance to header truss' });
+    return out;
+  }
+  const T = group === 'truss:front' ? r.truss.find((t) => t.id === 'FOH') : undefined;
+  if (T) {
+    const x = T.center[0] + T.length / 2 + 400;
+    return [
+      { id: 'CLR.FOH.TRIM', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [x, T.center[1], H], to: [x, T.center[1], T.bottom], value: T.bottom - H, label: 'Trim above deck' },
+      { id: 'CLR.FOH.DIST', kind: 'dim', layer: '90_TECHNICAL::90_01_DIMENSIONS', from: [x, 0, H], to: [x, T.center[1], H], value: -T.center[1], label: 'Distance from stage' },
+    ];
+  }
+  return [];
+}
+
+function Dimensions({ items, subtle }: { items: Annotation[]; subtle?: boolean }) {
   const units = useStore((s) => s.project.units);
   return (
     <group>
-      {scene.annotations.map((a) => {
+      {items.map((a) => {
         const mid: [number, number, number] = [(a.from[0] + a.to[0]) / 2, (a.from[1] + a.to[1]) / 2, (a.from[2] + a.to[2]) / 2];
-        const color = a.kind === 'line' ? '#9b9ba3' : '#0a84ff';
+        const color = a.kind === 'line' ? '#9b9ba3' : subtle ? '#6e6e78' : '#0a84ff';
         return (
           <group key={a.id}>
             <Line points={[a.from, a.to]} color={color} lineWidth={a.kind === 'line' ? 1 : 1.25} dashed={a.kind === 'line'} dashSize={300} gapSize={200} />
@@ -81,7 +126,7 @@ function Dimensions({ scene }: { scene: SceneGraph }) {
                   <Line key={i} points={[[p[0], p[1], p[2] - 120], [p[0], p[1], p[2] + 120]]} color={color} lineWidth={1.25} />
                 ))}
                 <Html position={mid} center zIndexRange={[5, 0]} className="dim-label-wrap">
-                  <div className="dim-label">{formatLength(a.value ?? 0, units, { precise: true })}</div>
+                  <div className={`dim-label ${subtle ? 'subtle' : ''}`} title={a.label}>{subtle && a.label ? <span>{a.label}</span> : null}{formatLength(a.value ?? 0, units, { precise: true })}</div>
                 </Html>
               </>
             )}
@@ -100,8 +145,9 @@ function viewFor(view: CameraView, b: SceneGraph['bounds']) {
     case 'front': return { fov: 10, pos: c.clone().add(new THREE.Vector3(0, 0, s * 8.2)), target: c };
     case 'side': return { fov: 10, pos: c.clone().add(new THREE.Vector3(Math.max(d, h * 1.8) * 9.5 + w / 2, 0, 0)), target: c };
     case 'plan': return { fov: 10, pos: c.clone().add(new THREE.Vector3(0, s * 8.2, 0.001)), target: c };
+    case 'house': return { fov: 32, pos: c.clone().add(new THREE.Vector3(-s * 0.3, s * 0.62, s * 1.05)), target: c.clone().add(new THREE.Vector3(0, 0, -d * 0.12)) };
     case 'iso': return { fov: 24, pos: c.clone().add(new THREE.Vector3(s * 1.25, s * 1.15, s * 1.85)), target: c };
-    default: return { fov: 30, pos: c.clone().add(new THREE.Vector3(-s * 1.05, s * 0.5, s * 2.45)), target: c.clone().add(new THREE.Vector3(0, -h * 0.1, 0)) };
+    default: return { fov: 30, pos: c.clone().add(new THREE.Vector3(-s * 1.05, s * 0.72, s * 2.35)), target: c.clone().add(new THREE.Vector3(0, -h * 0.1, 0)) };
   }
 }
 
@@ -110,10 +156,10 @@ function CameraRig({ scene }: { scene: SceneGraph }) {
   const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
   const view = useStore((s) => s.view);
   const nonce = useStore((s) => s.viewNonce);
-  const boundsKey = useMemo(() => JSON.stringify(scene.bounds), [scene.bounds]);
+  const boundsKey = useMemo(() => JSON.stringify(view === 'house' ? scene.houseBounds : scene.bounds), [scene, view]);
   const first = useRef(true);
   useEffect(() => {
-    const v = viewFor(view, scene.bounds);
+    const v = viewFor(view, view === 'house' ? scene.houseBounds : scene.bounds);
     const animate = !first.current;
     first.current = false;
     camera.fov = v.fov;
@@ -124,9 +170,29 @@ function CameraRig({ scene }: { scene: SceneGraph }) {
   // keep the orbit target centred on the stage as it changes size, without moving the camera abruptly
   useEffect(() => {
     if (first.current) return;
-    const v = viewFor(view, scene.bounds);
+    const v = viewFor(view, view === 'house' ? scene.houseBounds : scene.bounds);
     ref.current?.setTarget(v.target.x, v.target.y, v.target.z, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boundsKey]);
   return <CameraControls ref={ref} makeDefault minDistance={2} maxDistance={400} maxPolarAngle={Math.PI * 0.495} smoothTime={0.35} draggingSmoothTime={0.08} dollyToCursor />;
 }
+
+/** While dragging: centreline, stage front and deck-top datum, so moves read against the stage. */
+function DragGuides({ scene }: { scene: SceneGraph }) {
+  const dragging = useStore((s) => s.dragInfo != null);
+  const sel = useStore((s) => s.selection);
+  if (!dragging) return null;
+  const st = scene.report.stage;
+  const W = st.width.resolved, D = st.depth.resolved, H = st.height.resolved;
+  const L = scene.report.led.find((l) => `led:${l.id}` === sel?.group);
+  const centred = L && Math.abs(L.origin[0]) < 0.5;
+  return (
+    <group>
+      <Line points={[[0, -4000, H], [0, D + 6000, H]]} color={centred ? '#0a84ff' : '#a1a1a6'} lineWidth={centred ? 2 : 1} dashed dashSize={250} gapSize={150} />
+      <Line points={[[0, D + 400, 0], [0, D + 400, 14000]]} color={centred ? '#0a84ff' : '#a1a1a6'} lineWidth={centred ? 2 : 1} dashed dashSize={250} gapSize={150} />
+      <Line points={[[-W / 2 - 3000, D + 400, H], [W / 2 + 3000, D + 400, H]]} color="#a1a1a6" lineWidth={1} dashed dashSize={250} gapSize={150} />
+      {L && <Line points={[[L.origin[0], L.origin[1] - L.sagitta - 20, H], [L.origin[0], L.origin[1] - L.sagitta - 20, L.origin[2]]]} color="#0a84ff" lineWidth={1.5} />}
+    </group>
+  );
+}
+
