@@ -1,5 +1,5 @@
 import { ft } from './units';
-import { DEFAULT_AUDIO, DEFAULT_LIGHTING_POSITIONS, DEFAULT_SCENIC, DEFAULT_SEATING, PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project } from './schema';
+import { DEFAULT_AUDIO, DEFAULT_LIGHTING_POSITIONS, DEFAULT_SCENIC, DEFAULT_BROADCAST, DEFAULT_SEATING, PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project } from './schema';
 
 export interface Preset {
   id: string;
@@ -27,6 +27,7 @@ function base(name: string, presetId: string): Project {
     seating: { ...DEFAULT_SEATING },
     audio: { ...DEFAULT_AUDIO },
     scenic: structuredClone(DEFAULT_SCENIC),
+    broadcast: { ...structuredClone(DEFAULT_BROADCAST), enabled: true },
   };
 }
 

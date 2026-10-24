@@ -73,6 +73,8 @@ export interface SeatingReport {
   /** nearest seat front to the deck, measured on the centreline */
   frontDistance: Mm;
   wheelchairSpaces: number;
+  /** seats removed for camera positions (see broadcast.ts) */
+  seatKills?: number;
   chair: Chair;
   /** plan extents of the seating (world mm) */
   min: [number, number];

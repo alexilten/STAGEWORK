@@ -4,6 +4,7 @@ import { resolveSeating, type SeatingReport } from './seating';
 import { resolveAudio, type AudioReport, type DeckLip } from './audio';
 import { resolveLighting, type LightingPositionsReport } from './lighting';
 import { resolveScenic, type ScenicReport } from './scenic';
+import { resolveBroadcast, type BroadcastReport } from './broadcast';
 import type { Project } from '../schema';
 import { resolveDeck, type DeckLayout } from './deck';
 import { resolveLedWall, type LedLayout } from './led';
@@ -21,6 +22,7 @@ export interface ProductionReport {
   audio: AudioReport | null;
   lightingPositions: LightingPositionsReport | null;
   scenic: ScenicReport | null;
+  broadcast: BroadcastReport | null;
 }
 
 export interface SceneGraph {
@@ -139,24 +141,26 @@ export function resolveScene(project: Project): SceneGraph {
   }
 
   // ── Presenter scale figure (1.75 m)
+  const py = Math.min(D * 0.38, 2400);
+  const presenterAt: [number, number, number] = [0, py, Math.max(H, deckTopAt(0, py))];
   if (project.presenter.visible) {
-    const py = Math.min(D * 0.38, 2400);
     objects.push({
       id: 'REF.PRESENTER', label: 'Presenter scale figure (1.75 m)', layer: '00_REFERENCE', system: 'reference', group: 'presenter',
       parts: [
         { kind: 'cyl', from: [0, 0, 0], to: [0, 0, 1480], r: 170, mat: 'presenter' },
         { kind: 'cyl', from: [0, 0, 1530], to: [0, 0, 1750], r: 105, mat: 'presenter' },
       ],
-      position: [0, py, Math.max(H, deckTopAt(0, py))], rotationZ: 0, meta: { height: 1750 },
+      position: presenterAt, rotationZ: 0, meta: { height: 1750 },
     });
   }
 
   // ── Audience seating
   let seating: SeatingReport | null = null;
+  let seatObjects: typeof objects = [];
   if (project.seating?.enabled) {
     const chair = getCatalogItem<Chair>(project.seating.chairId, 'chair');
     const r = resolveSeating(project.seating, chair, { stageWidth: W, stageDepth: D, keepOut: deck.layout.keepOut, apronDepth: deck.layout.apron?.depth ?? 0 });
-    seating = r.report; addBlocks([r.block]); objects.push(...r.objects); annotations.push(...r.annotations); warnings.push(...r.warnings);
+    seating = r.report; addBlocks([r.block]); seatObjects = r.objects; annotations.push(...r.annotations); warnings.push(...r.warnings);
     if (seating.count) {
       // sightline: steepest look-up from the front row to the top of the main LED surface
       const main = led[0];
@@ -175,6 +179,22 @@ export function resolveScene(project: Project): SceneGraph {
       { stageWidth: W, stageDepth: D, stageTop: H, downstageY: 0, lip });
     audio = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings);
   }
+
+  // ── Broadcast: cameras, platforms, track, prompters (may remove seats under camera positions)
+  let broadcast: BroadcastReport | null = null;
+  if (project.broadcast?.enabled) {
+    const r = resolveBroadcast(project.broadcast, {
+      stageWidth: W, stageDepth: D, stageTop: H, deckTopAt, lip, presenter: presenterAt,
+      seating: seating && project.seating ? { report: seating, params: project.seating, seats: seatObjects } : null,
+      frontTruss: frontRun ? { y: frontRun.center[1], bottom: frontRun.bottom, length: frontRun.length } : null,
+    });
+    broadcast = r.report; addBlocks(r.blocks); objects.push(...r.objects); annotations.push(...r.annotations); warnings.push(...r.warnings);
+    if (r.kills.size && seating) {
+      seatObjects = seatObjects.filter((o) => !r.kills.has(o.id));
+      seating = { ...seating, count: seatObjects.length, seatKills: r.kills.size };
+    }
+  }
+  objects.push(...seatObjects);
 
   // ── Scenic (portal, masking, upstage drape)
   let scenic: ScenicReport | null = null;
@@ -226,10 +246,12 @@ export function resolveScene(project: Project): SceneGraph {
     hmin[0] = Math.min(hmin[0], seating.min[0]); hmin[1] = Math.min(hmin[1], seating.min[1]);
     hmax[0] = Math.max(hmax[0], seating.max[0]); hmax[1] = Math.max(hmax[1], seating.max[1]);
   }
+  const bp = broadcast?.platform;
+  if (bp) { hmin[1] = Math.min(hmin[1], bp.yFront - bp.depth - 500); hmin[0] = Math.min(hmin[0], -bp.width / 2 - 2500); hmax[0] = Math.max(hmax[0], bp.width / 2 + 2500); }
 
   return {
     objects, blocks, annotations, warnings,
-    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions, scenic },
+    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions, scenic, broadcast },
     bounds: { min, max },
     houseBounds: { min: hmin, max: hmax },
   };

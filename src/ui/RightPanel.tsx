@@ -1,3 +1,4 @@
+import { CAMERA_BODY, lensState, shotFor } from '../core/engine/broadcast';
 import { useMemo, useState, type ReactNode } from 'react';
 import { CATALOG } from '../core/catalog';
 import type { SceneGraph } from '../core/engine/scene';
@@ -80,6 +81,7 @@ function Production() {
           {r.seating && <Metric label="Seats" value={r.seating.count.toLocaleString()} sub={`${r.seating.rows} rows · ${r.seating.wheelchairSpaces} wheelchair`} />}
           {r.audio && <Metric label="PA" value={`${r.audio.mainsPerSide}/side`} sub={`${r.audio.subs} subs · ${r.audio.frontFills} fills · ${r.audio.monitors} wedges`} />}
           {r.scenic && <Metric label="Scenic" value={[r.scenic.portal && 'Portal', r.scenic.maskingLegs && `${r.scenic.maskingLegs} legs`, r.scenic.drape && 'Drape'].filter(Boolean).join(' · ')} sub={r.scenic.portal ? `Opening ${formatLength(r.scenic.portal.opening.width, u)} × ${formatLength(r.scenic.portal.opening.height, u)}` : 'Soft goods'} />}
+          {r.broadcast && r.broadcast.cameras.length > 0 && <Metric label="Cameras" value={String(r.broadcast.cameras.length)} sub={[r.broadcast.platform && `FOH ${formatLength(-r.broadcast.platform.yFront, u)}`, r.broadcast.rail && 'rail', r.broadcast.seatKills && `${r.broadcast.seatKills} seat kills`].filter(Boolean).join(' · ')} />}
           {r.lightingPositions && <Metric label="LX positions" value={`${r.lightingPositions.electrics} electrics`} sub={`${r.lightingPositions.booms} booms · ${r.lightingPositions.fixtureTotal} fixtures`} />}
         </div>
         {r.led.map((l) => (
@@ -175,6 +177,10 @@ function groupTitle(g: string, scene: SceneGraph) {
   if (g.startsWith('elx:')) return `Electric ${g.slice(4)}`;
   if (g === 'boom:l') return 'Lighting boom — house left';
   if (g === 'boom:r') return 'Lighting boom — house right';
+  if (g === 'bcast:platform') return 'Camera platforms';
+  if (g === 'bcast:rail') return 'Camera track';
+  if (g === 'bcast:prompters') return 'Prompters & confidence monitors';
+  if (g.startsWith('bcast:cam')) { const c = scene.report.broadcast?.cameras.find((x) => x.group === g); return c ? `${c.name} — ${c.role}` : 'Camera'; }
   if (g === 'scenic:portal') return 'Portal';
   if (g === 'scenic:masking') return 'Masking legs';
   if (g === 'scenic:drape') return 'Upstage drape';
@@ -225,6 +231,7 @@ function GroupRows({ group, scene, u }: { group: string; scene: SceneGraph; u: D
     if (group === 'scenic:masking') return (<><Row k="Legs" v={`${S.maskingLegs} (${S.maskingLegs / 2} pairs)`} /><p className="muted small">Soft goods drawn flat; fullness and pipes not modelled.</p></>);
     if (group === 'scenic:drape' && S.drape) return <Row k="Size" v={`${formatLength(S.drape.width, u)} × ${formatLength(S.drape.height, u)}`} />;
   }
+  if (group.startsWith('bcast:') && r.broadcast) return <BroadcastRows group={group} u={u} />;
   const RA = group.startsWith('riser:') ? r.stage.areas.find((a) => a.group === group) : undefined;
   if (RA) return (<>
     <Row k="Size" v={`${formatLength(RA.maxX - RA.minX, u, { precise: true })} × ${formatLength(RA.maxY - RA.minY, u, { precise: true })}`} />
@@ -322,4 +329,48 @@ function Warnings() {
       </div></div>
     </section>
   );
+}
+
+function BroadcastRows({ group, u }: { group: string; u: DisplayUnits }) {
+  const r = useStore((s) => s.scene.report.broadcast)!;
+  const setShot = useStore((s) => s.setShot);
+  const cam = r.cameras.find((c) => c.group === group);
+  if (cam) {
+    const tight = shotFor(cam, 'mcu', r.presenter, r.stageWidth);
+    const st = lensState(cam.lens, tight.focal);
+    return (<>
+      <Row k="Camera" v={`${CAMERA_BODY.manufacturer} ${CAMERA_BODY.model}`} />
+      <Row k="Lens" v={`${cam.lens.manufacturer} ${cam.lens.model}`} />
+      <Row k="Range" v={`${cam.lens.fMin}–${cam.lens.fMax} mm (×${cam.lens.extender})`} />
+      <Row k="To presenter" v={formatLength(cam.distance, u)} />
+      <Row k="Lens height" v={formatLength(cam.pivot[2], u, { precise: true })} />
+      <Row k="MCU needs" v={`${Math.round(tight.focal)} mm${st.outOfRange ? ' — out of range' : st.extender ? ' (extender)' : ''}`} />
+      <Row k="Crew" v={cam.crew === 'robotic' ? 'Robotic (remote operator)' : 'Operator'} />
+      <button className="disclose" onClick={() => setShot({ cam: cam.id, shot: 'mcu', focal: null })}>Look through {cam.name} →</button>
+    </>);
+  }
+  if (group === 'bcast:platform' && r.platform) return (<>
+    <Row k="FOH platform" v={`${formatLength(r.platform.width, u)} × ${formatLength(r.platform.depth, u)}`} />
+    <Row k="Height" v={formatLength(r.platform.height, u, { precise: true })} />
+    <Row k="Position" v={`${r.platform.placement === 'back' ? 'Back of house' : 'In the house'} · ${formatLength(-r.platform.yFront, u)} from stage`} />
+    {r.sidePlatformHeight != null && <Row k="Side platforms" v={formatLength(r.sidePlatformHeight, u, { precise: true })} />}
+    <Row k="Seat kills" v={String(r.seatKills)} />
+    <p className="muted small">Height is set from the sightline over the heads in front, in 8″ steps of 4′ × 4′ modular platform. Guards above 30″ (IBC 1015.2).</p>
+  </>);
+  if (group === 'bcast:rail' && r.rail) return (<>
+    <Row k="Track" v={`${formatLength(r.rail.length, u)}${r.rail.curved && r.rail.radius ? ` · ${formatLength(r.rail.radius, u)} radius` : ' straight'}`} />
+    <Row k="Dolly" v={`Ross Furio SE · ${r.rail.head}`} />
+    <Row k="Lens height" v={formatLength(r.rail.lensHeight, u, { precise: true })} />
+    <Row k="Payload" v={`${r.rail.payloadKg.toFixed(1)} kg`} />
+    <Row k="Stage → front row" v={`${formatLength(r.rail.gap, u, { precise: true })} (needs ${formatLength(r.rail.needed, u, { precise: true })})`} />
+    <p className="muted small">360 mm gauge track, 890 × 460 mm dolly, up to 30 m and 3 m radius (Ross Furio SE brochure).</p>
+  </>);
+  if (group === 'bcast:prompters') return (<>
+    <Row k="Presidential glass" v={r.prompters.presidential ? `${r.prompters.presidential} (17″)` : 'none'} />
+    <Row k="Downstage monitors" v={r.prompters.dsm ? `${r.prompters.dsm} × 55″ ${r.prompters.dsmMode === 'recessed' ? 'in the deck' : 'on stands'}` : 'none'} />
+    <Row k="FOH screens" v={r.prompters.foh ? `${r.prompters.foh} × 85″ ${r.prompters.fohMode === 'truss' ? 'hung' : 'on stands'}` : 'none'} />
+    {r.prompters.onCamera && <Row k="On-camera" v="Autoscript EPIC-IP19 on the rail" />}
+    <p className="muted small">Monitor sizes are generic. Readable distance ≈ 0.35 m per inch of diagonal, scaled from Autocue's 17″ / 6 m.</p>
+  </>);
+  return null;
 }

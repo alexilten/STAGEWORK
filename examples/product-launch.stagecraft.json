@@ -78,12 +78,14 @@
       "perBatten": 8,
       "firstAt": 1000,
       "spacing": 1500,
-      "trim": 7000
+      "trim": 7000,
+      "fixtureId": "robe.megapointe"
     },
     "booms": {
-      "enabled": false,
-      "perBoom": 4,
-      "height": 4000
+      "enabled": true,
+      "perBoom": 3,
+      "height": 4500,
+      "fixtureId": "chauvet.maverick-storm-1-wash"
     }
   },
   "presenter": {
@@ -114,5 +116,46 @@
     "frontFills": 4,
     "monitorSpeakerId": "generic.wedge",
     "monitors": 4
+  },
+  "scenic": {
+    "portal": {
+      "enabled": false,
+      "margin": 300,
+      "legWidth": 1200,
+      "headerHeight": 1200,
+      "thickness": 150,
+      "finish": "white"
+    },
+    "masking": {
+      "enabled": true,
+      "pairs": 2,
+      "legWidth": 1830,
+      "height": 6000
+    },
+    "drape": {
+      "enabled": true
+    }
+  },
+  "broadcast": {
+    "enabled": true,
+    "foh": {
+      "cameras": 2,
+      "placement": "auto",
+      "distance": 25000,
+      "standing": false
+    },
+    "sideCams": true,
+    "rail": {
+      "enabled": true,
+      "length": 9000,
+      "prompter": false
+    },
+    "handheld": true,
+    "prompters": {
+      "presidential": true,
+      "dsm": "stand",
+      "dsmCount": 2,
+      "foh": "truss"
+    }
   }
 }

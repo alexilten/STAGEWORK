@@ -16,7 +16,7 @@ import type { MaterialKey, Part, SceneObject, SystemKey } from '../core/engine/t
 import type { StageFinish } from '../core/schema';
 import { APP_VERSION } from './rhino';
 
-type Mat = { name: string; rgb: [number, number, number]; metal: number; rough: number; emissive?: [number, number, number] };
+type Mat = { name: string; rgb: [number, number, number]; metal: number; rough: number; emissive?: [number, number, number]; alpha?: number };
 
 const FINISH: Record<StageFinish, [number, number, number]> = { white: [242, 241, 238], black: [27, 27, 29], graphite: [58, 58, 61], oak: [185, 154, 116] };
 function materialTable(finish: StageFinish, scenic: StageFinish): Record<MaterialKey | 'ledFace', Mat> {
@@ -38,6 +38,10 @@ function materialTable(finish: StageFinish, scenic: StageFinish): Record<Materia
     speakerGrille: { name: 'SC_Speaker_Grille', rgb: [12, 12, 14], metal: 0.5, rough: 0.45 },
     scenicFlat: { name: `SC_Scenic_Flat_${scenic}`, rgb: FINISH[scenic], metal: 0, rough: 0.8 },
     drape: { name: 'SC_Drape_Black_Velour', rgb: [14, 14, 15], metal: 0, rough: 1 },
+    camera: { name: 'SC_Camera', rgb: [38, 38, 42], metal: 0.4, rough: 0.5 },
+    platform: { name: 'SC_Camera_Platform', rgb: [30, 30, 32], metal: 0, rough: 0.9 },
+    glass: { name: 'SC_Prompter_Glass', rgb: [200, 214, 224], metal: 0, rough: 0.05, alpha: 0.25 },
+    screen: { name: 'SC_Monitor_Screen', rgb: [12, 16, 26], metal: 0.1, rough: 0.2, emissive: [0.05, 0.08, 0.14] },
   };
 }
 
@@ -141,8 +145,9 @@ export function exportGlb(scene: SceneGraph, projectName: string, opts: GlbOptio
       const m = mats[k];
       materials.push({
         name: m.name,
-        pbrMetallicRoughness: { baseColorFactor: [...m.rgb.map(srgbToLinear), 1], metallicFactor: m.metal, roughnessFactor: m.rough },
+        pbrMetallicRoughness: { baseColorFactor: [...m.rgb.map(srgbToLinear), m.alpha ?? 1], metallicFactor: m.metal, roughnessFactor: m.rough },
         ...(m.emissive ? { emissiveFactor: m.emissive } : {}),
+        ...(m.alpha != null ? { alphaMode: 'BLEND', doubleSided: true } : {}),
       });
       matIndex.set(k, materials.length - 1);
     }
