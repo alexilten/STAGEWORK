@@ -99,6 +99,26 @@ export function buildTrussRun(
 
 /** Fixture hung under a truss; origin = clamp point at the truss bottom chord. Head points down. */
 export function fixtureParts(f: Fixture): Part[] {
+  if (f.form === 'batten') {
+    // a long tilting bar on two brackets, hanging under the pipe
+    const w = f.width / 2, l = f.length / 2;
+    return [
+      { kind: 'cyl', from: [-w * 0.6, 0, 0], to: [-w * 0.6, 0, -40], r: 20, mat: 'fixture' },
+      { kind: 'cyl', from: [w * 0.6, 0, 0], to: [w * 0.6, 0, -40], r: 20, mat: 'fixture' },
+      { kind: 'box', min: [-w, -l, -f.height], max: [w, l, -40], mat: 'fixture' },
+    ];
+  }
+  if (f.form === 'ellipsoidal') {
+    // yoke + barrel pointing +Y (upstage from a front-of-house position)
+    const r = f.width * 0.32, zc = -f.height * 0.55, yokeT = 14;
+    return [
+      { kind: 'cyl', from: [0, 0, 0], to: [0, 0, -60], r: 20, mat: 'fixture' },
+      { kind: 'box', min: [-f.width / 2, -yokeT / 2, zc], max: [-f.width / 2 + yokeT, yokeT / 2, -60], mat: 'fixture' },
+      { kind: 'box', min: [f.width / 2 - yokeT, -yokeT / 2, zc], max: [f.width / 2, yokeT / 2, -60], mat: 'fixture' },
+      { kind: 'box', min: [-r, -f.length * 0.45, zc - r], max: [r, -f.length * 0.1, zc + r], mat: 'fixture' },
+      { kind: 'cyl', from: [0, -f.length * 0.1, zc], to: [0, f.length * 0.55, zc], r: r * 0.75, mat: 'fixture' },
+    ];
+  }
   const baseH = Math.round(f.height * 0.28);
   const headR = f.width * 0.38;
   const yokeT = 18;

@@ -3,6 +3,7 @@ import type { CatalogItem, Chair, DeckSystem, Fixture, Hoist, LedCabinet, Speake
 export * from './types';
 
 const ACCESSED = '2026-10-23';
+const ACCESS2 = '2026-10-24';
 
 /* ───────────────────────────── LED cabinets ───────────────────────────── */
 
@@ -68,6 +69,22 @@ export const LED_CABINETS: LedCabinet[] = [
     weightKg: null, powerMaxW: null, powerAvgW: null,
     curveConcaveMaxDeg: 7.5, curveConvexMaxDeg: 7.5,
     sources: [{ label: 'Generic planning cabinet — typical of 2.6 mm touring products' }],
+  },
+  {
+    id: 'roe.cb5-mkii',
+    category: 'led-cabinet',
+    manufacturer: 'ROE Visual',
+    model: 'Carbon CB5 MKII (600 × 1200)',
+    verification: 'secondary',
+    width: 600, height: 1200, depth: 79,
+    pixelPitch: 5.77, pixelsW: 104, pixelsH: 208,
+    weightKg: 12.2, powerMaxW: 480, powerAvgW: 240,
+    curveConcaveMaxDeg: 15, curveConvexMaxDeg: 10,
+    sources: [
+      { label: '4Wall Entertainment rental listing — ROE CB5 MKII', url: 'https://europe.4wall.com/rentals/9759078/5-77mm-roe-cb5-mkii', accessed: ACCESS2,
+        note: '600 × 1200 × 79 mm, 5.77 mm, 104 × 208 px, 12.2 kg, 480 W max / 240 W typical, concave 15° to convex 10°' },
+    ],
+    notes: ['Large-format rental panel for IMAG side screens and big backdrops.'],
   },
   {
     id: 'generic.led-600x337.5-1.5',
@@ -175,6 +192,88 @@ export const FIXTURES: Fixture[] = [
     sources: [
       { label: 'Full Compass product listing — Martin MAC Aura XB', url: 'https://www.fullcompass.com/prod/276614-martin-pro-mac-aura-xb-mac-aura-xb-compact-led-wash-light-fixture', accessed: ACCESSED },
     ],
+  },
+  {
+    id: 'robe.megapointe',
+    category: 'fixture',
+    manufacturer: 'Robe',
+    model: 'MegaPointe',
+    fixtureType: 'spot',
+    verification: 'manufacturer',
+    length: 230, width: 396, height: 640,
+    weightKg: 22, powerMaxW: 670,
+    mounting: 'Omega brackets with quarter-turn clamps; any orientation',
+    sources: [
+      { label: 'Robe — MegaPointe leaflet (PDF)', url: 'https://www.robe.cz/res/downloads/catalogues/ROBE_MegaPointe_leaflet.pdf', accessed: ACCESS2,
+        note: 'H 640 mm (head vertical) × W 396 mm × D 230 mm, 22 kg, 670 W at 230 V' },
+    ],
+    notes: ['Robe lists 670 W at 230 V without calling it a maximum; used as the planning max.'],
+  },
+  {
+    id: 'ayrton.perseo-s',
+    category: 'fixture',
+    manufacturer: 'Ayrton',
+    model: 'Perseo-S (IP65 profile)',
+    fixtureType: 'profile',
+    verification: 'secondary',
+    length: 330, width: 490, height: 710,
+    weightKg: 38.8, powerMaxW: 800,
+    mounting: 'Omega brackets; IP65 for outdoor use',
+    sources: [
+      { label: 'Full Compass product listing — Ayrton Perseo-S', url: 'https://fullcompass.com/prod/625947-ayrton-perseo-s-500w-ip65-led-profile-7-to-56-degree', accessed: ACCESS2,
+        note: '490 × 710 × 330 mm (l × h × d), 38.8 kg, 800 W max' },
+    ],
+  },
+  {
+    id: 'chauvet.maverick-storm-1-wash',
+    category: 'fixture',
+    manufacturer: 'Chauvet Professional',
+    model: 'Maverick Storm 1 Wash',
+    fixtureType: 'wash',
+    verification: 'manufacturer',
+    length: 319, width: 414, height: 477,
+    weightKg: 27, powerMaxW: 477,
+    mounting: 'Omega brackets; IP65 for outdoor use',
+    sources: [
+      { label: 'Chauvet Professional — Maverick Storm 1 Wash spec sheet (PDF)', url: 'https://chauvetprofessional.com/wp-content/uploads/pdf/en/MAVERICKSTORM1WASH.pdf', accessed: ACCESS2,
+        note: '319 × 414 × 477 mm, 27 kg, 477 W at 120 V' },
+    ],
+    notes: ['The sheet gives 319 × 414 × 477 mm without axis labels; read as length × width × height.', '477 W is the highest listed draw (120 V); used as the planning max.'],
+  },
+  {
+    id: 'glp.impression-x4-bar-20',
+    category: 'fixture',
+    manufacturer: 'GLP',
+    model: 'impression X4 Bar 20',
+    fixtureType: 'wash',
+    form: 'batten',
+    verification: 'manufacturer',
+    length: 100, width: 1000, height: 240,
+    weightKg: 16, powerMaxW: null, powerTypW: 400,
+    mounting: 'Two omega brackets; tilting batten',
+    sources: [
+      { label: 'GLP — impression X4 Bar 20 product page', url: 'https://www.glp.de/en/products/moving-lights-led/impression-x4-bar-20', accessed: ACCESS2,
+        note: '1000 mm long (across yoke) × 100 mm wide × 240 mm high, 16 kg net, typical power 400 W at 230 V' },
+    ],
+    notes: ['GLP publishes typical power only (400 W); no maximum is shown, so power totals leave this fixture out.'],
+  },
+  {
+    id: 'etc.s4-led-s3-lustr',
+    category: 'fixture',
+    manufacturer: 'ETC',
+    model: 'Source Four LED Series 3 Lustr X8',
+    fixtureType: 'profile',
+    form: 'ellipsoidal',
+    verification: 'secondary',
+    length: 600, width: 300, height: 450,
+    weightKg: 8.87, powerMaxW: null, powerTypW: 305,
+    mounting: 'C-clamp on yoke',
+    sources: [
+      { label: 'Full Compass product listing — ETC Source Four LED Series 3 Lustr X8', url: 'https://www.fullcompass.com/prod/599947-etc-source-four-led-series-3-s4-led-series-3-light-engine-only-lustr-x8-black', accessed: ACCESS2,
+        note: '8.87 kg with barrel (6.76 kg without); typical 307 W at 120 V / 305 W at 230 V' },
+      { label: 'ETC S4LEDS3LS spec sheet (via dealer)', url: 'https://goknight.com/content/documentation/S4LEDS3LS Spec Sheet.pdf', accessed: ACCESS2, note: 'lens-tube lengths only, e.g. 26°–50° XDLT 190 mm' },
+    ],
+    notes: ['ETC lists weight and typical power but no overall dimensions; the 600 × 300 × 450 mm envelope (with a 26° lens tube) is a planning estimate.'],
   },
 ];
 

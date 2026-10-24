@@ -30,16 +30,17 @@ const DEG = Math.PI / 180;
 const fixtureKey = (f: Fixture) => `SC_FIX_${f.manufacturer}_${f.model}`.replace(/[^\w]+/g, '_');
 
 export function resolveLighting(
-  p: LightingParams, fx: Fixture, trussSys: TrussSystem, hoist: Hoist, ctx: LightingContext,
+  p: LightingParams, getFixture: (id: string) => Fixture, trussSys: TrussSystem, hoist: Hoist, ctx: LightingContext,
 ) {
   const objects: SceneObject[] = [];
   const blocks = new Map<string, BlockDef>();
   const warnings: Warning[] = [];
   const addBlock = (b: BlockDef) => { if (!blocks.has(b.key)) blocks.set(b.key, b); return b.key; };
-  const fKey = addBlock({ key: fixtureKey(fx), description: `${fx.manufacturer} ${fx.model}`, catalogId: fx.id, parts: fixtureParts(fx) });
   let fixtureTotal = 0;
 
-  const hangFixtures = (prefix: string, group: string, n: number, at: (i: number) => { pos: Vec3; rotationZ: number; tilt?: number; note: string }) => {
+  // each position can carry its own fixture; it falls back to the rig's main fixture
+  const hangFixtures = (fx: Fixture, prefix: string, group: string, n: number, at: (i: number) => { pos: Vec3; rotationZ: number; tilt?: number; note: string }) => {
+    const fKey = addBlock({ key: fixtureKey(fx), description: `${fx.manufacturer} ${fx.model}`, catalogId: fx.id, parts: fixtureParts(fx) });
     for (let i = 0; i < n; i++) {
       const a = at(i);
       objects.push({
@@ -53,8 +54,9 @@ export function resolveLighting(
 
   // ── overhead electrics: horizontal battens spanning the stage width
   const e = p.electrics;
+  const elxFx = getFixture(e.fixtureId ?? p.fixtureId);
   const asked = Math.max(0, Math.round(e.count));
-  let nE = 0;
+  let nE = 0, perBatten = 0;
   for (let b = 0; b < asked; b++) {
     const y = e.firstAt + b * e.spacing;
     if (y > ctx.stageDepth - 200 && b > 0) break; // the rest would sit past the upstage edge
@@ -65,9 +67,11 @@ export function resolveLighting(
     });
     for (const o of run.objects) { o.layer = o.layer === '30_RIGGING::30_01_TRUSS' ? '40_LIGHTING::40_03_POSITIONS' : o.layer; o.system = 'lighting'; }
     run.blocks.forEach(addBlock); objects.push(...run.objects);
-    const m = Math.max(0, Math.round(e.perBatten));
-    const usable = run.run.length - 600;
-    hangFixtures(`FIX.ELX${b + 1}`, `elx:${b + 1}`, m, (i) => ({
+    // battens (bar fixtures) sit end to end, so never more than fit along the pipe
+    const m = Math.min(Math.max(0, Math.round(e.perBatten)), Math.floor((run.run.length - 300) / (elxFx.width + 50)));
+    const usable = run.run.length - 300 - elxFx.width;
+    perBatten = m;
+    hangFixtures(elxFx, `FIX.ELX${b + 1}`, `elx:${b + 1}`, m, (i) => ({
       pos: [m === 1 ? 0 : -usable / 2 + (usable * i) / (m - 1), yy, run.run.bottom], rotationZ: 0, note: `Electric ${b + 1} #${i + 1}`,
     }));
     const clash = ctx.led.find((L) => yy > L.minY - 400 && yy < L.maxY + 400 && run.run.bottom - 700 < L.top);
@@ -76,10 +80,13 @@ export function resolveLighting(
   }
   if (nE > 0 && e.trim < ctx.stageTop + 3000)
     warnings.push({ level: 'warn', code: 'light.elx.trim', target: 'elx:1', message: `Electrics trim is only ${Math.round(e.trim - ctx.stageTop)} mm above the deck — check head clearance and sightlines.` });
+  if (nE > 0 && perBatten < Math.round(e.perBatten))
+    warnings.push({ level: 'info', code: 'light.elx.full', target: 'elx:1', message: `Only ${perBatten} × ${elxFx.model} fit along each ${Math.round(ctx.stageWidth / 100) / 10} m batten.` });
   if (nE < asked)
     warnings.push({ level: 'info', code: 'light.elx.fit', target: 'elx:1', message: `Only ${nE} of ${asked} electrics fit over the stage depth at this spacing.` });
   // ── side booms on the deck, house left (−X) and right (+X): a vertical pipe with side-mounted fixtures aimed inboard
   const bm = p.booms;
+  const boomFx = getFixture(bm.fixtureId ?? p.fixtureId);
   let booms = 0;
   if (bm.enabled && bm.perBoom > 0) {
     const pipeR = 24;
@@ -101,7 +108,7 @@ export function resolveLighting(
       });
       const m = Math.max(0, Math.round(bm.perBoom));
       const lo = 600, hi = bm.height - 300;
-      hangFixtures(`FIX.BOOM${side < 0 ? 'L' : 'R'}`, `boom:${side < 0 ? 'l' : 'r'}`, m, (i) => ({
+      hangFixtures(boomFx, `FIX.BOOM${side < 0 ? 'L' : 'R'}`, `boom:${side < 0 ? 'l' : 'r'}`, m, (i) => ({
         // head points inboard: pitch 90° (head to horizontal) then yaw so it aims across the stage
         pos: [side * bx, by, base + (m === 1 ? hi : lo + ((hi - lo) * i) / (m - 1))],
         rotationZ: side < 0 ? -Math.PI / 2 : Math.PI / 2, tilt: 90 * DEG,
@@ -111,7 +118,7 @@ export function resolveLighting(
     }
   }
 
-  const report: LightingPositionsReport = { electrics: nE, perBatten: Math.round(e.perBatten), booms, perBoom: Math.round(bm.perBoom), fixtureTotal };
+  const report: LightingPositionsReport = { electrics: nE, perBatten, booms, perBoom: Math.round(bm.perBoom), fixtureTotal };
   return { report, objects, blocks: [...blocks.values()], warnings };
 }
 

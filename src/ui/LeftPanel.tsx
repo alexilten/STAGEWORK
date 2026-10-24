@@ -10,6 +10,8 @@ const ASPECTS: { label: string; r: number }[] = [
   { label: '16:9', r: 16 / 9 }, { label: '21:9', r: 21 / 9 }, { label: '32:9', r: 32 / 9 }, { label: '4:1', r: 4 },
 ];
 
+const FIXTURE_OPTIONS = FIXTURES.map((f) => ({ value: f.id, label: `${f.manufacturer} ${f.model}`, badge: f.form === 'batten' ? 'batten' : f.fixtureType }));
+
 export function LeftPanel() {
   const project = useStore((s) => s.project);
   const scene = useStore((s) => s.scene);
@@ -134,15 +136,17 @@ export function LeftPanel() {
 
         <Section title="Lighting" defaultOpen={false} summary={`${scene.report.fixtures?.count ?? 0} FOH · ${scene.report.lightingPositions?.fixtureTotal ?? 0} positions`}>
           <Toggle label="Lighting" checked={project.lighting.enabled} onChange={(v) => edit((p) => { p.lighting.enabled = v; })} />
-          <Select label="Fixture" value={project.lighting.fixtureId} options={FIXTURES.map((f) => ({ value: f.id, label: `${f.manufacturer} ${f.model}` }))} onChange={(v) => edit((p) => { p.lighting.fixtureId = v; })} />
+          <Select label="FOH fixture" value={project.lighting.fixtureId} options={FIXTURE_OPTIONS} onChange={(v) => edit((p) => { p.lighting.fixtureId = v; })} />
           <NumberControl label="FOH count" value={project.lighting.count} min={0} max={30} step={1} disabled={!project.lighting.enabled || !project.rigging.front.enabled}
             hint={!project.rigging.front.enabled ? 'Enable the front truss to hang fixtures' : 'Evenly spaced on the front truss'}
             onChange={(v) => edit((p) => { p.lighting.count = v; }, 'light.count')} />
           <div className="sub-label">Overhead electrics</div>
+          <Select label="Electrics fixture" value={project.lighting.electrics.fixtureId ?? project.lighting.fixtureId} options={FIXTURE_OPTIONS} onChange={(v) => edit((p) => { p.lighting.electrics.fixtureId = v; })} />
           <NumberControl label="Battens" value={project.lighting.electrics.count} min={0} max={8} step={1} disabled={!project.lighting.enabled}
             hint={scene.report.lightingPositions ? <>{scene.report.lightingPositions.electrics < project.lighting.electrics.count ? `${scene.report.lightingPositions.electrics} of ${project.lighting.electrics.count} fit` : scene.report.lightingPositions.electrics} over the stage · {scene.report.lightingPositions.electrics * scene.report.lightingPositions.perBatten} fixtures</> : 'Battens over the stage'}
             onChange={(v) => edit((p) => { p.lighting.electrics.count = v; }, 'light.elx.n')} />
           <NumberControl label="Fixtures per batten" value={project.lighting.electrics.perBatten} min={0} max={24} step={1} disabled={!project.lighting.enabled}
+            hint={scene.report.lightingPositions && scene.report.lightingPositions.perBatten < project.lighting.electrics.perBatten ? `${scene.report.lightingPositions.perBatten} fit along the batten` : undefined}
             onChange={(v) => edit((p) => { p.lighting.electrics.perBatten = v; }, 'light.elx.m')} />
           <LengthControl label="Electrics trim" units={u} value={project.lighting.electrics.trim} min={3000} max={14000} step={100} disabled={!project.lighting.enabled}
             onChange={(v) => edit((p) => { p.lighting.electrics.trim = v; }, 'light.elx.trim')} />
@@ -152,6 +156,7 @@ export function LeftPanel() {
             onChange={(v) => edit((p) => { p.lighting.electrics.spacing = v; }, 'light.elx.sp')} />
           <div className="sub-label">Side booms</div>
           <Toggle label="Side booms (L/R)" checked={project.lighting.booms.enabled} onChange={(v) => edit((p) => { p.lighting.booms.enabled = v; })} />
+          {project.lighting.booms.enabled && <Select label="Boom fixture" value={project.lighting.booms.fixtureId ?? project.lighting.fixtureId} options={FIXTURE_OPTIONS} onChange={(v) => edit((p) => { p.lighting.booms.fixtureId = v; })} />}
           <NumberControl label="Fixtures per boom" value={project.lighting.booms.perBoom} min={0} max={12} step={1} disabled={!project.lighting.enabled || !project.lighting.booms.enabled}
             onChange={(v) => edit((p) => { p.lighting.booms.perBoom = v; }, 'light.boom.m')} />
           <LengthControl label="Boom height" units={u} value={project.lighting.booms.height} min={1500} max={7000} step={100} disabled={!project.lighting.enabled || !project.lighting.booms.enabled}

@@ -272,7 +272,7 @@ function CatalogRows({ id, u }: { id: string; u: DisplayUnits }) {
     case 'fixture': return (<>
       <Row k="Size" v={`${c.length} × ${c.width} × ${c.height} mm`} />
       <Row k="Weight" v={c.weightKg != null ? `${c.weightKg} kg` : '—'} />
-      <Row k="Power" v={c.powerMaxW != null ? `${c.powerMaxW} W max` : '—'} />
+      <Row k="Power" v={c.powerMaxW != null ? `${c.powerMaxW} W max` : c.powerTypW != null ? `${c.powerTypW} W typical` : '—'} />
     </>);
     case 'hoist': return <Row k="Capacity" v={`${c.capacityKg} kg`} />;
     case 'chair': return (<>
