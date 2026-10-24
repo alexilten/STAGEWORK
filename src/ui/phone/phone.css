@@ -69,7 +69,8 @@
 .phone-viewbar { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); border-radius: 12px; padding: 3px; display: flex; gap: 2px; align-items: center; z-index: 6; animation: riseB 0.7s var(--ease) both 0.15s; }
 .phone-viewbar .segmented { background: transparent; }
 .phone-viewbar .segmented button { height: 28px; padding: 0 8px; font-size: 12px; }
-.phone-viewbar .icon-btn { width: 30px; height: 28px; }
+.phone-viewbar .icon-btn { width: 28px; height: 28px; }
+.phone-viewbar .segmented button { padding: 0 7px; }
 
 /* bottom dock: content above, icon tabs at the thumb */
 .phone-dock { position: absolute; left: var(--pad); right: var(--pad); bottom: var(--safe-bottom); height: calc(var(--dock-h) - var(--pad)); border-radius: 20px; display: flex; flex-direction: column-reverse; overflow: hidden; z-index: 6; animation: riseB2 0.7s var(--ease) both 0.1s; }
@@ -93,3 +94,17 @@
 @keyframes cardIn { from { opacity: 0; transform: translateY(-6px) scale(.99); } to { opacity: 1; transform: none; } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes riseB2 { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* screen media inside the more menu: its own menu covers the more menu */
+.phone-menu .media-wrap { position: static; margin: 0; }
+.phone-menu .media-menu { top: 0; left: 0; right: 0; width: auto; z-index: 2; }
+
+/* camera view: the stage band takes the whole screen, the frame and shot bar sit on top */
+body[data-shot="1"] .phone-stage { top: 0; bottom: 0; }
+body[data-shot="1"] .phone-sheet, body[data-shot="1"] .phone-dock, body[data-shot="1"] .phone-viewbar, body[data-shot="1"] .phone-bar { display: none; }
+.phone .shot-bar { min-width: 0; width: calc(100vw - 16px); bottom: var(--safe-bottom); }
+.phone .shot-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.phone .shot-row::-webkit-scrollbar { display: none; }
+.phone .shot-row .segmented { flex: none; }
+.phone .shot-meta { gap: 4px 12px; font-size: 11px; }
+.phone .shot-row .chip { white-space: nowrap; flex: none; }

@@ -5,6 +5,8 @@ import { Icon } from '../icons';
 import { LeftPanel } from '../LeftPanel';
 import { LayerList, Inspector, Production, Warnings } from '../RightPanel';
 import { PresetPicker } from '../PresetPicker';
+import { MediaButton } from '../MediaButton';
+import { CameraShot } from '../CameraShot';
 import { ExportMenu, openProjectFile } from '../Toolbar';
 import { exportProject } from '../../export/browser';
 import { projectForSave, useStore, type CameraView } from '../store';
@@ -37,6 +39,17 @@ export function PhoneApp() {
   const mode = useStore((s) => s.mode);
   useEffect(() => { document.body.dataset.mode = mode; }, [mode]);
   const info = useStore((s) => s.dragInfo);
+  // leaving the camera view hands the full screen back to the stage band: reframe once the canvas has resized
+  const inShot = useStore((s) => s.shot != null);
+  const wasShot = useRef(false);
+  useEffect(() => {
+    if (wasShot.current && !inShot) {
+      const t = window.setTimeout(() => { const st = useStore.getState(); st.setView(st.view); }, 150);
+      wasShot.current = inShot;
+      return () => window.clearTimeout(t);
+    }
+    wasShot.current = inShot;
+  }, [inShot]);
 
   return (
     <div className="app phone">
@@ -48,6 +61,7 @@ export function PhoneApp() {
       <PhoneBar onToast={showToast} />
       <PhoneSheet />
       <PhoneDock />
+      <CameraShot />
       {toast && <div className="toast glass">{toast}</div>}
     </div>
   );
@@ -90,6 +104,7 @@ function PhoneMenu({ onClose, onToast }: { onClose: () => void; onToast: (m: str
       <div className="phone-menu-row"><span>Units</span>
         <Segmented size="sm" value={project.units} onChange={(v) => edit((p) => { p.units = v; })} options={[{ value: 'metric', label: 'm' }, { value: 'imperial', label: 'ft' }]} />
       </div>
+      <div className="phone-menu-row"><span>Screen media</span><MediaButton onToast={onToast} /></div>
       <div className="menu-sep" />
       <input ref={fileRef} type="file" accept=".json,.3dm" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) openProjectFile(f, load, onToast); e.target.value = ''; onClose(); }} />
       <button className="menu-item" onClick={() => fileRef.current?.click()}><span className="mi"><Icon.open /> Open project</span></button>
@@ -133,10 +148,13 @@ const VIEWS: { value: CameraView; label: string }[] = [
 function PhoneViewbar() {
   const view = useStore((s) => s.view);
   const setView = useStore((s) => s.setView);
+  const cams = useStore((s) => s.scene.report.broadcast?.cameras.length ?? 0);
+  const setShot = useStore((s) => s.setShot);
   return (
     <div className="phone-viewbar glass">
       <Segmented<CameraView> size="sm" value={view} onChange={setView} options={VIEWS} />
       <button className="icon-btn" aria-label="Frame stage" onClick={() => setView(view)}><Icon.frame /></button>
+      {cams > 0 && <button className="icon-btn" aria-label="Camera view" onClick={() => setShot({ cam: 'cam1', shot: 'mcu', focal: null })}><Icon.camera /></button>}
     </div>
   );
 }
