@@ -56,6 +56,15 @@ Done:
   - **Camera view**: look through any camera with the right vertical field of view for its focal length on a 2/3″ sensor (9.6 × 5.4 mm image area), a 16:9 frame with a 90% safe guide, shot presets by frame height and a log zoom across the lens + extender range.
   Limits: planning start points for the director and camera supplier; jibs, Steadicam, PTZ, cabling, cable ramps, large-lens adaptors and camera sight lines through hanging scenery are not modelled; framing presets assume a 1.75 m presenter at the mark; monitor sizes are generic.
 - Left panel: only Stage is open when the app starts; every other section starts collapsed.
+- **Preset library: 21 presets in four categories** (Tech & Brand, Concert & Touring, EDM & Festival, Cinematic & Immersive), picked from a thumbnail gallery in the toolbar. Full list, numbers and sources in [PRESETS.md](PRESETS.md). Engine features added for them:
+  - Stage: `round` centre stage (custom circular deck, diameter = width) and `cross` (centre square + four arms of hire platforms); runway B-stage can be round.
+  - LED: arc mode by radius (concave or convex, rings capped at 360°), whole-wall yaw, elevation from the floor, LED floors (face up, floor-rated tile required: ROE Black Marble BM4, manufacturer-verified) and ceilings (face down). Non-planar walls get no header truss and are excluded from media mapping, scenic framing and drag targets.
+  - Audience: standing GA floor (front or surround) with capacity at a planning density, barricade along the deck edge at the pit depth, and raked stands (straight or arc) with a C-value check on every row.
+  - Structure (`30_04_GROUND_SUPPORT`, `30_05_GRID`, `50_05_DELAYS`): Stageco roof envelopes from published figures with PA wings and wing IMAG, a mother grid, delay towers with delay hangs, free truss members between two points.
+  - Audio: four-way PA round a centre stage, out-fill hangs.
+  - Show (`60_04_ELEMENTS`, `60_05_DJ_BOOTH`): DJ booth with CDJ-3000 footprints, scenic blocks, hemispherical LED dome of generic tiles with an optional opening.
+  - Rhino export frees openNURBS handles after each export, so stadium-size files no longer exhaust the wasm heap.
+  Limits: dome tiles, barricade, mixer, roof members and scenic blocks are generic; roofs are envelopes, not engineered structures; crowd capacity is a planning figure, not a licensed capacity; media is front-projected and only onto upright walls.
 
 Next:
 Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, Claypaky and more LED products, lighting arrangement presets, seating follow-ups (placed wheelchair spaces), jib / Steadicam / PTZ positions, camera view for any point in the house, video for screen media, richer warnings (sightlines, trim vs. venue height).

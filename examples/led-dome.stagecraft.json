@@ -1,0 +1,197 @@
+{
+  "schema": "stagecraft.project",
+  "version": 1,
+  "name": "LED Dome",
+  "presetId": "led-dome",
+  "units": "metric",
+  "stage": {
+    "width": 4876.8,
+    "depth": 2438.4,
+    "height": 304.8,
+    "deckSystemId": "generic.deck-8x4",
+    "finish": "black",
+    "fascia": true
+  },
+  "ledWalls": [],
+  "rigging": {
+    "trussId": "prolyte.h30v",
+    "header": {
+      "enabled": false,
+      "clearance": 600,
+      "overhang": 500,
+      "maxHoistSpacing": 6000
+    },
+    "front": {
+      "enabled": false,
+      "distance": 6000,
+      "trim": 8500,
+      "width": 14000
+    }
+  },
+  "lighting": {
+    "enabled": true,
+    "fixtureId": "martin.mac-aura-xb",
+    "count": 0,
+    "electrics": {
+      "count": 0,
+      "perBatten": 8,
+      "firstAt": 1000,
+      "spacing": 1500,
+      "trim": 7000
+    },
+    "booms": {
+      "enabled": false,
+      "perBoom": 4,
+      "height": 4000
+    }
+  },
+  "presenter": {
+    "visible": false
+  },
+  "seating": {
+    "enabled": false,
+    "layout": "block",
+    "count": 1000,
+    "chairId": "generic.chair-stack",
+    "frontDistance": 3050,
+    "rowPitch": 915,
+    "seatPitch": 560,
+    "aisleWidth": 1070,
+    "seatsPerBlock": 14
+  },
+  "audio": {
+    "enabled": false,
+    "mainSpeakerId": "dbaudio.j8",
+    "mainsPerSide": 12,
+    "trim": 8000,
+    "spread": 7000,
+    "splayPerBox": 2,
+    "subSpeakerId": "dbaudio.j-sub",
+    "subs": 4,
+    "subMode": "ground",
+    "fillSpeakerId": "generic.fill",
+    "frontFills": 4,
+    "monitorSpeakerId": "generic.wedge",
+    "monitors": 4
+  },
+  "scenic": {
+    "portal": {
+      "enabled": false,
+      "margin": 300,
+      "legWidth": 1200,
+      "headerHeight": 1200,
+      "thickness": 150,
+      "finish": "white"
+    },
+    "masking": {
+      "enabled": false,
+      "pairs": 2,
+      "legWidth": 1830,
+      "height": 6000
+    },
+    "drape": {
+      "enabled": false
+    }
+  },
+  "broadcast": {
+    "enabled": false,
+    "foh": {
+      "cameras": 2,
+      "placement": "auto",
+      "distance": 25000,
+      "standing": false
+    },
+    "sideCams": true,
+    "rail": {
+      "enabled": true,
+      "length": 9000,
+      "prompter": false
+    },
+    "handheld": true,
+    "prompters": {
+      "presidential": true,
+      "dsm": "stand",
+      "dsmCount": 2,
+      "foh": "truss"
+    }
+  },
+  "audience": {
+    "standing": {
+      "enabled": false,
+      "shape": "front",
+      "width": 30000,
+      "depth": 25000,
+      "radius": 24000,
+      "pit": 1800,
+      "density": 2,
+      "barricade": true
+    },
+    "stands": [
+      {
+        "kind": "arc",
+        "x": 0,
+        "y": 0,
+        "width": 20000,
+        "yawDeg": 0,
+        "cx": 0,
+        "cy": 3000,
+        "r0": 3000,
+        "a0": 215,
+        "a1": 325,
+        "rowRise": 450,
+        "rowPitch": 1100,
+        "base": 0,
+        "id": "tiers",
+        "name": "Raked tiers",
+        "rows": 9,
+        "focus": [
+          0,
+          16258.800000000001,
+          2500
+        ]
+      }
+    ]
+  },
+  "structure": {
+    "roof": {
+      "enabled": false,
+      "system": "stageco.roof-25x10",
+      "span": 25000,
+      "wings": true,
+      "wingImag": true
+    },
+    "grid": {
+      "enabled": false,
+      "width": 20000,
+      "depth": 12000,
+      "trim": 12000,
+      "spacing": 3000
+    },
+    "delays": {
+      "enabled": false,
+      "count": 2,
+      "distance": 45000,
+      "spread": 22000,
+      "height": 14000
+    },
+    "truss": []
+  },
+  "show": {
+    "booth": {
+      "enabled": false,
+      "x": 0,
+      "y": 2400,
+      "width": 2400,
+      "decks": 4
+    },
+    "blocks": [],
+    "dome": {
+      "enabled": true,
+      "diameter": 26517.600000000002,
+      "springing": 2500,
+      "openingDeg": 70,
+      "cx": 0,
+      "cy": 3000
+    }
+  }
+}

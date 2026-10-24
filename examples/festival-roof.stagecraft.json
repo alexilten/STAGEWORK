@@ -1,0 +1,212 @@
+{
+  "schema": "stagecraft.project",
+  "version": 1,
+  "name": "Festival Headliner Roof",
+  "presetId": "festival-roof",
+  "units": "metric",
+  "stage": {
+    "width": 20726.4,
+    "depth": 14630.400000000001,
+    "height": 1828.8000000000002,
+    "deckSystemId": "generic.deck-8x4",
+    "finish": "black",
+    "fascia": true
+  },
+  "ledWalls": [
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 1200,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "main",
+      "name": "Main LED",
+      "width": 18000,
+      "height": 9600
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 6000,
+      "offsetX": -17800,
+      "upstageGap": -16315.2,
+      "curveDeg": 0,
+      "id": "imagl",
+      "name": "IMAG left (wing)",
+      "width": 7200,
+      "height": 4800,
+      "base": "floor",
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 6000,
+      "offsetX": 17800,
+      "upstageGap": -16315.2,
+      "curveDeg": 0,
+      "id": "imagr",
+      "name": "IMAG right (wing)",
+      "width": 7200,
+      "height": 4800,
+      "base": "floor",
+      "header": false
+    }
+  ],
+  "rigging": {
+    "trussId": "prolyte.h30v",
+    "header": {
+      "enabled": true,
+      "clearance": 600,
+      "overhang": 500,
+      "maxHoistSpacing": 6000
+    },
+    "front": {
+      "enabled": false,
+      "distance": 6000,
+      "trim": 8500,
+      "width": 14000
+    }
+  },
+  "lighting": {
+    "enabled": true,
+    "fixtureId": "martin.mac-aura-xb",
+    "count": 0,
+    "electrics": {
+      "count": 4,
+      "perBatten": 10,
+      "firstAt": 1500,
+      "spacing": 3000,
+      "trim": 13500,
+      "fixtureId": "robe.megapointe"
+    },
+    "booms": {
+      "enabled": false,
+      "perBoom": 4,
+      "height": 4000
+    }
+  },
+  "presenter": {
+    "visible": true
+  },
+  "seating": {
+    "enabled": false,
+    "layout": "block",
+    "count": 1000,
+    "chairId": "generic.chair-stack",
+    "frontDistance": 3050,
+    "rowPitch": 915,
+    "seatPitch": 560,
+    "aisleWidth": 1070,
+    "seatsPerBlock": 14
+  },
+  "audio": {
+    "enabled": true,
+    "mainSpeakerId": "dbaudio.j8",
+    "mainsPerSide": 14,
+    "trim": 15500,
+    "spread": 17800,
+    "splayPerBox": 2,
+    "subSpeakerId": "dbaudio.j-sub",
+    "subs": 12,
+    "subMode": "ground",
+    "fillSpeakerId": "generic.fill",
+    "frontFills": 6,
+    "monitorSpeakerId": "generic.wedge",
+    "monitors": 8
+  },
+  "scenic": {
+    "portal": {
+      "enabled": false,
+      "margin": 300,
+      "legWidth": 1200,
+      "headerHeight": 1200,
+      "thickness": 150,
+      "finish": "white"
+    },
+    "masking": {
+      "enabled": false,
+      "pairs": 2,
+      "legWidth": 1830,
+      "height": 6000
+    },
+    "drape": {
+      "enabled": false
+    }
+  },
+  "broadcast": {
+    "enabled": false,
+    "foh": {
+      "cameras": 2,
+      "placement": "auto",
+      "distance": 25000,
+      "standing": false
+    },
+    "sideCams": true,
+    "rail": {
+      "enabled": true,
+      "length": 9000,
+      "prompter": false
+    },
+    "handheld": true,
+    "prompters": {
+      "presidential": true,
+      "dsm": "stand",
+      "dsmCount": 2,
+      "foh": "truss"
+    }
+  },
+  "audience": {
+    "standing": {
+      "enabled": true,
+      "shape": "front",
+      "width": 60000,
+      "depth": 50000,
+      "radius": 0,
+      "pit": 1800,
+      "density": 2,
+      "barricade": true
+    },
+    "stands": []
+  },
+  "structure": {
+    "roof": {
+      "enabled": true,
+      "system": "stageco.classic-4-tower",
+      "span": 25600,
+      "wings": true,
+      "wingImag": true
+    },
+    "grid": {
+      "enabled": false,
+      "width": 20000,
+      "depth": 12000,
+      "trim": 12000,
+      "spacing": 3000
+    },
+    "delays": {
+      "enabled": false,
+      "count": 2,
+      "distance": 45000,
+      "spread": 22000,
+      "height": 14000
+    },
+    "truss": []
+  },
+  "show": {
+    "booth": {
+      "enabled": false,
+      "x": 0,
+      "y": 2400,
+      "width": 2400,
+      "decks": 4
+    },
+    "blocks": [],
+    "dome": {
+      "enabled": false,
+      "diameter": 26500,
+      "springing": 2000,
+      "openingDeg": 0,
+      "cx": 0,
+      "cy": 0
+    }
+  }
+}

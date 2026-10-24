@@ -39,6 +39,8 @@ export interface LedCabinet extends CatalogBase {
   /** max inter-cabinet angle in degrees; concave positive. null = not documented → treat as flat only */
   curveConcaveMaxDeg: number | null;
   curveConvexMaxDeg: number | null;
+  /** walkable LED floor product: rated distributed load, kg / m² */
+  floorLoadKgM2?: number;
 }
 
 export interface DeckSystem extends CatalogBase {

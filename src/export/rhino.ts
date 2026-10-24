@@ -28,11 +28,11 @@ export const LAYER_TREE: { name: string; color: [number, number, number]; childr
   { name: '00_REFERENCE', color: [150, 150, 150], children: [] },
   { name: '10_STAGE', color: [60, 60, 60], children: ['10_01_DECKING', '10_02_RISERS', '10_03_SUPPORTS', '10_04_FINISHES'] },
   { name: '20_LED', color: [0, 112, 201], children: ['20_01_CABINETS', '20_02_SUPPORTS', '20_03_TRIM'] },
-  { name: '30_RIGGING', color: [205, 120, 0], children: ['30_01_TRUSS', '30_02_HOISTS', '30_03_HARDWARE'] },
+  { name: '30_RIGGING', color: [205, 120, 0], children: ['30_01_TRUSS', '30_02_HOISTS', '30_03_HARDWARE', '30_04_GROUND_SUPPORT', '30_05_GRID'] },
   { name: '40_LIGHTING', color: [200, 30, 90], children: ['40_01_FIXTURES', '40_02_ACCESSORIES', '40_03_POSITIONS'] },
-  { name: '50_AUDIO', color: [120, 70, 190], children: ['50_01_MAINS', '50_02_SUBS', '50_03_FILLS', '50_04_MONITORS'] },
-  { name: '60_SCENIC', color: [40, 150, 100], children: ['60_01_PORTAL', '60_02_MASKING', '60_03_DRAPES'] },
-  { name: '70_AUDIENCE', color: [110, 110, 130], children: ['70_01_SEATING', '70_02_LAYOUT'] },
+  { name: '50_AUDIO', color: [120, 70, 190], children: ['50_01_MAINS', '50_02_SUBS', '50_03_FILLS', '50_04_MONITORS', '50_05_DELAYS'] },
+  { name: '60_SCENIC', color: [40, 150, 100], children: ['60_01_PORTAL', '60_02_MASKING', '60_03_DRAPES', '60_04_ELEMENTS', '60_05_DJ_BOOTH'] },
+  { name: '70_AUDIENCE', color: [110, 110, 130], children: ['70_01_SEATING', '70_02_LAYOUT', '70_03_STANDING', '70_04_BARRICADE', '70_05_STANDS'] },
   { name: '80_BROADCAST', color: [0, 150, 170], children: ['80_01_CAMERAS', '80_02_PLATFORMS', '80_03_TRACK', '80_04_PROMPTERS', '80_05_CREW'] },
   { name: '90_TECHNICAL', color: [230, 40, 40], children: ['90_01_DIMENSIONS', '90_02_CENTERLINES', '90_03_REFERENCE'] },
 ];
@@ -59,6 +59,12 @@ export const RHINO_MATERIALS: Record<MaterialKey, { name: string; rgb: [number, 
   platform: { name: 'SC_Camera_Platform', rgb: [30, 30, 32] },
   glass: { name: 'SC_Prompter_Glass', rgb: [200, 214, 224], gloss: 0.9, transparency: 0.75 },
   screen: { name: 'SC_Monitor_Screen', rgb: [12, 16, 26], gloss: 0.6 },
+  crowd: { name: 'SC_Crowd_Figure', rgb: [128, 132, 146] },
+  barricade: { name: 'SC_Barricade_Steel', rgb: [150, 152, 158], gloss: 0.4 },
+  stand: { name: 'SC_Seating_Stand', rgb: [92, 94, 100] },
+  structure: { name: 'SC_Ground_Support_Steel', rgb: [110, 112, 118], gloss: 0.4 },
+  roofSkin: { name: 'SC_Roof_Skin', rgb: [228, 228, 230], gloss: 0.1, transparency: 0.55 },
+  booth: { name: 'SC_DJ_Booth', rgb: [22, 22, 24], gloss: 0.3 },
 };
 
 export interface RhinoExportOptions {
@@ -68,6 +74,9 @@ export interface RhinoExportOptions {
   systems?: SystemKey[];
   includeAnnotations?: boolean;
 }
+
+/** release a wasm-side handle once openNURBS has copied it into the document */
+const free = (...xs: unknown[]) => { for (const x of xs) (x as { delete?: () => void } | null)?.delete?.(); };
 
 export function exportRhino(rh: RhinoModule, scene: SceneGraph, project: Project, opts: RhinoExportOptions = {}): Uint8Array {
   const doc = new rh.File3dm();
@@ -131,6 +140,7 @@ export function exportRhino(rh: RhinoModule, scene: SceneGraph, project: Project
       attrs.push(a);
     });
     const idx = doc.instanceDefinitions().add(key, def.description, '', '', [0, 0, 0], geoms, attrs);
+    free(...geoms, ...attrs);
     if (idx < 0) throw new Error(`Failed to add block ${key}`);
     blockId.set(key, doc.instanceDefinitions().get(idx).id);
   }
@@ -158,7 +168,9 @@ export function exportRhino(rh: RhinoModule, scene: SceneGraph, project: Project
       return a;
     };
     if (o.block) {
-      doc.objects().add(new rh.InstanceReference(blockId.get(o.block)!, xf), base());
+      const ref = new rh.InstanceReference(blockId.get(o.block)!, xf), a = base();
+      doc.objects().add(ref, a);
+      free(ref, a);
     } else if (o.parts) {
       let gi: number | undefined;
       if (o.parts.length > 1) {
@@ -176,8 +188,10 @@ export function exportRhino(rh: RhinoModule, scene: SceneGraph, project: Project
         a.materialSource = rh.ObjectMaterialSource.MaterialFromObject;
         if (gi !== undefined) a.addToGroup(gi);
         doc.objects().add(geom, a);
+        free(geom, a);
       });
     }
+    free(xf);
   }
 
   // ── annotations (lines + text dots; rhino3dm cannot author true Rhino dimensions yet)
@@ -214,7 +228,10 @@ export function exportRhino(rh: RhinoModule, scene: SceneGraph, project: Project
 
   const options = new rh.File3dmWriteOptions();
   options.version = opts.version ?? 8;
-  return doc.toByteArrayOptions(options);
+  const bytes = doc.toByteArrayOptions(options);
+  // free the wasm-side document: big shows (crowds, stadium roofs) otherwise exhaust the wasm heap over repeated exports
+  free(options, doc);
+  return bytes;
 }
 
 function partGeometry(rh: RhinoModule, part: Part): GeometryBase {

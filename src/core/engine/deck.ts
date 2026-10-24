@@ -16,6 +16,8 @@ export interface DeckArea {
   rows: number;
   /** long side of the platforms along X or along Y */
   orient: 'x' | 'y';
+  /** custom-built round platform (no hire decking): circle inscribed in the area */
+  round?: { cx: number; cy: number; r: number };
 }
 
 export interface DeckLayout {
@@ -50,8 +52,10 @@ export function resolveDeck(stage: StageParams, sys: DeckSystem) {
   if (Math.abs(sys.long - 2 * sys.short) > 0.5 || Math.abs(sys.infill.long - sys.short) > 0.5)
     throw new Error(`Deck system ${sys.id}: layout requires long = 2 × short and a square infill`);
 
+  const shape0: StageShape = stage.shape ?? 'rect';
   const width = resolveModules(stage.width, sys.short, 2, 60);
-  const depth = resolveModules(stage.depth, sys.short, 1, 40);
+  // a round centre stage is as deep as it is wide
+  const depth = shape0 === 'round' ? { ...width, requested: width.requested } : resolveModules(stage.depth, sys.short, 1, 40);
   const height = snapStep(stage.height, sys.minHeight, sys.heightStep, sys.minHeight, sys.maxHeight);
   label(width, sys.short, sys.label); label(depth, sys.short, sys.label);
 
@@ -62,7 +66,9 @@ export function resolveDeck(stage: StageParams, sys: DeckSystem) {
   const warnings: Warning[] = [];
   const annotations: Annotation[] = [];
 
-  const areas: DeckArea[] = [{ id: 'MAIN', label: 'Main deck', kind: 'main', group: 'stage', minX: -W / 2, maxX: W / 2, minY: 0, maxY: D, base: 0, top: H, cols: width.modules, rows: depth.modules, orient: 'x' }];
+  const areas: DeckArea[] = [{ id: 'MAIN', label: shape === 'round' ? 'Round stage' : 'Main deck', kind: 'main', group: 'stage', minX: -W / 2, maxX: W / 2, minY: 0, maxY: D, base: 0, top: H, cols: width.modules, rows: depth.modules, orient: 'x',
+    ...(shape === 'round' ? { round: { cx: 0, cy: D / 2, r: W / 2 } } : {}) }];
+  const centreStage = shape === 'round' || shape === 'cross';
   const centred = (id: string, label: string, kind: DeckArea['kind'], cols: number, rows: number, maxY: number, orient: DeckArea['orient'] = 'x'): DeckArea =>
     ({ id, label, kind, group: 'stage', minX: (-cols * S) / 2, maxX: (cols * S) / 2, minY: maxY - rows * S, maxY, base: 0, top: H, cols, rows, orient });
 
@@ -78,8 +84,26 @@ export function resolveDeck(stage: StageParams, sys: DeckSystem) {
     areas.push(centred('RUNWAY', 'Runway', 'runway', cols, rows, 0, 'y'));
     if (r.endWidth > 0 && r.endDepth > 0) {
       const ec = Math.max(cols, resolveModules(r.endWidth, S, 1, 30).modules);
-      const er = resolveModules(r.endDepth, S, 1, 20).modules;
-      areas.push(centred('BSTAGE', 'B-stage', 'bstage', ec, er, -rows * S));
+      if (r.endShape === 'round') {
+        // custom round B-stage: its circle meets the runway end along the runway's full width
+        const R = (ec * S) / 2, hw = (cols * S) / 2;
+        const cy = -rows * S - Math.sqrt(Math.max(0, R * R - hw * hw));
+        areas.push({ id: 'BSTAGE', label: 'Round B-stage', kind: 'bstage', group: 'stage', minX: -R, maxX: R, minY: cy - R, maxY: cy + R, base: 0, top: H, cols: ec, rows: ec, orient: 'x', round: { cx: 0, cy, r: R } });
+      } else {
+        const er = resolveModules(r.endDepth, S, 1, 20).modules;
+        areas.push(centred('BSTAGE', 'B-stage', 'bstage', ec, er, -rows * S));
+      }
+    }
+  } else if (shape === 'cross') {
+    // arms out from all four sides of the centre square (in-the-round)
+    const c = { armWidth: 2438, armLength: 4877, ...stage.cross };
+    const aw = Math.min(width.modules, resolveModules(c.armWidth, S, 1, 20).modules);
+    const al = resolveModules(c.armLength, S, 1, 40).modules;
+    areas.push(centred('ARM_FRONT', 'Front arm', 'runway', aw, al, 0, 'y'));
+    areas.push({ ...centred('ARM_BACK', 'Back arm', 'runway', aw, al, D + al * S, 'y') });
+    for (const [id, label, sx] of [['ARM_LEFT', 'Left arm', -1], ['ARM_RIGHT', 'Right arm', 1]] as const) {
+      const x0 = sx < 0 ? -W / 2 - al * S : W / 2;
+      areas.push({ id, label, kind: 'runway', group: 'stage', minX: x0, maxX: x0 + al * S, minY: D / 2 - (aw * S) / 2, maxY: D / 2 + (aw * S) / 2, base: 0, top: H, cols: al, rows: aw, orient: 'x' });
     }
   }
 
@@ -110,6 +134,18 @@ export function resolveDeck(stage: StageParams, sys: DeckSystem) {
   const objects: SceneObject[] = [];
   let primaryCount = 0, infillCount = 0, legCount = 0;
   for (const a of areas) {
+    if (a.round) {
+      // custom carpentry: drawn as one round platform, not hire decking
+      const { cx, cy, r } = a.round;
+      const points: [number, number][] = Array.from({ length: 72 }, (_, i) => { const t = (i / 72) * Math.PI * 2; return [Math.round((cx + r * Math.cos(t)) * 10) / 10, Math.round((cy + r * Math.sin(t)) * 10) / 10]; });
+      objects.push({
+        id: `DECK.${a.id}.ROUND`, label: `${a.label} (custom build)`, layer: '10_STAGE::10_01_DECKING', system: 'decking', group: a.group,
+        parts: [{ kind: 'prism', points, z0: a.base, z1: a.top, mat: 'deckTop' }], position: [0, 0, 0], rotationZ: 0,
+        meta: { material: `${stage.finish} finish`, diameter: Math.round(2 * r), note: 'Custom carpentry on a sub-structure — not hire decking', verification: 'generic', bom: `Round platform Ø${(2 * r / 1000).toFixed(1)} m (custom build)` },
+      });
+      warnings.push({ level: 'info', code: 'deck.round', target: a.group, message: `${a.label} (Ø ${(2 * r / 1000).toFixed(1)} m) is custom carpentry on its own sub-structure, not hire decking.` });
+      continue;
+    }
     const legLen = a.top - a.base - sys.frameDepth;
     const lk = legKey(legLen);
     // lines of platforms: along X (one row per module of depth) or along Y (one column per module of width)
@@ -178,14 +214,15 @@ export function resolveDeck(stage: StageParams, sys: DeckSystem) {
   if (stage.fascia) {
     const t = 12;
     for (const a of areas) {
-      const others = areas.filter((o) => o !== a && o.base === a.base);
+      if (a.round) continue;
+      const others = areas.filter((o) => o !== a && o.base === a.base && !o.round);
       const edges: { side: 'front' | 'back' | 'left' | 'right'; from: number; to: number }[] = [];
       const free = (lo: number, hi: number, covers: [number, number][]) => subtract([lo, hi], covers);
       const touch = (k: 'minY' | 'maxY' | 'minX' | 'maxX', v: number) => others.filter((o) => Math.abs(o[k] - v) < 0.5);
       const frontCover: [number, number][] = touch('maxY', a.minY).map((o) => [o.minX, o.maxX]);
       if (a.kind === 'main' && apron) frontCover.push([a.minX, a.maxX]);
       for (const [f, to] of free(a.minX, a.maxX, frontCover)) edges.push({ side: 'front', from: f, to });
-      if (a.kind !== 'main') for (const [f, to] of free(a.minX, a.maxX, touch('minY', a.maxY).map((o) => [o.minX, o.maxX]))) edges.push({ side: 'back', from: f, to });
+      if (a.kind !== 'main' || centreStage) for (const [f, to] of free(a.minX, a.maxX, touch('minY', a.maxY).map((o) => [o.minX, o.maxX]))) edges.push({ side: 'back', from: f, to });
       for (const [f, to] of free(a.minY, a.maxY, touch('maxX', a.minX).map((o) => [o.minY, o.maxY]))) edges.push({ side: 'left', from: f, to });
       for (const [f, to] of free(a.minY, a.maxY, touch('minX', a.maxX).map((o) => [o.minY, o.maxY]))) edges.push({ side: 'right', from: f, to });
       edges.forEach((e, i) => {
@@ -220,7 +257,7 @@ export function resolveDeck(stage: StageParams, sys: DeckSystem) {
   const ground = areas.filter((a) => a.base === 0);
   const keepOut = ground.map(({ minX, maxX, minY, maxY }) => ({ minX, maxX, minY, maxY }));
   if (apron) keepOut.push({ minX: -W / 2, maxX: W / 2, minY: -apron.depth, maxY: 0 });
-  const areaMm2 = ground.reduce((s, a) => s + (a.maxX - a.minX) * (a.maxY - a.minY), 0) + (apron ? polygonArea(apron.points) : 0);
+  const areaMm2 = ground.reduce((s, a) => s + (a.round ? Math.PI * a.round.r ** 2 : (a.maxX - a.minX) * (a.maxY - a.minY)), 0) + (apron ? polygonArea(apron.points) : 0);
 
   const layout: DeckLayout = {
     width, depth, height, shape, primaryCount, infillCount, legCount, legLength,

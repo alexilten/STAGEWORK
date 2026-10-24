@@ -16,9 +16,10 @@ function randomProject(r: () => number): Project {
   const p = PRESETS[Math.floor(r() * PRESETS.length)].build();
   const S = 1220;
   p.stage.width = between(S * 4, S * 40); p.stage.depth = between(S * 2, S * 16); p.stage.height = between(200, 1800);
-  p.stage.shape = pick<StageShape>(['rect', 'thrust', 'runway', 'rounded']);
+  p.stage.shape = pick<StageShape>(['rect', 'thrust', 'runway', 'rounded', 'round', 'cross']);
+  p.stage.cross = { armWidth: between(S, p.stage.width), armLength: between(S, S * 16) };
   p.stage.thrust = { width: between(S, p.stage.width), depth: between(S, S * 12) };
-  p.stage.runway = { width: between(S, S * 4), length: between(S * 2, S * 30), endWidth: between(S, S * 12), endDepth: between(S, S * 8) };
+  p.stage.runway = { width: between(S, S * 4), length: between(S * 2, S * 30), endWidth: between(S, S * 12), endDepth: between(S, S * 8), endShape: pick(['rect', 'round'] as const) };
   p.stage.apron = { depth: between(300, Math.max(600, p.stage.width / 2)) };
   if (r() < 0.5) p.stage.risers = [{ id: 'r', name: 'Riser', width: between(S, p.stage.width), depth: between(S, p.stage.depth), height: between(200, 1200), x: between(-p.stage.width / 2, p.stage.width / 2), y: between(0, p.stage.depth - S) }];
   for (const w of p.ledWalls) { w.elevation = between(0, 4000); w.upstageGap = between(-3000, 4000); w.curveDeg = r() < 0.5 ? 0 : between(0, 5); }

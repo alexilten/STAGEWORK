@@ -1,0 +1,214 @@
+{
+  "schema": "stagecraft.project",
+  "version": 1,
+  "name": "General Session + IMAG",
+  "presetId": "general-session",
+  "units": "metric",
+  "stage": {
+    "width": 24384,
+    "depth": 10972.800000000001,
+    "height": 1219.2,
+    "deckSystemId": "generic.deck-8x4",
+    "finish": "white",
+    "fascia": true
+  },
+  "ledWalls": [
+    {
+      "cabinetId": "roe.bp2v2",
+      "elevation": 1000,
+      "offsetX": 0,
+      "upstageGap": 300,
+      "curveDeg": 0,
+      "id": "main",
+      "name": "Content wall",
+      "width": 16000,
+      "height": 6000
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 3500,
+      "offsetX": -19400,
+      "upstageGap": -13472.800000000001,
+      "curveDeg": 0,
+      "id": "imagl",
+      "name": "IMAG left",
+      "width": 8400,
+      "height": 4800,
+      "base": "floor",
+      "yawDeg": 20,
+      "header": false
+    },
+    {
+      "cabinetId": "roe.cb5-mkii",
+      "elevation": 3500,
+      "offsetX": 19400,
+      "upstageGap": -13472.800000000001,
+      "curveDeg": 0,
+      "id": "imagr",
+      "name": "IMAG right",
+      "width": 8400,
+      "height": 4800,
+      "base": "floor",
+      "yawDeg": -20,
+      "header": false
+    }
+  ],
+  "rigging": {
+    "trussId": "prolyte.h30v",
+    "header": {
+      "enabled": true,
+      "clearance": 600,
+      "overhang": 500,
+      "maxHoistSpacing": 6000
+    },
+    "front": {
+      "enabled": true,
+      "distance": 7000,
+      "trim": 10000,
+      "width": 26000
+    }
+  },
+  "lighting": {
+    "enabled": true,
+    "fixtureId": "martin.mac-aura-xb",
+    "count": 16,
+    "electrics": {
+      "count": 3,
+      "perBatten": 8,
+      "firstAt": 1000,
+      "spacing": 1500,
+      "trim": 7000
+    },
+    "booms": {
+      "enabled": false,
+      "perBoom": 4,
+      "height": 4000
+    }
+  },
+  "presenter": {
+    "visible": true
+  },
+  "seating": {
+    "enabled": true,
+    "layout": "block",
+    "count": 3000,
+    "chairId": "generic.chair-stack",
+    "frontDistance": 4500,
+    "rowPitch": 915,
+    "seatPitch": 560,
+    "aisleWidth": 1070,
+    "seatsPerBlock": 14
+  },
+  "audio": {
+    "enabled": true,
+    "mainSpeakerId": "dbaudio.j8",
+    "mainsPerSide": 14,
+    "trim": 10500,
+    "spread": 14500,
+    "splayPerBox": 2,
+    "subSpeakerId": "dbaudio.j-sub",
+    "subs": 8,
+    "subMode": "ground",
+    "fillSpeakerId": "generic.fill",
+    "frontFills": 6,
+    "monitorSpeakerId": "generic.wedge",
+    "monitors": 4,
+    "outfills": 8
+  },
+  "scenic": {
+    "portal": {
+      "enabled": false,
+      "margin": 300,
+      "legWidth": 1200,
+      "headerHeight": 1200,
+      "thickness": 150,
+      "finish": "white"
+    },
+    "masking": {
+      "enabled": false,
+      "pairs": 2,
+      "legWidth": 1830,
+      "height": 6000
+    },
+    "drape": {
+      "enabled": false
+    }
+  },
+  "broadcast": {
+    "enabled": true,
+    "foh": {
+      "cameras": 2,
+      "placement": "auto",
+      "distance": 25000,
+      "standing": false
+    },
+    "sideCams": true,
+    "rail": {
+      "enabled": true,
+      "length": 9000,
+      "prompter": false
+    },
+    "handheld": true,
+    "prompters": {
+      "presidential": true,
+      "dsm": "stand",
+      "dsmCount": 2,
+      "foh": "truss"
+    }
+  },
+  "audience": {
+    "standing": {
+      "enabled": false,
+      "shape": "front",
+      "width": 30000,
+      "depth": 25000,
+      "radius": 24000,
+      "pit": 1800,
+      "density": 2,
+      "barricade": true
+    },
+    "stands": []
+  },
+  "structure": {
+    "roof": {
+      "enabled": false,
+      "system": "stageco.roof-25x10",
+      "span": 25000,
+      "wings": true,
+      "wingImag": true
+    },
+    "grid": {
+      "enabled": false,
+      "width": 20000,
+      "depth": 12000,
+      "trim": 12000,
+      "spacing": 3000
+    },
+    "delays": {
+      "enabled": false,
+      "count": 2,
+      "distance": 45000,
+      "spread": 22000,
+      "height": 14000
+    },
+    "truss": []
+  },
+  "show": {
+    "booth": {
+      "enabled": false,
+      "x": 0,
+      "y": 2400,
+      "width": 2400,
+      "decks": 4
+    },
+    "blocks": [],
+    "dome": {
+      "enabled": false,
+      "diameter": 26500,
+      "springing": 2000,
+      "openingDeg": 0,
+      "cx": 0,
+      "cy": 0
+    }
+  }
+}

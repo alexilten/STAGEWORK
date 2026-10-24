@@ -79,7 +79,15 @@ function Production() {
           <Metric label="LED cabinets" value={String(cabinets)} sub={`${formatArea(ledArea, u)} · ${r.led.length} surface${r.led.length === 1 ? '' : 's'}`} />
           <Metric label="Truss" value={`${sections} sections`} sub={`${formatLength(trussLen, u)} · ${hoists} hoists`} />
           {r.seating && <Metric label="Seats" value={r.seating.count.toLocaleString()} sub={`${r.seating.rows} rows · ${r.seating.wheelchairSpaces} wheelchair`} />}
-          {r.audio && <Metric label="PA" value={`${r.audio.mainsPerSide}/side`} sub={`${r.audio.subs} subs · ${r.audio.frontFills} fills · ${r.audio.monitors} wedges`} />}
+          {r.audience?.standing && <Metric label="Standing" value={r.audience.standing.capacity.toLocaleString()} sub={`${r.audience.standing.areaM2.toLocaleString()} m² at ${r.audience.standing.density}/m²${r.audience.standing.barricadeM ? ` · ${Math.round(r.audience.standing.barricadeM)} m barricade` : ''}`} />}
+          {r.audience && r.audience.stands.length > 0 && (() => {
+            const cs = r.audience.stands.map((x) => x.minC).filter((c): c is number => c != null);
+            return <Metric label="Stands" value={r.audience.standSeats.toLocaleString()} sub={`${r.audience.stands.length} stand${r.audience.stands.length === 1 ? '' : 's'}${cs.length ? ` · C-value ≥ ${Math.min(...cs)} mm` : ''}`} />;
+          })()}
+          {r.audio && <Metric label="PA" value={r.audio.layout === 'quad' ? `${r.audio.hangs} hangs` : `${r.audio.mainsPerSide}/side`} sub={`${r.audio.layout === 'quad' ? `${r.audio.mainsPerSide} boxes each · ` : ''}${r.audio.subs} subs · ${r.audio.frontFills} fills · ${r.audio.monitors} wedges`} />}
+          {r.structure?.roof && <Metric label="Roof" value={`${r.structure.roof.span / 1000} m span`} sub={`${r.structure.roof.spec.name.replace('Stageco ', '')} · ${formatLength(r.structure.roof.clearance, u)} clear`} />}
+          {r.structure?.delays && <Metric label="Delays" value={`${r.structure.delays.count} towers`} sub={`${formatLength(r.structure.delays.distance, u)} · ≈ ${r.structure.delays.delayMs} ms`} />}
+          {r.show?.dome && <Metric label="LED dome" value={`${formatLength(r.show.dome.diameter, u)}`} sub={`${r.show.dome.tiles.toLocaleString()} tiles · ${Math.round(r.show.dome.areaM2).toLocaleString()} m²`} />}
           {r.scenic && <Metric label="Scenic" value={[r.scenic.portal && 'Portal', r.scenic.maskingLegs && `${r.scenic.maskingLegs} legs`, r.scenic.drape && 'Drape'].filter(Boolean).join(' · ')} sub={r.scenic.portal ? `Opening ${formatLength(r.scenic.portal.opening.width, u)} × ${formatLength(r.scenic.portal.opening.height, u)}` : 'Soft goods'} />}
           {r.broadcast && r.broadcast.cameras.length > 0 && <Metric label="Cameras" value={String(r.broadcast.cameras.length)} sub={[r.broadcast.platform && `FOH ${formatLength(-r.broadcast.platform.yFront, u)}`, r.broadcast.rail && 'rail', r.broadcast.seatKills && `${r.broadcast.seatKills} seat kills`].filter(Boolean).join(' · ')} />}
           {r.lightingPositions && <Metric label="LX positions" value={`${r.lightingPositions.electrics} electrics`} sub={`${r.lightingPositions.booms} booms · ${r.lightingPositions.fixtureTotal} fixtures`} />}

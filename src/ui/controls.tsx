@@ -104,9 +104,9 @@ export function Toggle({ label, checked, onChange }: { label: string; checked: b
   );
 }
 
-export function Segmented<T extends string>({ value, options, onChange, size }: { value: T; options: { value: T; label: ReactNode; title?: string }[]; onChange: (v: T) => void; size?: 'sm' }) {
+export function Segmented<T extends string>({ value, options, onChange, size, wrap }: { value: T; options: { value: T; label: ReactNode; title?: string }[]; onChange: (v: T) => void; size?: 'sm'; wrap?: boolean }) {
   return (
-    <div className={`segmented ${size ?? ''}`}>
+    <div className={`segmented ${size ?? ''} ${wrap ? 'wrap' : ''}`}>
       {options.map((o) => (
         <button key={o.value} title={o.title} className={o.value === value ? 'on' : ''} onClick={() => onChange(o.value)}>{o.label}</button>
       ))}

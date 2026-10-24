@@ -12,7 +12,8 @@ const FINISH: Record<StageFinish, string> = { white: '#f2f1ee', black: '#1b1b1d'
 export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish, scenicFinish: StageFinish = 'white'): Look {
   if (mode === 'technical') {
     if (key === 'glass') return { color: '#cfe3f0', metalness: 0, roughness: 0.1, edge: 0, opacity: 0.35 };
-    const tone: Partial<Record<MaterialKey, string>> = { camera: '#b9b9bf', platform: '#d6d6db', screen: '#9a9aa2', drape: '#d0d0d6', scenicFlat: '#ececef', speaker: '#d7d7dc', speakerGrille: '#bcbcc2', chairSeat: '#e4e4e8', chairFrame: '#c7c7cc', ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc' };
+    if (key === 'roofSkin') return { color: '#eef0f4', metalness: 0, roughness: 0.9, edge: 0, opacity: 0.3 };
+    const tone: Partial<Record<MaterialKey, string>> = { crowd: '#c9cbd2', barricade: '#bdbdc2', stand: '#e6e6ea', structure: '#c9cbd0', booth: '#bcbcc2', camera: '#b9b9bf', platform: '#d6d6db', screen: '#9a9aa2', drape: '#d0d0d6', scenicFlat: '#ececef', speaker: '#d7d7dc', speakerGrille: '#bcbcc2', chairSeat: '#e4e4e8', chairFrame: '#c7c7cc', ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc' };
     return { color: tone[key] ?? '#f7f7f8', metalness: 0, roughness: 0.9, edge: 1, edgeColor: '#5d5d63' };
   }
   switch (key) {
@@ -36,6 +37,12 @@ export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish, s
     case 'platform': return { color: '#1e1e21', metalness: 0, roughness: 0.92, edge: 0.4, edgeColor: '#000000' };
     case 'glass': return { color: '#cfe3f0', metalness: 0, roughness: 0.05, edge: 0, opacity: 0.3 };
     case 'screen': return { color: '#0d1422', metalness: 0.2, roughness: 0.18, edge: 0 };
+    case 'crowd': return { color: '#8d93a3', metalness: 0, roughness: 0.9, edge: 0 };
+    case 'barricade': return { color: '#a7a9b0', metalness: 0.8, roughness: 0.35, edge: 0 };
+    case 'stand': return { color: '#d9d9de', metalness: 0, roughness: 0.75, edge: 0.4, edgeColor: '#b4b4ba' };
+    case 'structure': return { color: '#c4c6cc', metalness: 0.9, roughness: 0.3, edge: 0 };
+    case 'roofSkin': return { color: '#f4f4f6', metalness: 0, roughness: 0.6, edge: 0, opacity: 0.42 };
+    case 'booth': return { color: '#151517', metalness: 0.3, roughness: 0.45, edge: 0.4, edgeColor: '#000000' };
   }
 }
 
