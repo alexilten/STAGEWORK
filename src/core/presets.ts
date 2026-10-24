@@ -46,6 +46,7 @@ export const PRESETS: Preset[] = [
       p.seating = { ...p.seating, layout: 'radial', count: 2500 };
       p.stage.shape = 'rounded'; p.stage.apron = { depth: 1800 };
       p.audio = { ...DEFAULT_AUDIO, enabled: true, mainsPerSide: 14, trim: 9000, spread: 11000, subs: 6, frontFills: 6, monitors: 4 };
+      p.lighting.electrics = { ...p.lighting.electrics, fixtureId: 'glp.impression-x4-bar-20', perBatten: 12 };
       p.ledWalls = [wall({ id: 'main', name: 'Panoramic wall', width: 24000, height: 6000, elevation: 900, upstageGap: 1200, curveDeg: 1 })];
       return p;
     },
@@ -60,6 +61,8 @@ export const PRESETS: Preset[] = [
       p.stage.shape = 'runway'; p.stage.runway = { width: ft(8), length: ft(24), endWidth: ft(16), endDepth: ft(12) };
       p.rigging.front.width = 20000;
       p.lighting.count = 12;
+      p.lighting.electrics = { ...p.lighting.electrics, fixtureId: 'robe.megapointe' };
+      p.lighting.booms = { enabled: true, perBoom: 3, height: 4500, fixtureId: 'chauvet.maverick-storm-1-wash' };
       p.ledWalls = [
         wall({ id: 'main', name: 'Hero wall', width: 10000, height: 5500, elevation: 900 }),
         wall({ id: 'left', name: 'Reveal left', width: 2500, height: 5500, elevation: 900, offsetX: -6750, upstageGap: -1500 }),
@@ -91,7 +94,7 @@ export const PRESETS: Preset[] = [
       const p = base('Conversation Stage', 'conversation');
       p.stage.width = ft(32); p.stage.height = ft(2);
       p.rigging.front = { enabled: true, distance: 5000, trim: 7000, width: 11000 };
-      p.lighting.count = 8;
+      p.lighting.count = 8; p.lighting.fixtureId = 'etc.s4-led-s3-lustr';
       p.seating = { ...p.seating, layout: 'radial', count: 500, frontDistance: 2450 };
       p.stage.risers = [{ id: 'r1', name: 'Chat riser', width: ft(12), depth: ft(8), height: ft(1), x: 0, y: ft(4) }];
       p.ledWalls = [wall({ id: 'main', name: 'Backdrop wall', width: 9000, height: 4500, elevation: 1000 })];

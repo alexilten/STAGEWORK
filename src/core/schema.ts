@@ -86,9 +86,9 @@ export interface LightingParams {
   /** front-of-house fixtures on the front truss */
   count: number;
   /** overhead electrics: horizontal lighting battens over the stage */
-  electrics: { count: number; perBatten: number; firstAt: Mm; spacing: Mm; trim: Mm };
+  electrics: { count: number; perBatten: number; firstAt: Mm; spacing: Mm; trim: Mm; fixtureId?: string };
   /** vertical side booms, house left and right */
-  booms: { enabled: boolean; perBoom: number; height: Mm };
+  booms: { enabled: boolean; perBoom: number; height: Mm; fixtureId?: string };
 }
 
 export const DEFAULT_LIGHTING_POSITIONS = {

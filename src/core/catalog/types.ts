@@ -77,11 +77,17 @@ export interface TrussSystem extends CatalogBase {
 export interface Fixture extends CatalogBase {
   category: 'fixture';
   fixtureType: 'wash' | 'spot' | 'beam' | 'profile' | 'strobe';
+  /** body form for the planning envelope (default moving head) */
+  form?: 'moving-head' | 'batten' | 'ellipsoidal';
+  /** front-to-back (Y) */
   length: Mm;
+  /** side-to-side (X); for a batten, its length */
   width: Mm;
   height: Mm;
   weightKg: number | null;
   powerMaxW: number | null;
+  /** typical draw where the maker publishes only that (not used as a max) */
+  powerTypW?: number | null;
   mounting: string;
 }
 

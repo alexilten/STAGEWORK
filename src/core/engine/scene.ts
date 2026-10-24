@@ -129,8 +129,7 @@ export function resolveScene(project: Project): SceneGraph {
   // ── Lighting positions (overhead electrics + side booms)
   let lightingPositions: LightingPositionsReport | null = null;
   if (project.lighting.enabled && (project.lighting.electrics.count > 0 || project.lighting.booms.enabled)) {
-    const fx = getCatalogItem<Fixture>(project.lighting.fixtureId, 'fixture');
-    const r = resolveLighting(project.lighting, fx, trussSys, hoist, {
+    const r = resolveLighting(project.lighting, (id) => getCatalogItem<Fixture>(id, 'fixture'), trussSys, hoist, {
       stageWidth: W, stageDepth: D, stageTop: H, deckTopAt,
       led: led.map((L) => ({ name: L.name, minY: L.origin[1] - L.sagitta, maxY: L.origin[1] + L.cabinet.depth, top: L.top })),
     });
