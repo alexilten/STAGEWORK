@@ -115,6 +115,34 @@ export const DEFAULT_SEATING: SeatingParams = {
   frontDistance: 3050, rowPitch: 915, seatPitch: 560, aisleWidth: 1070, seatsPerBlock: 14,
 };
 
+export interface AudioParams {
+  enabled: boolean;
+  mainSpeakerId: string;
+  /** boxes per flown hang (house left and right) */
+  mainsPerSide: number;
+  /** bottom-of-array planning: top-of-array trim height AFF */
+  trim: Mm;
+  /** outboard offset of each hang from the centreline */
+  spread: Mm;
+  /** nominal progressive inter-cabinet splay, degrees */
+  splayPerBox: number;
+  subSpeakerId: string;
+  subs: number;
+  subMode: 'ground' | 'flown';
+  fillSpeakerId: string;
+  frontFills: number;
+  monitorSpeakerId: string;
+  monitors: number;
+}
+
+export const DEFAULT_AUDIO: AudioParams = {
+  enabled: false,
+  mainSpeakerId: 'dbaudio.j8', mainsPerSide: 12, trim: 8000, spread: 7000, splayPerBox: 2,
+  subSpeakerId: 'dbaudio.j-sub', subs: 4, subMode: 'ground',
+  fillSpeakerId: 'generic.fill', frontFills: 4,
+  monitorSpeakerId: 'generic.wedge', monitors: 4,
+};
+
 export interface Project {
   schema: typeof PROJECT_SCHEMA;
   version: number;
@@ -127,6 +155,7 @@ export interface Project {
   lighting: LightingParams;
   presenter: { visible: boolean };
   seating: SeatingParams;
+  audio: AudioParams;
 }
 
 export function serializeProject(p: Project): string {
@@ -140,5 +169,6 @@ export function parseProject(text: string): Project {
     throw new Error(`Project version ${data.version} is newer than this app supports (${PROJECT_VERSION})`);
   // additive fields from later rounds: fill defaults rather than bumping the version
   if (!data.seating) data.seating = { ...DEFAULT_SEATING, enabled: false };
+  if (!data.audio) data.audio = { ...DEFAULT_AUDIO };
   return data as Project;
 }

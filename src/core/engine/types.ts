@@ -7,7 +7,8 @@ export type MaterialKey =
   | 'ledBody' | 'ledSupport'
   | 'truss' | 'hoist' | 'fixture'
   | 'presenter'
-  | 'chairSeat' | 'chairFrame';
+  | 'chairSeat' | 'chairFrame'
+  | 'speaker' | 'speakerGrille';
 
 export type Part =
   | { kind: 'box'; min: Vec3; max: Vec3; mat: MaterialKey }
@@ -22,7 +23,8 @@ export type LayerPath =
   | '20_LED::20_01_CABINETS' | '20_LED::20_02_SUPPORTS' | '20_LED::20_03_TRIM'
   | '30_RIGGING::30_01_TRUSS' | '30_RIGGING::30_02_HOISTS' | '30_RIGGING::30_03_HARDWARE'
   | '40_LIGHTING::40_01_FIXTURES' | '40_LIGHTING::40_02_ACCESSORIES'
-  | '50_AUDIO' | '60_SCENIC'
+  | '50_AUDIO::50_01_MAINS' | '50_AUDIO::50_02_SUBS' | '50_AUDIO::50_03_FILLS' | '50_AUDIO::50_04_MONITORS'
+  | '60_SCENIC'
   | '70_AUDIENCE::70_01_SEATING' | '70_AUDIENCE::70_02_LAYOUT'
   | '90_TECHNICAL::90_01_DIMENSIONS' | '90_TECHNICAL::90_02_CENTERLINES' | '90_TECHNICAL::90_03_REFERENCE';
 
@@ -48,7 +50,9 @@ export interface SceneObject {
   block?: string;
   parts?: Part[]; // unique (non-block) geometry
   position: Vec3;
-  rotationZ: number; // radians, about the object's origin
+  rotationZ: number; // radians, yaw about the object's local Z
+  /** optional pitch about the object's local X axis, applied after rotationZ (radians) */
+  tilt?: number;
   meta: Record<string, MetaValue>;
 }
 

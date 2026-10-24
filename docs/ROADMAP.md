@@ -41,9 +41,11 @@ Done:
 - Risers on the deck: add / rename / remove, width, depth, height above deck (leg increments), position snapped to deck seams, drag or arrow-handle move, legs standing on the deck, `10_02_RISERS` layer. Errors when a riser hangs off the deck or overlaps another. The presenter figure stands on whatever level is under it.
 - Seating follows the shape: rows start in front of the apron, seats keep the front distance from any deck edge they face and an aisle width beside a thrust or runway.
 - Presets: Panoramic → rounded apron, Product Launch → runway + B-stage, Multi-Screen → thrust, Conversation → chat riser.
+- **Audio** (`src/core/engine/audio.ts`, `50_AUDIO` layers): flown main L/R line-array hangs with a nominal progressive J-rake (object `tilt` added to the model + all three exporters), subwoofers (ground-stacked or flown), downstage front-fills and stage-monitor wedges. Real d&b J8 / J-SUB data (manufacturer-verified) plus a generic fill and wedge. Panel, inspector, production readout, BOM, drag + gizmo on each hang (spread + trim). Labelled: splay, coverage and rigging loads are the audio vendor's.
 - The app is published at https://alexilten.github.io/STAGEWORK/ on every push to main.
 
 Next:
+- Lighting positions: overhead electrics (battens over the stage) and side booms, with arrangement presets.
 Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, expanded LED/lighting catalogue (Robe, Ayrton, Claypaky, ETC, Chauvet), lighting positions & arrangement presets, audio (line arrays, fills), scenic panels/portals, richer warnings (sightlines, trim vs. venue height).
 
 ## Round 4 — interoperability

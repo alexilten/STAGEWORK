@@ -1,6 +1,7 @@
-import { CHAIRS, DECK_SYSTEMS, FIXTURES, HOISTS, LED_CABINETS, TRUSS_SYSTEMS, getCatalogItem } from '../catalog';
-import type { Chair, DeckSystem, Fixture, Hoist, LedCabinet, TrussSystem } from '../catalog';
+import { CHAIRS, DECK_SYSTEMS, FIXTURES, HOISTS, LED_CABINETS, SPEAKERS, TRUSS_SYSTEMS, getCatalogItem } from '../catalog';
+import type { Chair, DeckSystem, Fixture, Hoist, LedCabinet, Speaker, TrussSystem } from '../catalog';
 import { resolveSeating, type SeatingReport } from './seating';
+import { resolveAudio, type AudioReport } from './audio';
 import type { Project } from '../schema';
 import { resolveDeck, type DeckLayout } from './deck';
 import { resolveLedWall, type LedLayout } from './led';
@@ -15,6 +16,7 @@ export interface ProductionReport {
   fixtures: { fixture: Fixture; count: number } | null;
   hoist: Hoist;
   seating: SeatingReport | null;
+  audio: AudioReport | null;
 }
 
 export interface SceneGraph {
@@ -139,6 +141,14 @@ export function resolveScene(project: Project): SceneGraph {
     }
   }
 
+  // ── Audio
+  let audio: AudioReport | null = null;
+  if (project.audio?.enabled) {
+    const r = resolveAudio(project.audio, (id) => getCatalogItem<Speaker>(id, 'speaker'),
+      { stageWidth: W, stageDepth: D, stageTop: H, downstageY: 0 });
+    audio = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings);
+  }
+
   // ── Technical annotations (exported to 90_TECHNICAL)
   const off = 900;
   annotations.push(
@@ -166,6 +176,7 @@ export function resolveScene(project: Project): SceneGraph {
     max[0] = Math.max(max[0], a.maxX); max[2] = Math.max(max[2], a.top);
   }
   if (deck.layout.apron) min[1] = Math.min(min[1], -deck.layout.apron.depth);
+  if (audio) { const sp = audio.spread + 1500; min[0] = Math.min(min[0], -sp); max[0] = Math.max(max[0], sp); max[2] = Math.max(max[2], audio.trim + 500); min[1] = Math.min(min[1], -1500); }
   for (const L of led) {
     min[0] = Math.min(min[0], L.origin[0] - L.chord / 2); max[0] = Math.max(max[0], L.origin[0] + L.chord / 2);
     max[1] = Math.max(max[1], L.origin[1] + L.cabinet.depth); max[2] = Math.max(max[2], L.top);
@@ -180,10 +191,10 @@ export function resolveScene(project: Project): SceneGraph {
 
   return {
     objects, blocks, annotations, warnings,
-    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating },
+    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio },
     bounds: { min, max },
     houseBounds: { min: hmin, max: hmax },
   };
 }
 
-export const catalogs = { LED_CABINETS, DECK_SYSTEMS, TRUSS_SYSTEMS, FIXTURES, HOISTS, CHAIRS };
+export const catalogs = { LED_CABINETS, DECK_SYSTEMS, TRUSS_SYSTEMS, FIXTURES, HOISTS, CHAIRS, SPEAKERS };

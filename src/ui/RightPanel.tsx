@@ -78,6 +78,7 @@ function Production() {
           <Metric label="LED cabinets" value={String(cabinets)} sub={`${formatArea(ledArea, u)} · ${r.led.length} surface${r.led.length === 1 ? '' : 's'}`} />
           <Metric label="Truss" value={`${sections} sections`} sub={`${formatLength(trussLen, u)} · ${hoists} hoists`} />
           {r.seating && <Metric label="Seats" value={r.seating.count.toLocaleString()} sub={`${r.seating.rows} rows · ${r.seating.wheelchairSpaces} wheelchair`} />}
+          {r.audio && <Metric label="PA" value={`${r.audio.mainsPerSide}/side`} sub={`${r.audio.subs} subs · ${r.audio.frontFills} fills · ${r.audio.monitors} wedges`} />}
         </div>
         {r.led.map((l) => (
           <div className="sub-card" key={l.id}>
@@ -164,6 +165,11 @@ function groupTitle(g: string, scene: SceneGraph) {
   if (g === 'presenter') return 'Presenter reference';
   if (g === 'fixtures') return 'Front-of-house lighting';
   if (g === 'seating') return 'Audience seating';
+  if (g === 'audio:main:l') return 'Main hang — house left';
+  if (g === 'audio:main:r') return 'Main hang — house right';
+  if (g === 'audio:sub') return 'Subwoofers';
+  if (g === 'audio:fill') return 'Front fills';
+  if (g === 'audio:monitor') return 'Stage monitors';
   if (g.startsWith('riser:')) return scene.report.stage.areas.find((a) => a.group === g)?.label ?? 'Riser';
   if (g === 'truss:front') return 'Front light truss';
   if (g.startsWith('truss:header:')) return `${scene.report.led.find((l) => `truss:header:${l.id}` === g)?.name ?? ''} header truss`;
@@ -180,6 +186,19 @@ function GroupRows({ group, scene, u }: { group: string; scene: SceneGraph; u: D
     <Row k="Legs" v={String(r.stage.legCount)} />
     <Row k="Shape" v={r.stage.shape === 'rect' ? 'Rectangle' : r.stage.shape === 'rounded' ? `Rounded · ${formatLength(r.stage.apron?.depth ?? 0, u)} apron` : r.stage.areas.filter((a) => a.kind !== 'main' && a.kind !== 'riser').map((a) => a.label).join(' + ')} />
   </>);
+  if (group.startsWith('audio:') && r.audio) {
+    const A = r.audio;
+    if (group.startsWith('audio:main')) return (<>
+      <Row k="Array" v={`${A.mainsPerSide} × ${A.main.model}`} />
+      <Row k="Trim (top)" v={formatLength(A.trim, u, { precise: true })} />
+      <Row k="Outboard" v={formatLength(A.spread, u, { precise: true })} />
+      {A.main.dispersionH && <Row k="Horizontal" v={`${A.main.dispersionH}°`} />}
+      <p className="muted small">Splay and coverage are set by the audio vendor's prediction software.</p>
+    </>);
+    if (group === 'audio:sub') return (<><Row k="Subs" v={`${A.subs} × ${A.sub?.model ?? ''}`} /><Row k="Arrangement" v={A.subMode === 'ground' ? 'Ground-stacked' : 'Flown'} /></>);
+    if (group === 'audio:fill') return <Row k="Front fills" v={`${A.frontFills} × ${A.fill?.model ?? ''}`} />;
+    if (group === 'audio:monitor') return <Row k="Wedges" v={`${A.monitors} × ${A.monitor?.model ?? ''}`} />;
+  }
   const RA = group.startsWith('riser:') ? r.stage.areas.find((a) => a.group === group) : undefined;
   if (RA) return (<>
     <Row k="Size" v={`${formatLength(RA.maxX - RA.minX, u, { precise: true })} × ${formatLength(RA.maxY - RA.minY, u, { precise: true })}`} />
@@ -247,6 +266,12 @@ function CatalogRows({ id, u }: { id: string; u: DisplayUnits }) {
     case 'chair': return (<>
       <Row k="Footprint" v={`${c.width} × ${c.depth} mm`} />
       <Row k="Height / seat" v={`${c.height} / ${c.seatHeight} mm`} />
+    </>);
+    case 'speaker': return (<>
+      <Row k="Cabinet" v={`${c.width} × ${c.depth} × ${c.height} mm`} />
+      <Row k="Weight" v={c.weightKg != null ? `${c.weightKg} kg` : '—'} />
+      {c.dispersionH != null && <Row k="Horizontal" v={`${c.dispersionH}°`} />}
+      {c.splayRange && <Row k="Splay" v={`${c.splayRange[0]}–${c.splayRange[1]}°`} />}
     </>);
   }
 }

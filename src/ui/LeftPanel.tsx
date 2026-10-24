@@ -1,7 +1,7 @@
-import { CHAIRS, DECK_SYSTEMS, FIXTURES, LED_CABINETS, getCatalogItem, type DeckSystem, type LedCabinet } from '../core/catalog';
+import { CHAIRS, DECK_SYSTEMS, FIXTURES, LED_CABINETS, SPEAKERS, getCatalogItem, type DeckSystem, type LedCabinet, type Speaker } from '../core/catalog';
 import { SEAT_COUNT } from '../core/engine/seating';
 import { useState } from 'react';
-import { DEFAULT_SEATING, DEFAULT_SHAPES, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
+import { DEFAULT_AUDIO, DEFAULT_SEATING, DEFAULT_SHAPES, type AudioParams, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
 import { formatLength } from '../core/units';
 import { LengthControl, NumberControl, Section, Segmented, Select, Toggle, VerificationBadge } from './controls';
 import { useStore } from './store';
@@ -139,6 +139,8 @@ export function LeftPanel() {
             hint={!project.rigging.front.enabled ? 'Enable the front truss to hang fixtures' : 'Evenly spaced on the front truss'}
             onChange={(v) => edit((p) => { p.lighting.count = v; }, 'light.count')} />
         </Section>
+
+        <AudioSection />
 
         <Section title="Scenic" defaultOpen={false} summary="Round 3">
           <p className="muted small">Scenic panels, portals and architectural frames arrive in a later round. The <code>60_SCENIC</code> Rhino layer is already reserved in every export.</p>
@@ -309,6 +311,45 @@ function RiserSection() {
         <LengthControl label="Upstage of deck edge" units={u} value={r.y} min={0} max={st.depth.resolved - S} step={S}
           onChange={(v) => set({ y: v }, `riser.${r.id}.y`)} />
       </>)}
+    </Section>
+  );
+}
+
+const speakersOf = (t: Speaker['speakerType']) => SPEAKERS.filter((x) => x.speakerType === t);
+
+function AudioSection() {
+  const project = useStore((s) => s.project);
+  const r = useStore((s) => s.scene.report.audio);
+  const edit = useStore((s) => s.edit);
+  const u = project.units;
+  const a = project.audio ?? DEFAULT_AUDIO;
+  const set = (fn: (x: AudioParams) => void, key?: string) => edit((p) => { p.audio ??= { ...DEFAULT_AUDIO }; fn(p.audio); }, key);
+  const off = !a.enabled;
+  const main = getCatalogItem<Speaker>(a.mainSpeakerId, 'speaker');
+  return (
+    <Section title="Audio" defaultOpen={false} summary={a.enabled && r ? `${r.mainsPerSide}/side · ${r.subs} subs` : 'off'}>
+      <Toggle label="PA system" checked={a.enabled} onChange={(v) => set((x) => { x.enabled = v; })} />
+      <p className="muted small" style={{ marginTop: off ? 0 : undefined, opacity: off ? 0.5 : 1 }}>Main L/R line-array hangs, subs, front fills and monitors. Positions are for planning — the audio vendor sets array splay and coverage.</p>
+      <div className="sub-label">Main hangs (L/R)</div>
+      <Select label="Box" value={a.mainSpeakerId} options={speakersOf('line-array').map((x) => ({ value: x.id, label: `${x.manufacturer} ${x.model}` }))} onChange={(v) => set((x) => { x.mainSpeakerId = v; })} />
+      <NumberControl label="Boxes per side" value={a.mainsPerSide} min={1} max={24} step={1} disabled={off}
+        hint={r ? <>{r.mainsPerSide * 2} boxes · {main.dispersionH ?? '—'}° horizontal</> : undefined}
+        onChange={(v) => set((x) => { x.mainsPerSide = v; }, 'audio.n')} />
+      <LengthControl label="Array trim (top)" units={u} value={a.trim} min={3000} max={16000} step={250} disabled={off}
+        hint={r ? <>Top of array above the floor</> : undefined} onChange={(v) => set((x) => { x.trim = v; }, 'audio.trim')} />
+      <LengthControl label="Outboard spread" units={u} value={a.spread} min={2000} max={20000} step={250} disabled={off}
+        hint="Each hang's offset from the centreline" onChange={(v) => set((x) => { x.spread = v; }, 'audio.spread')} />
+      <NumberControl label="Splay per box" value={a.splayPerBox} min={0} max={Math.max(1, main.splayRange?.[1] ?? 7)} step={0.5} suffix="°" disabled={off}
+        hint={main.splayRange ? <>Nominal rake · product range {main.splayRange[0]}–{main.splayRange[1]}°</> : undefined}
+        onChange={(v) => set((x) => { x.splayPerBox = v; }, 'audio.splay')} />
+      <div className="sub-label">Subs</div>
+      <Select label="Box" value={a.subSpeakerId} options={speakersOf('sub').map((x) => ({ value: x.id, label: `${x.manufacturer} ${x.model}` }))} onChange={(v) => set((x) => { x.subSpeakerId = v; })} />
+      <NumberControl label="Count" value={a.subs} min={0} max={24} step={1} disabled={off} onChange={(v) => set((x) => { x.subs = v; }, 'audio.subs')} />
+      <div className="ctl"><Segmented value={a.subMode} onChange={(v) => set((x) => { x.subMode = v; })} options={[{ value: 'ground', label: 'Ground-stacked' }, { value: 'flown', label: 'Flown' }]} /></div>
+      <div className="sub-label">Fills & monitors</div>
+      <NumberControl label="Front fills" value={a.frontFills} min={0} max={16} step={1} disabled={off} onChange={(v) => set((x) => { x.frontFills = v; }, 'audio.fills')} />
+      <NumberControl label="Stage wedges" value={a.monitors} min={0} max={16} step={1} disabled={off} onChange={(v) => set((x) => { x.monitors = v; }, 'audio.mons')} />
+      {r?.weightKg != null && <div className="cab-meta"><VerificationBadge v={main.verification} /><span>{(r.weightKg / 1000).toFixed(2)} t total</span></div>}
     </Section>
   );
 }

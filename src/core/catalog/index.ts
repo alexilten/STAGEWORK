@@ -1,5 +1,5 @@
 import { ft } from '../units';
-import type { CatalogItem, Chair, DeckSystem, Fixture, Hoist, LedCabinet, TrussSystem } from './types';
+import type { CatalogItem, Chair, DeckSystem, Fixture, Hoist, LedCabinet, Speaker, TrussSystem } from './types';
 export * from './types';
 
 const ACCESSED = '2026-10-23';
@@ -206,7 +206,67 @@ export const CHAIRS: Chair[] = [
   },
 ];
 
-export const CATALOG: CatalogItem[] = [...LED_CABINETS, ...DECK_SYSTEMS, ...TRUSS_SYSTEMS, ...FIXTURES, ...HOISTS, ...CHAIRS];
+
+/* ───────────────────────────── Audio ───────────────────────────── */
+
+export const SPEAKERS: Speaker[] = [
+  {
+    id: 'dbaudio.j8',
+    category: 'speaker',
+    manufacturer: 'd&b audiotechnik',
+    model: 'J8 (line array)',
+    speakerType: 'line-array',
+    verification: 'manufacturer',
+    width: 1100, depth: 570, height: 360,
+    weightKg: 60,
+    dispersionH: 80,
+    splayRange: [0, 7],
+    sources: [
+      { label: 'd&b audiotechnik — J8 product page', url: 'https://www.dbaudio.com/global/en/products/series/j-series/j8/', accessed: ACCESSED,
+        note: '360 (H) × 1100 (W) × 570 (D) mm, 60 kg, 80° horizontal, 0–7° inter-cabinet splay in 1° steps' },
+    ],
+  },
+  {
+    id: 'dbaudio.j-sub',
+    category: 'speaker',
+    manufacturer: 'd&b audiotechnik',
+    model: 'J-SUB (cardioid sub)',
+    speakerType: 'sub',
+    verification: 'manufacturer',
+    width: 1100, depth: 1062, height: 540,
+    weightKg: 106,
+    sources: [
+      { label: 'd&b audiotechnik — J-SUB architectural spec', url: 'https://www.dbaudio.com/assets/products/downloads/architectural-specifications/dbaudio-arch-specs-j-sub-en.txt', accessed: ACCESSED,
+        note: 'max 540 (H) × 1100 (W) × 1062 (D) mm, 106 kg' },
+    ],
+  },
+  {
+    id: 'generic.fill',
+    category: 'speaker',
+    manufacturer: 'Generic',
+    model: 'Front-fill point source',
+    speakerType: 'point',
+    verification: 'generic',
+    width: 300, depth: 360, height: 500,
+    weightKg: 15,
+    dispersionH: 90,
+    sources: [{ label: 'Representative compact 10"/12" point-source envelope; not a manufacturer SKU' }],
+    notes: ['Swap for the specified fill box before production.'],
+  },
+  {
+    id: 'generic.wedge',
+    category: 'speaker',
+    manufacturer: 'Generic',
+    model: 'Stage monitor wedge',
+    speakerType: 'monitor',
+    verification: 'generic',
+    width: 600, depth: 500, height: 400,
+    weightKg: 18,
+    sources: [{ label: 'Representative 12"/15" floor wedge envelope; not a manufacturer SKU' }],
+  },
+];
+
+export const CATALOG: CatalogItem[] = [...LED_CABINETS, ...DECK_SYSTEMS, ...TRUSS_SYSTEMS, ...FIXTURES, ...HOISTS, ...CHAIRS, ...SPEAKERS];
 
 export function getCatalogItem<T extends CatalogItem>(id: string, category: T['category']): T {
   const item = CATALOG.find((c) => c.id === id && c.category === category);
