@@ -5,7 +5,7 @@ import type { SystemKey } from '../core/engine/types';
 import { serializeProject, type Project } from '../core/schema';
 import { bomCsv } from './bom';
 import { exportRhino, type RhinoModule } from './rhino';
-import { exportGlb } from './glb';
+import { exportGlb, type GlbMedia } from './glb';
 
 let rhinoPromise: Promise<RhinoModule> | null = null;
 export function loadRhino(): Promise<RhinoModule> {
@@ -30,5 +30,5 @@ export async function export3dm(scene: SceneGraph, project: Project, opts: { ver
 }
 export const exportProject = (p: Project) => download(`${slug(p.name)}.stagecraft.json`, serializeProject(p), 'application/json');
 export const exportBom = (s: SceneGraph, p: Project) => download(`${slug(p.name)}_BOM.csv`, bomCsv(s), 'text/csv');
-export const exportGlbFile = (s: SceneGraph, p: Project, systems?: SystemKey[]) =>
-  download(`${slug(p.name)}.glb`, exportGlb(s, p.name, { systems, finish: p.stage.finish }) as BlobPart, 'model/gltf-binary');
+export const exportGlbFile = (s: SceneGraph, p: Project, systems?: SystemKey[], media?: GlbMedia) =>
+  download(`${slug(p.name)}.glb`, exportGlb(s, p.name, { systems, finish: p.stage.finish, media }) as BlobPart, 'model/gltf-binary');

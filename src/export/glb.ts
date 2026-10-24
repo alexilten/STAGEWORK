@@ -108,7 +108,13 @@ function prismPrim(points: [number, number][], z0: number, z1: number, out: Prim
 }
 const cross = (a: number[], b: number[]) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
-export interface GlbOptions { systems?: SystemKey[]; finish?: StageFinish }
+/**
+ * Screen content for the LED faces: an image already padded to cover every wall,
+ * and where it sits in world X / Z (mm). See ui/media.ts → glbMedia().
+ */
+export interface GlbMedia { image: Uint8Array; mimeType: 'image/png' | 'image/jpeg'; rect: { x0: number; z0: number; width: number; height: number } }
+
+export interface GlbOptions { systems?: SystemKey[]; finish?: StageFinish; media?: GlbMedia }
 
 export function exportGlb(scene: SceneGraph, projectName: string, opts: GlbOptions = {}): Uint8Array {
   const mats = materialTable(opts.finish ?? 'white');
@@ -118,11 +124,11 @@ export function exportGlb(scene: SceneGraph, projectName: string, opts: GlbOptio
   const bufferViews: any[] = [], accessors: any[] = [], meshes: any[] = [], nodes: any[] = [], materials: any[] = [];
   let byteLength = 0;
   const chunks: Uint8Array[] = [];
-  const pushView = (arr: Float32Array | Uint32Array, target: number) => {
+  const pushView = (arr: Float32Array | Uint32Array | Uint8Array, target?: number) => {
     const bytes = new Uint8Array(arr.buffer, arr.byteOffset, arr.byteLength);
     const pad = (4 - (byteLength % 4)) % 4;
     if (pad) { chunks.push(new Uint8Array(pad)); byteLength += pad; }
-    bufferViews.push({ buffer: 0, byteOffset: byteLength, byteLength: bytes.byteLength, target });
+    bufferViews.push({ buffer: 0, byteOffset: byteLength, byteLength: bytes.byteLength, ...(target ? { target } : {}) });
     chunks.push(bytes); byteLength += bytes.byteLength;
     return bufferViews.length - 1;
   };
@@ -182,11 +188,49 @@ export function exportGlb(scene: SceneGraph, projectName: string, opts: GlbOptio
       const parts = o.block ? scene.blocks[o.block].parts : o.parts!;
       const isCab = o.system === 'ledCabinets';
       const box = isCab ? (parts[0] as Extract<Part, { kind: 'box' }>) : undefined;
-      meshFor.set(key, buildMesh(o.block ?? o.id, parts, box ? { w: box.max[0] - box.min[0], h: box.max[2] - box.min[2] } : undefined));
+      meshFor.set(key, buildMesh(o.block ?? o.id, parts, box && !opts.media ? { w: box.max[0] - box.min[0], h: box.max[2] - box.min[2] } : undefined));
     }
     const parent = nodeForLayer(o.layer);
     nodes.push(objectNode(o, meshFor.get(key)!));
     nodes[parent].children.push(nodes.length - 1);
+  }
+  // screen content: one textured, emissive face mesh per wall in world space (UVs = front projection)
+  const extra: { images?: any[]; textures?: any[]; samplers?: any[] } = {};
+  if (opts.media) {
+    const { rect } = opts.media;
+    extra.images = [{ bufferView: pushView(opts.media.image), mimeType: opts.media.mimeType, name: 'SC_Screen_Content' }];
+    extra.samplers = [{ magFilter: 9729, minFilter: 9987, wrapS: 33071, wrapT: 33071 }];
+    extra.textures = [{ source: 0, sampler: 0 }];
+    materials.push({ name: 'SC_LED_Content', pbrMetallicRoughness: { baseColorFactor: [0, 0, 0, 1], metallicFactor: 0, roughnessFactor: 0.3 }, emissiveTexture: { index: 0 }, emissiveFactor: [1, 1, 1] });
+    const contentMat = materials.length - 1;
+    const walls = new Map<string, SceneObject[]>();
+    for (const o of objects) if (o.system === 'ledCabinets' && o.block) (walls.get(o.group) ?? walls.set(o.group, []).get(o.group)!).push(o);
+    for (const [group, cabs] of walls) {
+      const pos: number[] = [], nrm: number[] = [], uv: number[] = [], idx: number[] = [];
+      for (const o of cabs) {
+        const b = scene.blocks[o.block!].parts[0] as Extract<Part, { kind: 'box' }>;
+        const w = b.max[0] - b.min[0], h = b.max[2] - b.min[2];
+        const c = Math.cos(o.rotationZ), sn = Math.sin(o.rotationZ);
+        const base = pos.length / 3;
+        for (const [lx, lz] of [[-w / 2 + 2, 2], [w / 2 - 2, 2], [w / 2 - 2, h - 2], [-w / 2 + 2, h - 2]]) {
+          const X = o.position[0] + c * lx - sn * -3.5, Y = o.position[1] + sn * lx + c * -3.5, Z = o.position[2] + lz;
+          pos.push(X, Y, Z); nrm.push(sn, -c, 0);
+          uv.push((X - rect.x0) / rect.width, 1 - (Z - rect.z0) / rect.height);
+        }
+        idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+      }
+      const p32 = new Float32Array(pos);
+      const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+      for (let i = 0; i < p32.length; i += 3) for (let j = 0; j < 3; j++) { min[j] = Math.min(min[j], p32[i + j]); max[j] = Math.max(max[j], p32[i + j]); }
+      accessors.push({ bufferView: pushView(p32, 34962), componentType: 5126, count: p32.length / 3, type: 'VEC3', min, max });
+      accessors.push({ bufferView: pushView(new Float32Array(nrm), 34962), componentType: 5126, count: p32.length / 3, type: 'VEC3' });
+      accessors.push({ bufferView: pushView(new Float32Array(uv), 34962), componentType: 5126, count: p32.length / 3, type: 'VEC2' });
+      accessors.push({ bufferView: pushView(new Uint32Array(idx), 34963), componentType: 5125, count: idx.length, type: 'SCALAR' });
+      const a = accessors.length;
+      meshes.push({ name: `MEDIA_${group}`, primitives: [{ attributes: { POSITION: a - 4, NORMAL: a - 3, TEXCOORD_0: a - 2 }, indices: a - 1, material: contentMat }] });
+      nodes.push({ name: `MEDIA.${group.replace(/^led:/, '').toUpperCase()}`, mesh: meshes.length - 1, extras: { system: 'ledCabinets', group, content: 'screen media (front projection)' } });
+      nodes[nodeForLayer(cabs[0].layer)].children.push(nodes.length - 1);
+    }
   }
   for (const n of nodes) if (n.children && !n.children.length) delete n.children;
 
@@ -202,7 +246,7 @@ export function exportGlb(scene: SceneGraph, projectName: string, opts: GlbOptio
     asset: { version: '2.0', generator: `STAGECRAFT ${APP_VERSION}` },
     scene: 0,
     scenes: [{ name: projectName, nodes: [rootIndex] }],
-    nodes, meshes, materials, accessors, bufferViews,
+    nodes, meshes, materials, accessors, bufferViews, ...extra,
     buffers: [{ byteLength }],
   };
   return packGlb(json, chunks, byteLength);

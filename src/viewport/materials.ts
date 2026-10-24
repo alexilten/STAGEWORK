@@ -64,19 +64,25 @@ export function makeLedFaceMaterial() {
       uTech: { value: 0 },
       uSelected: { value: 0 },
       uAccent: { value: ACCENT.clone() },
+      // uploaded screen content: world-space rect (x0, z0, width, height) in mm
+      uMap: { value: null as THREE.Texture | null },
+      uHasMap: { value: 0 },
+      uRect: { value: new THREE.Vector4(0, 0, 1, 1) },
     },
     vertexShader: /* glsl */ `
       attribute vec2 aCell;
-      varying vec2 vUv; varying vec2 vG;
+      varying vec2 vUv; varying vec2 vG; varying vec2 vXZ;
       uniform vec2 uGrid;
       void main() {
         vUv = uv;
         vG = (aCell + uv) / uGrid;
+        vXZ = (instanceMatrix * vec4(position, 1.0)).xz; // STAGECRAFT mm, front projection
         gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
       }`,
     fragmentShader: /* glsl */ `
-      varying vec2 vUv; varying vec2 vG;
+      varying vec2 vUv; varying vec2 vG; varying vec2 vXZ;
       uniform vec2 uGrid; uniform float uTime; uniform float uTech; uniform float uSelected; uniform vec3 uAccent;
+      uniform sampler2D uMap; uniform float uHasMap; uniform vec4 uRect;
       float blob(vec2 p, vec2 c, float r) { return exp(-dot(p - c, p - c) / (r * r)); }
       void main() {
         float aspect = uGrid.x / max(uGrid.y, 1.0);
@@ -87,6 +93,12 @@ export function makeLedFaceMaterial() {
         col += vec3(0.62, 0.32, 0.95) * 0.70 * blob(p, vec2(aspect * (0.66 + 0.07 * cos(t * 2.7)), 0.58 + 0.08 * sin(t * 1.9)), 0.36);
         col += vec3(1.00, 0.58, 0.36) * 0.45 * blob(p, vec2(aspect * (0.52 + 0.12 * sin(t * 1.3)), 0.12), 0.30);
         col = col / (1.0 + col * 0.6);
+        if (uHasMap > 0.5) {
+          vec2 m = (vXZ - uRect.xy) / uRect.zw;
+          float inside = step(0.0, m.x) * step(m.x, 1.0) * step(0.0, m.y) * step(m.y, 1.0);
+          vec4 tx = texture2D(uMap, clamp(m, 0.0, 1.0));
+          col = vec3(0.008, 0.009, 0.012) + tx.rgb * tx.a * inside; // transparent logo areas read as black LED
+        }
         // cabinet seams
         vec2 fw = fwidth(vUv);
         vec2 e = smoothstep(vec2(0.0), fw * 1.2, vUv) * smoothstep(vec2(0.0), fw * 1.2, 1.0 - vUv);

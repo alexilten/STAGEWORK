@@ -7,7 +7,9 @@ import { getCatalogItem, type LedCabinet } from '../core/catalog';
 import { deleteUserPreset, listUserPresets, loadUserPreset, saveUserPreset } from './userPresets';
 import { Segmented } from './controls';
 import { Icon } from './icons';
-import { useStore } from './store';
+import { MediaButton } from './MediaButton';
+import { glbMedia } from './media';
+import { projectForSave, useStore } from './store';
 
 export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
   const project = useStore((s) => s.project);
@@ -30,7 +32,7 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
       const mod = e.metaKey || e.ctrlKey;
       if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) { redo(); } else { undo(); } }
       if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); redo(); }
-      if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(useStore.getState().project); }
+      if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); exportProject(projectForSave(useStore.getState().project)); }
       if (!mod && e.key === 't') setMode(useStore.getState().mode === 'technical' ? 'presentation' : 'technical');
       const views = { '1': 'perspective', '2': 'front', '3': 'side', '4': 'plan', '5': 'iso', '6': 'house' } as const;
       if (!mod && e.key in views) useStore.getState().setView(views[e.key as keyof typeof views]);
@@ -98,6 +100,7 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
           </select>
           <span className="chev"><Icon.chevron /></span>
         </div>
+        <MediaButton onToast={onToast} />
         <span className="tb-sep" />
         <button className="icon-btn" onClick={undo} disabled={!canUndo} title="Undo (⌘Z)"><Icon.undo /></button>
         <button className="icon-btn" onClick={redo} disabled={!canRedo} title="Redo (⇧⌘Z)"><Icon.redo /></button>
@@ -108,7 +111,7 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
       <div className="tb-group">
         <input ref={fileRef} type="file" accept=".json,.3dm" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) openFile(f); e.target.value = ''; }} />
         <button className="icon-btn" onClick={() => fileRef.current?.click()} title="Open project (.stagecraft.json or STAGECRAFT .3dm)"><Icon.open /></button>
-        <button className="icon-btn" onClick={() => exportProject(project)} title="Save project (⌘S)"><Icon.save /></button>
+        <button className="icon-btn" onClick={() => exportProject(projectForSave(project))} title="Save project (⌘S)"><Icon.save /></button>
         <div className="export-wrap">
           <button className="primary" onClick={() => setExportOpen(!exportOpen)}><Icon.export /> Export</button>
           {exportOpen && <ExportMenu onClose={() => setExportOpen(false)} onToast={onToast} />}
@@ -151,9 +154,13 @@ function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast: (m: st
         return n;
       }, 'Rhino .3dm exported')}>{busy ? 'Preparing…' : 'Export .3dm'}</button>
       <div className="menu-sep" />
-      <button className="menu-item" onClick={() => go(() => exportGlbFile(scene, project, SYSTEM_SETS[set].systems), 'GLB exported')}>glTF binary (selection above) <span>.glb</span></button>
+      <button className="menu-item" onClick={() => go(async () => {
+        const data = project.media && useStore.getState().assets[project.media.assetId];
+        const media = project.media && data ? await glbMedia(scene.report.led, project.media, data) : undefined;
+        exportGlbFile(scene, project, SYSTEM_SETS[set].systems, media);
+      }, 'GLB exported')}>glTF binary (selection above) <span>.glb</span></button>
       <button className="menu-item" onClick={() => go(() => exportBom(scene, project), 'Bill of materials exported')}>Bill of materials <span>.csv</span></button>
-      <button className="menu-item" onClick={() => go(() => exportProject(project), 'Project saved')}>Project file <span>.json</span></button>
+      <button className="menu-item" onClick={() => go(() => exportProject(projectForSave(project)), 'Project saved')}>Project file <span>.json</span></button>
       <div className="menu-item disabled" title="Round 4">FBX · DXF · DWG · STEP <span>planned</span></div>
     </div>
   );

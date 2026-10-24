@@ -55,6 +55,9 @@ interface State {
   /** live readout while dragging in the viewport */
   dragInfo: string | null;
   setDragInfo: (s: string | null) => void;
+  /** screen-content images by asset id (data: URLs), kept out of the undo history */
+  assets: Record<string, string>;
+  addAsset: (id: string, data: string) => void;
 }
 
 const urlPreset = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('preset') : null;
@@ -87,7 +90,10 @@ export const useStore = create<State>((set, get) => ({
       lastEditKey: key ?? null, lastEditAt: now,
     });
   },
-  load: (p) => set({ project: p, scene: resolveScene(p), past: [...get().past, get().project], future: [], selection: null, activeWall: p.ledWalls[0]?.id ?? '', lastEditKey: null }),
+  load: (raw) => {
+    const p = withAssetsExtracted(raw);
+    set({ project: p, scene: resolveScene(p), past: [...get().past, get().project], future: [], selection: null, activeWall: p.ledWalls[0]?.id ?? '', lastEditKey: null });
+  },
   loadPreset: (id) => { get().load(getPreset(id).build()); set({ viewNonce: get().viewNonce + 1 }); },
   undo: () => {
     const { past, project, future } = get();
@@ -131,7 +137,24 @@ export const useStore = create<State>((set, get) => ({
   },
   dragInfo: null,
   setDragInfo: (s) => set({ dragInfo: s }),
+  assets: {},
+  addAsset: (id, data) => set({ assets: { ...get().assets, [id]: data } }),
 }));
+
+/** a saved project carries its screen image inline; move it into the asset cache */
+function withAssetsExtracted(p: Project): Project {
+  const m = p.media;
+  if (!m?.data) return p;
+  useStore.getState().addAsset(m.assetId, m.data);
+  const { data: _data, ...rest } = m;
+  return { ...p, media: rest };
+}
+
+/** the project as saved to disk: screen image inlined so the file reopens with its content */
+export function projectForSave(p: Project): Project {
+  const data = p.media ? useStore.getState().assets[p.media.assetId] : undefined;
+  return p.media && data ? { ...p, media: { ...p.media, data } } : p;
+}
 
 function uniqueWallId(p: Project) {
   let n = p.ledWalls.length + 1;

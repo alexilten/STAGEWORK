@@ -7,6 +7,7 @@ import type { StageFinish } from '../core/schema';
 import { useStore, type ViewMode } from '../ui/store';
 import { ACCENT, lookFor, makeEdgeMaterial, makeLedFaceMaterial } from './materials';
 import { beginDrag, isDragging } from './DragController';
+import { resolveMediaCanvas, type MediaRect } from '../core/engine/media';
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
 const CYL = new THREE.CylinderGeometry(1, 1, 1, 20, 1);
@@ -58,6 +59,7 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
     return out;
   }, [visible, scene.blocks]);
 
+  const media = useScreenMedia(scene);
   const leds = useMemo(() => scene.report.led.map((L) => ({
     L, objects: visible.filter((o) => o.group === `led:${L.id}` && o.system === 'ledCabinets'),
   })).filter((x) => x.objects.length), [scene, visible]);
@@ -65,7 +67,7 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
   return (
     <group>
       {batches.map((b) => <InstancedBatch key={b.key + mode} batch={b} mode={mode} finish={finish} />)}
-      {leds.map(({ L, objects }) => <LedFaces key={L.id} id={L.id} cols={L.cols} rows={L.rows} w={L.cabinet.width} h={L.cabinet.height} objects={objects} mode={mode} />)}
+      {leds.map(({ L, objects }) => <LedFaces key={L.id} id={L.id} cols={L.cols} rows={L.rows} w={L.cabinet.width} h={L.cabinet.height} objects={objects} mode={mode} media={media} />)}
     </group>
   );
 }
@@ -159,7 +161,29 @@ function InstancedBatch({ batch, mode, finish }: { batch: Batch; mode: ViewMode;
   );
 }
 
-function LedFaces({ id, cols, rows, w, h, objects, mode }: { id: string; cols: number; rows: number; w: number; h: number; objects: SceneObject[]; mode: ViewMode }) {
+interface ScreenMedia { texture: THREE.Texture; rect: MediaRect }
+
+/** the uploaded screen image as a texture, plus where it lands in world X/Z for the current walls */
+function useScreenMedia(scene: SceneGraph): ScreenMedia | null {
+  const media = useStore((s) => s.project.media);
+  const data = useStore((s) => (media ? s.assets[media.assetId] : undefined));
+  const texture = useMemo(() => {
+    if (!data) return null;
+    const t = new THREE.TextureLoader().load(data, () => { t.needsUpdate = true; });
+    t.colorSpace = THREE.SRGBColorSpace; // decoded to linear; the output pass re-encodes, so it shows as authored
+    t.anisotropy = 8;
+    t.minFilter = THREE.LinearMipmapLinearFilter;
+    return t;
+  }, [data]);
+  useEffect(() => () => texture?.dispose(), [texture]);
+  return useMemo(() => {
+    if (!texture || !media) return null;
+    const c = resolveMediaCanvas(scene.report.led, media.width / media.height, media.fit);
+    return c ? { texture, rect: c.rect } : null;
+  }, [texture, media, scene]);
+}
+
+function LedFaces({ id, cols, rows, w, h, objects, mode, media }: { id: string; cols: number; rows: number; w: number; h: number; objects: SceneObject[]; mode: ViewMode; media: ScreenMedia | null }) {
   const ref = useRef<THREE.InstancedMesh>(null!);
   const material = useMemo(() => makeLedFaceMaterial(), []);
   const selection = useStore((s) => s.selection);
@@ -189,6 +213,13 @@ function LedFaces({ id, cols, rows, w, h, objects, mode }: { id: string; cols: n
     material.uniforms.uTech.value = mode === 'technical' ? 1 : 0;
     material.uniforms.uSelected.value = selection?.group === `led:${id}` ? 1 : 0;
   }, [mode, selection, id, material]);
+
+  useLayoutEffect(() => {
+    const u = material.uniforms;
+    u.uHasMap.value = media ? 1 : 0;
+    u.uMap.value = media?.texture ?? null;
+    if (media) { const r = media.rect; u.uRect.value.set(r.cx - r.width / 2, r.cz - r.height / 2, r.width, r.height); }
+  }, [media, material]);
 
   useFrame((_, dt) => { material.uniforms.uTime.value += dt; });
 

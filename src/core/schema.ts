@@ -153,6 +153,22 @@ export const DEFAULT_AUDIO: AudioParams = {
   monitorSpeakerId: 'generic.wedge', monitors: 4,
 };
 
+/**
+ * Screen content: one still image mapped across the LED surfaces (see engine/media.ts).
+ * The pixels themselves live outside the undo history; a saved project file carries
+ * them inline as `data` (a data: URL) so it reopens with its content.
+ */
+export interface MediaParams {
+  assetId: string;
+  name: string;
+  /** source image size in pixels */
+  width: number;
+  height: number;
+  /** span = cover every screen; main = fit inside the main screen */
+  fit: 'span' | 'main';
+  data?: string;
+}
+
 export interface Project {
   schema: typeof PROJECT_SCHEMA;
   version: number;
@@ -166,6 +182,7 @@ export interface Project {
   presenter: { visible: boolean };
   seating: SeatingParams;
   audio: AudioParams;
+  media?: MediaParams | null;
 }
 
 export function serializeProject(p: Project): string {
