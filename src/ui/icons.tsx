@@ -12,5 +12,6 @@ export const Icon = {
   close: () => <svg width="12" height="12" viewBox="0 0 12 12" {...P}><path d="M3 3l6 6M9 3 3 9" /></svg>,
   warn: () => <svg width="14" height="14" viewBox="0 0 16 16" {...P}><path d="M8 2 1.5 13.5h13z" /><path d="M8 6.5v3.2M8 11.6v.1" /></svg>,
   info: () => <svg width="14" height="14" viewBox="0 0 16 16" {...P}><circle cx="8" cy="8" r="6.5" /><path d="M8 7.2v4M8 4.9v.1" /></svg>,
+  image: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><rect x="2" y="3" width="12" height="10" rx="2" /><circle cx="5.8" cy="6.4" r="1.1" /><path d="m2.5 11.5 3.5-3 2.5 2 2-1.6 3 2.6" /></svg>,
   check: () => <svg width="12" height="12" viewBox="0 0 12 12" {...P}><path d="M2.5 6.2 5 8.5l4.5-5" /></svg>,
 };
