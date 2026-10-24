@@ -160,6 +160,30 @@ describe('Audio', () => {
     expect(s.objects.filter((o) => o.id.startsWith('SPK.SUB')).every((o) => o.layer === '50_AUDIO::50_02_SUBS')).toBe(true);
   });
 
+  it('fills sit on the front-most deck lip for every shape; fills and wedges rest on the deck, wedges aim up', () => {
+    // lowest corner of a block's cabinet box after the object's yaw + pitch
+    const minZ = (s: ReturnType<typeof resolveScene>, o: ReturnType<typeof resolveScene>['objects'][number]) => {
+      const b = s.blocks[o.block!].parts[0] as { min: number[]; max: number[] };
+      let z = Infinity;
+      for (const y of [b.min[1], b.max[1]]) for (const zz of [b.min[2], b.max[2]]) z = Math.min(z, y * Math.sin(o.tilt ?? 0) + zz * Math.cos(o.tilt ?? 0));
+      return o.position[2] + z;
+    };
+    for (const shape of ['rect', 'thrust', 'runway', 'rounded'] as const) {
+      const s = resolveScene(project((p) => { p.stage.shape = shape; p.audio = { ...p.audio, enabled: true, frontFills: 5, monitors: 3 }; }));
+      const H = s.report.stage.height.resolved;
+      const front = shape === 'rounded' ? -s.report.stage.apron!.depth : Math.min(...s.report.stage.areas.filter((a) => a.kind !== 'riser').map((a) => a.minY));
+      const fills = of(s, 'audio:fill');
+      const centre = fills[2];
+      expect(centre.position[1], shape).toBeGreaterThan(front);
+      expect(centre.position[1], shape).toBeLessThan(front + 600);
+      for (const o of [...fills, ...of(s, 'audio:monitor')]) {
+        expect(minZ(s, o), `${shape} ${o.id}`).toBeGreaterThanOrEqual(H - 0.5);
+        expect(minZ(s, o), `${shape} ${o.id}`).toBeLessThan(H + 5);
+      }
+      expect(of(s, 'audio:monitor').every((o) => (o.tilt ?? 0) < 0)).toBe(true); // baffle tilted back, toward the performer's ears
+    }
+  });
+
   it('reports total weight from real box weights and can be switched off', () => {
     const s = withAudio((a) => { a.mainsPerSide = 10; a.subs = 4; a.frontFills = 0; a.monitors = 0; });
     const j8 = getCatalogItem<Speaker>('dbaudio.j8', 'speaker').weightKg!;
@@ -183,7 +207,7 @@ describe('Audio', () => {
 });
 
 describe('Lighting positions', () => {
-  const lp = (mut?: (p: Project) => void) => resolveScene(project((p) => { p.lighting.electrics = { count: 3, perBatten: 8, firstAt: 1500, spacing: 2000, trim: 7000 }; p.lighting.booms = { enabled: true, perBoom: 4, height: 4000 }; mut?.(p); }));
+  const lp = (mut?: (p: Project) => void) => resolveScene(project((p) => { p.lighting.electrics = { count: 3, perBatten: 8, firstAt: 1000, spacing: 1500, trim: 7000 }; p.lighting.booms = { enabled: true, perBoom: 4, height: 4000 }; mut?.(p); }));
   const g = (s: ReturnType<typeof resolveScene>, group: string) => s.objects.filter((o) => o.group === group);
 
   it('builds the requested electrics with fixtures, on the lighting layers', () => {
@@ -205,6 +229,20 @@ describe('Lighting positions', () => {
     expect(bl.every((o) => Math.abs(o.rotationZ + Math.PI / 2) < 1e-9)).toBe(true); // house-left boom yaws to -90°
     const br = g(s, 'boom:r').filter((o) => o.block?.startsWith('SC_FIX'));
     expect(br.every((o) => Math.abs(o.rotationZ - Math.PI / 2) < 1e-9)).toBe(true);
+  });
+
+  it('stands booms on the deck and drops electrics that would sit past the upstage edge', () => {
+    const s = lp();
+    const H = s.report.stage.height.resolved, W = s.report.stage.width.resolved;
+    for (const b of [...g(s, 'boom:l'), ...g(s, 'boom:r')].filter((o) => o.id.startsWith('BOOM'))) {
+      expect(b.position[2]).toBeCloseTo(H, 6);
+      expect(Math.abs(b.position[0])).toBeLessThan(W / 2);
+    }
+    const tight = lp((p) => { p.lighting.electrics.count = 8; p.lighting.electrics.spacing = 2000; });
+    expect(tight.report.lightingPositions!.electrics).toBeLessThan(8);
+    expect(tight.warnings.some((w) => w.code === 'light.elx.fit')).toBe(true);
+    const ys = tight.objects.filter((o) => o.id.startsWith('FIX.ELX')).map((o) => o.position[1]);
+    expect(Math.max(...ys)).toBeLessThanOrEqual(tight.report.stage.depth.resolved);
   });
 
   it('warns on a low electrics trim and keeps old projects loading', () => {

@@ -1,7 +1,7 @@
 import { CHAIRS, DECK_SYSTEMS, FIXTURES, HOISTS, LED_CABINETS, SPEAKERS, TRUSS_SYSTEMS, getCatalogItem } from '../catalog';
 import type { Chair, DeckSystem, Fixture, Hoist, LedCabinet, Speaker, TrussSystem } from '../catalog';
 import { resolveSeating, type SeatingReport } from './seating';
-import { resolveAudio, type AudioReport } from './audio';
+import { resolveAudio, type AudioReport, type DeckLip } from './audio';
 import { resolveLighting, type LightingPositionsReport } from './lighting';
 import type { Project } from '../schema';
 import { resolveDeck, type DeckLayout } from './deck';
@@ -50,6 +50,19 @@ export function resolveScene(project: Project): SceneGraph {
   const deck = resolveDeck(project.stage, deckSys);
   addBlocks(deck.blocks); objects.push(...deck.objects); warnings.push(...deck.warnings); annotations.push(...deck.annotations);
   const W = deck.layout.width.resolved, D = deck.layout.depth.resolved, H = deck.layout.height.resolved;
+  /** top of the highest deck area under a plan point (main deck, thrust, riser …); the floor if none */
+  const deckTopAt = (x: number, y: number) =>
+    deck.layout.areas.filter((a) => a.minX <= x && a.maxX >= x && a.minY <= y && a.maxY >= y).reduce((z, a) => Math.max(z, a.top), 0);
+  /** front-most deck lip on the centreline: the curved apron, else the deck area reaching furthest downstage */
+  const lip: DeckLip = (() => {
+    const ap = deck.layout.apron;
+    if (ap) {
+      const R = (W * W / 4 + ap.depth * ap.depth) / (2 * ap.depth), cy = R - ap.depth;
+      return { minX: -W / 2, maxX: W / 2, top: H, y: (x: number) => cy - Math.sqrt(Math.max(0, R * R - x * x)) };
+    }
+    const front = deck.layout.areas.filter((a) => a.kind !== 'riser' && a.minX <= 0 && a.maxX >= 0).reduce((f, a) => (a.minY < f.minY ? a : f));
+    return { minX: front.minX, maxX: front.maxX, top: front.top, y: () => front.minY };
+  })();
 
   // ── LED
   const led: LedLayout[] = [];
@@ -117,7 +130,10 @@ export function resolveScene(project: Project): SceneGraph {
   let lightingPositions: LightingPositionsReport | null = null;
   if (project.lighting.enabled && (project.lighting.electrics.count > 0 || project.lighting.booms.enabled)) {
     const fx = getCatalogItem<Fixture>(project.lighting.fixtureId, 'fixture');
-    const r = resolveLighting(project.lighting, fx, trussSys, hoist, { stageWidth: W, stageDepth: D, stageTop: H });
+    const r = resolveLighting(project.lighting, fx, trussSys, hoist, {
+      stageWidth: W, stageDepth: D, stageTop: H, deckTopAt,
+      led: led.map((L) => ({ name: L.name, minY: L.origin[1] - L.sagitta, maxY: L.origin[1] + L.cabinet.depth, top: L.top })),
+    });
     lightingPositions = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings);
   }
 
@@ -130,7 +146,7 @@ export function resolveScene(project: Project): SceneGraph {
         { kind: 'cyl', from: [0, 0, 0], to: [0, 0, 1480], r: 170, mat: 'presenter' },
         { kind: 'cyl', from: [0, 0, 1530], to: [0, 0, 1750], r: 105, mat: 'presenter' },
       ],
-      position: [0, py, deck.layout.areas.filter((a) => a.minX <= 0 && a.maxX >= 0 && a.minY <= py && a.maxY >= py).reduce((z, a) => Math.max(z, a.top), H)], rotationZ: 0, meta: { height: 1750 },
+      position: [0, py, Math.max(H, deckTopAt(0, py))], rotationZ: 0, meta: { height: 1750 },
     });
   }
 
@@ -155,7 +171,7 @@ export function resolveScene(project: Project): SceneGraph {
   let audio: AudioReport | null = null;
   if (project.audio?.enabled) {
     const r = resolveAudio(project.audio, (id) => getCatalogItem<Speaker>(id, 'speaker'),
-      { stageWidth: W, stageDepth: D, stageTop: H, downstageY: 0 });
+      { stageWidth: W, stageDepth: D, stageTop: H, downstageY: 0, lip });
     audio = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings);
   }
 

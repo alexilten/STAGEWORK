@@ -92,7 +92,7 @@ export interface LightingParams {
 }
 
 export const DEFAULT_LIGHTING_POSITIONS = {
-  electrics: { count: 3, perBatten: 8, firstAt: 1500, spacing: 2000, trim: 7000 },
+  electrics: { count: 3, perBatten: 8, firstAt: 1000, spacing: 1500, trim: 7000 },
   booms: { enabled: false, perBoom: 4, height: 4000 },
 };
 
