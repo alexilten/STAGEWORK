@@ -28,9 +28,14 @@ export interface AudioReport {
   weightKg: number | null;
 }
 
-export interface AudioContext { stageWidth: Mm; stageDepth: Mm; stageTop: Mm; downstageY: Mm }
+/** The front-most deck edge on the centreline (main deck, thrust, B-stage or curved apron). */
+export interface DeckLip { minX: Mm; maxX: Mm; top: Mm; y: (x: Mm) => Mm }
+
+export interface AudioContext { stageWidth: Mm; stageDepth: Mm; stageTop: Mm; downstageY: Mm; lip: DeckLip }
 
 const DEG = Math.PI / 180;
+/** height to lift a box pitched about its bottom-centre so its lowest edge rests on the surface */
+const restLift = (sp: Speaker, tilt: number) => (sp.depth / 2) * Math.abs(Math.sin(tilt));
 
 function speakerBlock(sp: Speaker, key: string): BlockDef {
   const w = sp.width / 2, d = sp.depth / 2, h = sp.height;
@@ -110,26 +115,32 @@ export function resolveAudio(p: AudioParams, getSpeaker: (id: string) => Speaker
     tally(sub, nSub);
   }
 
-  // ── front fills along the downstage edge
+  // ── front fills on the lip of the front-most deck (main edge, thrust, B-stage or apron curve), facing the audience
   let fill: Speaker | null = null;
   const nFill = Math.max(0, Math.round(p.frontFills));
   if (nFill > 0) {
     fill = getSpeaker(p.fillSpeakerId);
     const fKey = add(fill);
-    const usable = ctx.stageWidth - fill.width;
+    const { lip } = ctx;
+    const usable = Math.max(0, lip.maxX - lip.minX - fill.width);
+    const mid = (lip.minX + lip.maxX) / 2;
     for (let i = 0; i < nFill; i++) {
-      const x = nFill === 1 ? 0 : -usable / 2 + (usable * i) / (nFill - 1);
+      const x = nFill === 1 ? mid : mid - usable / 2 + (usable * i) / (nFill - 1);
+      // face along the outward normal of the lip so fills follow a curved apron
+      const slope = (lip.y(x + 1) - lip.y(x - 1)) / 2;
+      const yaw = Math.atan(slope);
+      const inset = fill.depth / 2 + 50;
       objects.push({
         id: `SPK.FILL.${String(i + 1).padStart(2, '0')}`, label: `${fill.model} — front fill #${i + 1}`,
         layer: '50_AUDIO::50_03_FILLS', system: 'audio', group: 'audio:fill',
-        block: fKey, position: [x, ctx.downstageY - fill.depth / 2 - 50, ctx.stageTop], rotationZ: 0, tilt: 8 * DEG,
+        block: fKey, position: [x - Math.sin(yaw) * inset, lip.y(x) + Math.cos(yaw) * inset, lip.top + restLift(fill, 8 * DEG)], rotationZ: yaw, tilt: 8 * DEG,
         meta: { catalogId: fill.id, weightKg: fill.weightKg, position: `Front fill #${i + 1}` },
       });
     }
     tally(fill, nFill);
   }
 
-  // ── stage-monitor wedges across the downstage edge, facing the performer (+Y), tilted up
+  // ── stage-monitor wedges across the downstage edge, facing the performer (+Y), baffle tilted up 35°
   let monitor: Speaker | null = null;
   const nMon = Math.max(0, Math.round(p.monitors));
   if (nMon > 0) {
@@ -141,7 +152,7 @@ export function resolveAudio(p: AudioParams, getSpeaker: (id: string) => Speaker
       objects.push({
         id: `SPK.MON.${String(i + 1).padStart(2, '0')}`, label: `${monitor.model} — wedge #${i + 1}`,
         layer: '50_AUDIO::50_04_MONITORS', system: 'audio', group: 'audio:monitor',
-        block: mKey, position: [x, 700, ctx.stageTop], rotationZ: Math.PI, tilt: 35 * DEG,
+        block: mKey, position: [x, 700, ctx.stageTop + restLift(monitor, 35 * DEG)], rotationZ: Math.PI, tilt: -35 * DEG,
         meta: { catalogId: monitor.id, weightKg: monitor.weightKg, position: `Wedge #${i + 1}` },
       });
     }

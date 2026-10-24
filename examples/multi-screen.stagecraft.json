@@ -74,8 +74,8 @@
     "electrics": {
       "count": 3,
       "perBatten": 8,
-      "firstAt": 1500,
-      "spacing": 2000,
+      "firstAt": 1000,
+      "spacing": 1500,
       "trim": 7000
     },
     "booms": {
