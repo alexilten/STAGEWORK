@@ -164,6 +164,7 @@ function groupTitle(g: string, scene: SceneGraph) {
   if (g === 'presenter') return 'Presenter reference';
   if (g === 'fixtures') return 'Front-of-house lighting';
   if (g === 'seating') return 'Audience seating';
+  if (g.startsWith('riser:')) return scene.report.stage.areas.find((a) => a.group === g)?.label ?? 'Riser';
   if (g === 'truss:front') return 'Front light truss';
   if (g.startsWith('truss:header:')) return `${scene.report.led.find((l) => `truss:header:${l.id}` === g)?.name ?? ''} header truss`;
   if (g.startsWith('led:')) return scene.report.led.find((l) => `led:${l.id}` === g)?.name ?? 'LED wall';
@@ -177,6 +178,13 @@ function GroupRows({ group, scene, u }: { group: string; scene: SceneGraph; u: D
     <Row k="Deck height" v={formatLength(r.stage.height.resolved, u, { precise: true })} />
     <Row k="Leg length" v={formatLength(r.stage.legLength, u, { precise: true })} />
     <Row k="Legs" v={String(r.stage.legCount)} />
+    <Row k="Shape" v={r.stage.shape === 'rect' ? 'Rectangle' : r.stage.shape === 'rounded' ? `Rounded · ${formatLength(r.stage.apron?.depth ?? 0, u)} apron` : r.stage.areas.filter((a) => a.kind !== 'main' && a.kind !== 'riser').map((a) => a.label).join(' + ')} />
+  </>);
+  const RA = group.startsWith('riser:') ? r.stage.areas.find((a) => a.group === group) : undefined;
+  if (RA) return (<>
+    <Row k="Size" v={`${formatLength(RA.maxX - RA.minX, u, { precise: true })} × ${formatLength(RA.maxY - RA.minY, u, { precise: true })}`} />
+    <Row k="Height above deck" v={formatLength(RA.top - RA.base, u, { precise: true })} />
+    <Row k="Top above floor" v={formatLength(RA.top, u, { precise: true })} />
   </>);
   const L = r.led.find((l) => `led:${l.id}` === group);
   if (L) return (<>

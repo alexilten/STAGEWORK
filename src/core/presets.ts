@@ -36,24 +36,26 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'panoramic-keynote', name: 'Panoramic Keynote',
-    summary: 'Wide cinematic canvas (~4:1) with a gentle concave curve over a 56′ deck.',
+    summary: 'Wide cinematic canvas (~4:1) with a gentle concave curve over a 56′ deck with a curved apron, radial seating.',
     build: () => {
       const p = base('Panoramic Keynote', 'panoramic-keynote');
       p.stage.width = ft(56);
       p.rigging.front.width = 20000;
       p.lighting.count = 14;
       p.seating = { ...p.seating, layout: 'radial', count: 2500 };
+      p.stage.shape = 'rounded'; p.stage.apron = { depth: 1800 };
       p.ledWalls = [wall({ id: 'main', name: 'Panoramic wall', width: 24000, height: 6000, elevation: 900, upstageGap: 1200, curveDeg: 1 })];
       return p;
     },
   },
   {
     id: 'product-launch', name: 'Product Launch',
-    summary: 'Hero wall flanked by two portrait reveal screens; deeper deck for product reveals.',
+    summary: 'Hero wall flanked by two portrait reveal screens, with a runway and B-stage into the house for reveals.',
     build: () => {
       const p = base('Product Launch', 'product-launch');
       p.stage.width = ft(56); p.stage.depth = ft(20);
       p.seating = { ...p.seating, count: 2000 };
+      p.stage.shape = 'runway'; p.stage.runway = { width: ft(8), length: ft(24), endWidth: ft(16), endDepth: ft(12) };
       p.rigging.front.width = 20000;
       p.lighting.count = 12;
       p.ledWalls = [
@@ -66,26 +68,28 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'multi-screen', name: 'Multi-Screen',
-    summary: 'Three equal media surfaces in a modular rhythm, for multi-presenter or data-rich content.',
+    summary: 'Three equal media surfaces in a modular rhythm and a centre thrust, for multi-presenter or data-rich content.',
     build: () => {
       const p = base('Multi-Screen', 'multi-screen');
       p.stage.width = ft(48);
       p.rigging.front.width = 18000;
       p.rigging.header.overhang = 250;
       p.seating = { ...p.seating, layout: 'grid', count: 1500 };
+      p.stage.shape = 'thrust'; p.stage.thrust = { width: ft(16), depth: ft(8) };
       p.ledWalls = [-1, 0, 1].map((k) => wall({ id: ['l', 'c', 'r'][k + 1], name: ['Left', 'Centre', 'Right'][k + 1] + ' screen', width: 5000, height: 3000, elevation: 1500, offsetX: k * 5750 }));
       return p;
     },
   },
   {
     id: 'conversation', name: 'Conversation Stage',
-    summary: 'Low, intimate 32′ deck at 24″ for fireside chats, with a calm backdrop wall.',
+    summary: 'Low, intimate 32′ deck at 24″ with a chat riser for fireside conversations and a calm backdrop wall.',
     build: () => {
       const p = base('Conversation Stage', 'conversation');
       p.stage.width = ft(32); p.stage.height = ft(2);
       p.rigging.front = { enabled: true, distance: 5000, trim: 7000, width: 11000 };
       p.lighting.count = 8;
       p.seating = { ...p.seating, layout: 'radial', count: 500, frontDistance: 2450 };
+      p.stage.risers = [{ id: 'r1', name: 'Chat riser', width: ft(12), depth: ft(8), height: ft(1), x: 0, y: ft(4) }];
       p.ledWalls = [wall({ id: 'main', name: 'Backdrop wall', width: 9000, height: 4500, elevation: 1000 })];
       return p;
     },

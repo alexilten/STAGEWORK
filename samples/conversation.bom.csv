@@ -1,9 +1,15 @@
 System,Rhino layer,Manufacturer,Model,Item,Qty,Unit weight (kg),Total weight (kg),Verification,Catalogue id
-decking,10_STAGE::10_01_DECKING,Generic,Steel-frame platform 8′ × 4′,8′ × 4′ platform,16,,,generic,generic.deck-8x4
+decking,10_STAGE::10_01_DECKING,Generic,Steel-frame platform 8′ × 4′,8′ × 4′ platform,18,,,generic,generic.deck-8x4
 supports,10_STAGE::10_03_SUPPORTS,Generic,Steel-frame platform 8′ × 4′,Platform leg,64,,,generic,generic.deck-8x4
-finishes,10_STAGE::10_04_FINISHES,Generic,—,Stage fascia — front,1,,,generic,
-finishes,10_STAGE::10_04_FINISHES,Generic,—,Stage fascia — house left,1,,,generic,
-finishes,10_STAGE::10_04_FINISHES,Generic,—,Stage fascia — house right,1,,,generic,
+decking,10_STAGE::10_02_RISERS,Generic,Steel-frame platform 8′ × 4′,4′ × 4′ platform,2,,,generic,generic.deck-8x4
+supports,10_STAGE::10_03_SUPPORTS,Generic,Steel-frame platform 8′ × 4′,Platform leg,16,,,generic,generic.deck-8x4
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck front,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck left,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — main deck right,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — chat riser front,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — chat riser back,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — chat riser left,1,,,generic,
+finishes,10_STAGE::10_04_FINISHES,Generic,—,Fascia — chat riser right,1,,,generic,
 ledCabinets,20_LED::20_01_CABINETS,ROE Visual,Black Pearl BP2 V2,Black Pearl BP2 V2 cabinet,162,9.35,1514.7,secondary,roe.bp2v2
 ledSupports,20_LED::20_02_SUPPORTS,Generic,—,Flying bar 2-wide (generic),9,,,generic,
 rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chord) 1 m",1,,,secondary,prolyte.h30v

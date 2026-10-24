@@ -44,7 +44,7 @@ export function resolveScene(project: Project): SceneGraph {
   // ── Stage
   const deckSys = getCatalogItem<DeckSystem>(project.stage.deckSystemId, 'deck');
   const deck = resolveDeck(project.stage, deckSys);
-  addBlocks(deck.blocks); objects.push(...deck.objects); warnings.push(...deck.warnings);
+  addBlocks(deck.blocks); objects.push(...deck.objects); warnings.push(...deck.warnings); annotations.push(...deck.annotations);
   const W = deck.layout.width.resolved, D = deck.layout.depth.resolved, H = deck.layout.height.resolved;
 
   // ── LED
@@ -111,13 +111,14 @@ export function resolveScene(project: Project): SceneGraph {
 
   // ── Presenter scale figure (1.75 m)
   if (project.presenter.visible) {
+    const py = Math.min(D * 0.38, 2400);
     objects.push({
       id: 'REF.PRESENTER', label: 'Presenter scale figure (1.75 m)', layer: '00_REFERENCE', system: 'reference', group: 'presenter',
       parts: [
         { kind: 'cyl', from: [0, 0, 0], to: [0, 0, 1480], r: 170, mat: 'presenter' },
         { kind: 'cyl', from: [0, 0, 1530], to: [0, 0, 1750], r: 105, mat: 'presenter' },
       ],
-      position: [0, Math.min(D * 0.38, 2400), H], rotationZ: 0, meta: { height: 1750 },
+      position: [0, py, deck.layout.areas.filter((a) => a.minX <= 0 && a.maxX >= 0 && a.minY <= py && a.maxY >= py).reduce((z, a) => Math.max(z, a.top), H)], rotationZ: 0, meta: { height: 1750 },
     });
   }
 
@@ -125,7 +126,7 @@ export function resolveScene(project: Project): SceneGraph {
   let seating: SeatingReport | null = null;
   if (project.seating?.enabled) {
     const chair = getCatalogItem<Chair>(project.seating.chairId, 'chair');
-    const r = resolveSeating(project.seating, chair, { stageWidth: W, stageDepth: D });
+    const r = resolveSeating(project.seating, chair, { stageWidth: W, stageDepth: D, keepOut: deck.layout.keepOut, apronDepth: deck.layout.apron?.depth ?? 0 });
     seating = r.report; addBlocks([r.block]); objects.push(...r.objects); annotations.push(...r.annotations); warnings.push(...r.warnings);
     if (seating.count) {
       // sightline: steepest look-up from the front row to the top of the main LED surface
@@ -160,6 +161,11 @@ export function resolveScene(project: Project): SceneGraph {
   // bounds
   const min: [number, number, number] = [-W / 2, Math.min(0, frontRun ? frontRun.center[1] - 300 : 0), 0];
   const max: [number, number, number] = [W / 2, D, H];
+  for (const a of deck.layout.areas) {
+    min[0] = Math.min(min[0], a.minX); min[1] = Math.min(min[1], a.minY);
+    max[0] = Math.max(max[0], a.maxX); max[2] = Math.max(max[2], a.top);
+  }
+  if (deck.layout.apron) min[1] = Math.min(min[1], -deck.layout.apron.depth);
   for (const L of led) {
     min[0] = Math.min(min[0], L.origin[0] - L.chord / 2); max[0] = Math.max(max[0], L.origin[0] + L.chord / 2);
     max[1] = Math.max(max[1], L.origin[1] + L.cabinet.depth); max[2] = Math.max(max[2], L.top);
@@ -174,7 +180,7 @@ export function resolveScene(project: Project): SceneGraph {
 
   return {
     objects, blocks, annotations, warnings,
-    report: { stage: { ...deck.layout, system: deckSys, areaMm2: W * D }, led, truss, trussSystem: trussSys, fixtures, hoist, seating },
+    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating },
     bounds: { min, max },
     houseBounds: { min: hmin, max: hmax },
   };

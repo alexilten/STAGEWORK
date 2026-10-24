@@ -34,7 +34,16 @@ Tests (`npm test`, 24 passing): LED modularity, stage geometry, modular constrai
 
 Not done: a scripted usability pass (Test 7) still needs a human designer.
 
-## Round 3 — technical production systems
+## Round 3 — technical production systems (in progress)
+Done:
+- Stage shapes (`stage.shape`): Straight, Thrust, Runway (+ optional B-stage), Rounded. Thrust, runway and B-stage are built from the same hire platforms (runway platforms run lengthwise); every area tiles with whole platforms only. The rounded front is a custom-built curved apron (exported as a closed extruded solid, `prism` part) and is labelled as carpentry, not hire stock.
+- Fascia follows the outline: every exposed edge gets fascia, never across an opening between areas.
+- Risers on the deck: add / rename / remove, width, depth, height above deck (leg increments), position snapped to deck seams, drag or arrow-handle move, legs standing on the deck, `10_02_RISERS` layer. Errors when a riser hangs off the deck or overlaps another. The presenter figure stands on whatever level is under it.
+- Seating follows the shape: rows start in front of the apron, seats keep the front distance from any deck edge they face and an aisle width beside a thrust or runway.
+- Presets: Panoramic → rounded apron, Product Launch → runway + B-stage, Multi-Screen → thrust, Conversation → chat riser.
+- The app is published at https://alexilten.github.io/STAGEWORK/ on every push to main.
+
+Next:
 Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, expanded LED/lighting catalogue (Robe, Ayrton, Claypaky, ETC, Chauvet), lighting positions & arrangement presets, audio (line arrays, fills), scenic panels/portals, richer warnings (sightlines, trim vs. venue height).
 
 ## Round 4 — interoperability

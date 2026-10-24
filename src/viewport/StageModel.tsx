@@ -15,6 +15,7 @@ const Y = new THREE.Vector3(0, 1, 0);
 
 /** Local matrix that maps the unit primitive onto a Part (mm, Z-up object space). */
 function partMatrix(p: Part, out: THREE.Matrix4) {
+  if (p.kind === 'prism') return out.makeTranslation(0, 0, p.z0);
   if (p.kind === 'box') {
     const s = [p.max[0] - p.min[0], p.max[1] - p.min[1], p.max[2] - p.min[2]];
     return out.compose(
@@ -78,6 +79,10 @@ function InstancedBatch({ batch, mode, finish }: { batch: Batch; mode: ViewMode;
   const geom = useMemo(() => {
     const p = batch.part;
     if (p.kind === 'box') return BOX;
+    if (p.kind === 'prism') {
+      const shape = new THREE.Shape(p.points.map(([x, y]) => new THREE.Vector2(x, y)));
+      return new THREE.ExtrudeGeometry(shape, { depth: p.z1 - p.z0, bevelEnabled: false, curveSegments: 1 });
+    }
     if (!batch.capsule) return CYL;
     const len = Math.hypot(p.to[0] - p.from[0], p.to[1] - p.from[1], p.to[2] - p.from[2]);
     return new THREE.CapsuleGeometry(p.r, Math.max(1, len - 2 * p.r), 8, 24);
@@ -144,7 +149,7 @@ function InstancedBatch({ batch, mode, finish }: { batch: Batch; mode: ViewMode;
         const g = batch.objects[e.instanceId ?? 0]?.group ?? null;
         setHover(g);
         const sel = useStore.getState().selection;
-        document.body.style.cursor = sel && sel.group === g && (g?.startsWith('led:') || g === 'truss:front' || g === 'seating') ? 'grab' : 'pointer';
+        document.body.style.cursor = sel && sel.group === g && (g?.startsWith('led:') || g?.startsWith('riser:') || g === 'truss:front' || g === 'seating') ? 'grab' : 'pointer';
       }}
       onPointerOut={() => { setHover(null); document.body.style.cursor = ''; }}
     />

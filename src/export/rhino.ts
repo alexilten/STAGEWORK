@@ -211,6 +211,15 @@ function partGeometry(rh: RhinoModule, part: Part): GeometryBase {
   if (part.kind === 'box') {
     return rh.Extrusion.createBoxExtrusion(new rh.Box(new rh.BoundingBox(part.min, part.max)), true);
   }
+  if (part.kind === 'prism') {
+    const pl = new rh.Polyline(0);
+    for (const [x, y] of part.points) pl.add(x, y, 0);
+    pl.add(part.points[0][0], part.points[0][1], 0);
+    // Extrusion.create extrudes along the profile normal, which flips with winding
+    const ext = rh.Extrusion.create(pl.toPolylineCurve(), Math.sign(signedArea(part.points)) * (part.z1 - part.z0), true);
+    ext.translate([0, 0, part.z0]);
+    return ext;
+  }
   const d = [part.to[0] - part.from[0], part.to[1] - part.from[1], part.to[2] - part.from[2]];
   const len = Math.hypot(d[0], d[1], d[2]);
   const ext = rh.Extrusion.createCylinderExtrusion(new rh.Cylinder(new rh.Circle(part.r), len), true, true);
@@ -228,6 +237,12 @@ function placement(rh: RhinoModule, o: SceneObject) {
   const t = rh.Transform.translationXYZ(o.position[0], o.position[1], o.position[2]);
   if (!o.rotationZ) return t;
   return rh.Transform.multiply(t, rh.Transform.rotation(o.rotationZ, [0, 0, 1], [0, 0, 0]));
+}
+
+function signedArea(pts: [number, number][]) {
+  let s = 0;
+  for (let i = 0; i < pts.length; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[(i + 1) % pts.length]; s += x0 * y1 - x1 * y0; }
+  return s / 2;
 }
 
 const rgba = ([r, g, b]: [number, number, number]) => ({ r, g, b, a: 255 });

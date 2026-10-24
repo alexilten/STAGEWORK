@@ -62,6 +62,24 @@ export function dragTargetFor(group: string): DragTarget | null {
       },
     };
   }
+  if (group.startsWith('riser:')) {
+    const id = group.slice(6);
+    const i = (project.stage.risers ?? []).findIndex((r) => r.id === id);
+    const A = scene.report.stage.areas.find((a) => a.group === group);
+    if (i < 0 || !A) return null;
+    const r0 = { ...project.stage.risers![i] };
+    const S = scene.report.stage.system.short;
+    const key = `drag:${group}:${performance.now()}`;
+    return {
+      group, label: r0.name, anchor: [(A.minX + A.maxX) / 2, A.minY, A.top], floor: true,
+      apply: (d, _shift, fine) => {
+        const x = r0.x + snap(d.x, fine ? 1 : S / 2);
+        const y = Math.max(0, r0.y + snap(d.y, fine ? 1 : S));
+        useStore.getState().edit((p) => { Object.assign(p.stage.risers![i], { x, y }); }, key);
+        return `${r0.name} · x ${formatLength(x, units, { precise: true })} · ${formatLength(y, units, { precise: true })} upstage`;
+      },
+    };
+  }
   if (group === 'seating' && project.seating && scene.report.seating) {
     const s0 = { ...project.seating };
     const key = `drag:${group}:${performance.now()}`;

@@ -10,7 +10,12 @@
     "height": 914.4000000000001,
     "deckSystemId": "generic.deck-8x4",
     "finish": "white",
-    "fascia": true
+    "fascia": true,
+    "shape": "thrust",
+    "thrust": {
+      "width": 4876.8,
+      "depth": 2438.4
+    }
   },
   "ledWalls": [
     {

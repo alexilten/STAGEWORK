@@ -10,7 +10,18 @@
     "height": 609.6,
     "deckSystemId": "generic.deck-8x4",
     "finish": "white",
-    "fascia": true
+    "fascia": true,
+    "risers": [
+      {
+        "id": "r1",
+        "name": "Chat riser",
+        "width": 3657.6000000000004,
+        "depth": 2438.4,
+        "height": 304.8,
+        "x": 0,
+        "y": 1219.2
+      }
+    ]
   },
   "ledWalls": [
     {
