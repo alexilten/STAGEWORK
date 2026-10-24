@@ -22,6 +22,10 @@ export function gizmoFor(group: string, scene: SceneGraph): { anchor: Vec3; axes
     const A = r.stage.areas.find((a) => a.group === group);
     return A ? { anchor: [(A.minX + A.maxX) / 2, (A.minY + A.maxY) / 2, A.top + 30], axes: ['x', 'y'] } : null;
   }
+  if (group.startsWith('audio:main:') && r.audio) {
+    const side = group.endsWith(':r') ? 1 : -1;
+    return { anchor: [side * r.audio.spread, -800, r.audio.trim + 400], axes: ['x', 'z'] };
+  }
   if (group === 'seating' && r.seating?.count) return { anchor: [0, -r.seating.frontDistance - 400, 0], axes: ['y'] };
   return null;
 }

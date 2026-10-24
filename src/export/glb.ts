@@ -34,6 +34,8 @@ function materialTable(finish: StageFinish): Record<MaterialKey | 'ledFace', Mat
     presenter: { name: 'SC_Reference_Figure', rgb: [235, 232, 227], metal: 0, rough: 0.85 },
     chairSeat: { name: 'SC_Chair_Seat', rgb: [34, 34, 37], metal: 0, rough: 0.7 },
     chairFrame: { name: 'SC_Chair_Frame_Steel', rgb: [150, 150, 155], metal: 0.8, rough: 0.35 },
+    speaker: { name: 'SC_Speaker_Cabinet', rgb: [26, 26, 29], metal: 0.2, rough: 0.6 },
+    speakerGrille: { name: 'SC_Speaker_Grille', rgb: [12, 12, 14], metal: 0.5, rough: 0.45 },
   };
 }
 
@@ -212,7 +214,16 @@ function objectNode(o: SceneObject, mesh: number) {
   const extras: Record<string, unknown> = { stagecraftId: o.id, label: o.label, system: o.system, group: o.group, layer: o.layer };
   for (const [k, v] of Object.entries(o.meta)) if (v != null) extras[k] = v;
   const node: any = { name: o.id, mesh, extras };
-  if (o.rotationZ) node.matrix = [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, x, y, z, 1];
+  if (o.tilt) {
+    // column-major T · Rz · Rx
+    const cx = Math.cos(o.tilt), sx = Math.sin(o.tilt);
+    node.matrix = [
+      c, s, 0, 0,
+      -s * cx, c * cx, sx, 0,
+      s * sx, -c * sx, cx, 0,
+      x, y, z, 1,
+    ];
+  } else if (o.rotationZ) node.matrix = [c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, x, y, z, 1];
   else node.translation = [x, y, z];
   return node;
 }

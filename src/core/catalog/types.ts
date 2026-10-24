@@ -19,7 +19,7 @@ interface CatalogBase {
   id: string; // stable, used in project files — never rename
   manufacturer: string; // "Generic" for generic entries
   model: string;
-  category: 'led-cabinet' | 'deck' | 'truss' | 'fixture' | 'hoist' | 'chair';
+  category: 'led-cabinet' | 'deck' | 'truss' | 'fixture' | 'hoist' | 'chair' | 'speaker';
   verification: Verification;
   sources: SourceRef[];
   notes?: string[];
@@ -104,4 +104,18 @@ export interface Chair extends CatalogBase {
   weightKg: number | null;
 }
 
-export type CatalogItem = LedCabinet | DeckSystem | TrussSystem | Fixture | Hoist | Chair;
+export interface Speaker extends CatalogBase {
+  category: 'speaker';
+  speakerType: 'line-array' | 'sub' | 'point' | 'monitor';
+  /** cabinet envelope: width (X, left-right), depth (Y, front-back), height (Z) */
+  width: Mm;
+  depth: Mm;
+  height: Mm;
+  weightKg: number | null;
+  /** nominal horizontal coverage, degrees (point/array) */
+  dispersionH?: number | null;
+  /** inter-cabinet splay range for line arrays, degrees [min,max] */
+  splayRange?: [number, number] | null;
+}
+
+export type CatalogItem = LedCabinet | DeckSystem | TrussSystem | Fixture | Hoist | Chair | Speaker;

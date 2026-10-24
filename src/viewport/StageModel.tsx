@@ -28,8 +28,11 @@ function partMatrix(p: Part, out: THREE.Matrix4) {
   return out.compose(a.add(b).multiplyScalar(0.5), q, new THREE.Vector3(p.r, len, p.r));
 }
 
+const _qz = new THREE.Quaternion(), _qx = new THREE.Quaternion(), _ax = new THREE.Vector3(1, 0, 0), _az = new THREE.Vector3(0, 0, 1);
 function objectMatrix(o: SceneObject, out: THREE.Matrix4) {
-  return out.compose(new THREE.Vector3(...o.position), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), o.rotationZ), new THREE.Vector3(1, 1, 1));
+  _qz.setFromAxisAngle(_az, o.rotationZ);
+  if (o.tilt) _qz.multiply(_qx.setFromAxisAngle(_ax, o.tilt));
+  return out.compose(new THREE.Vector3(...o.position), _qz, new THREE.Vector3(1, 1, 1));
 }
 
 interface Batch { key: string; part: Part; objects: SceneObject[]; capsule?: boolean }
@@ -149,7 +152,7 @@ function InstancedBatch({ batch, mode, finish }: { batch: Batch; mode: ViewMode;
         const g = batch.objects[e.instanceId ?? 0]?.group ?? null;
         setHover(g);
         const sel = useStore.getState().selection;
-        document.body.style.cursor = sel && sel.group === g && (g?.startsWith('led:') || g?.startsWith('riser:') || g === 'truss:front' || g === 'seating') ? 'grab' : 'pointer';
+        document.body.style.cursor = sel && sel.group === g && (g?.startsWith('led:') || g?.startsWith('riser:') || g?.startsWith('audio:main:') || g === 'truss:front' || g === 'seating') ? 'grab' : 'pointer';
       }}
       onPointerOut={() => { setHover(null); document.body.style.cursor = ''; }}
     />

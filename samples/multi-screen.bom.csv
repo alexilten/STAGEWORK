@@ -14,3 +14,7 @@ rigging,30_RIGGING::30_01_TRUSS,Prolyte,"H30V (box, 4-chord)","H30V (box, 4-chor
 rigging,30_RIGGING::30_02_HOISTS,Generic,1 t electric chain hoist,1 t electric chain hoist,10,,,generic,generic.hoist-1t
 lighting,40_LIGHTING::40_01_FIXTURES,Martin Professional,MAC Aura XB,Martin Professional MAC Aura XB,10,6.5,65,secondary,martin.mac-aura-xb
 seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,1500,,,generic,generic.chair-stack
+audio,50_AUDIO::50_01_MAINS,d&b audiotechnik,J8 (line array),J8 (line array) — house left #1,20,60,1200,manufacturer,dbaudio.j8
+audio,50_AUDIO::50_02_SUBS,d&b audiotechnik,J-SUB (cardioid sub),J-SUB (cardioid sub) — left #1,4,106,424,manufacturer,dbaudio.j-sub
+audio,50_AUDIO::50_03_FILLS,Generic,Front-fill point source,Front-fill point source — front fill #1,5,15,75,generic,generic.fill
+audio,50_AUDIO::50_04_MONITORS,Generic,Stage monitor wedge,Stage monitor wedge — wedge #1,2,18,36,generic,generic.wedge

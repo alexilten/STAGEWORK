@@ -30,7 +30,7 @@ export const LAYER_TREE: { name: string; color: [number, number, number]; childr
   { name: '20_LED', color: [0, 112, 201], children: ['20_01_CABINETS', '20_02_SUPPORTS', '20_03_TRIM'] },
   { name: '30_RIGGING', color: [205, 120, 0], children: ['30_01_TRUSS', '30_02_HOISTS', '30_03_HARDWARE'] },
   { name: '40_LIGHTING', color: [200, 30, 90], children: ['40_01_FIXTURES', '40_02_ACCESSORIES'] },
-  { name: '50_AUDIO', color: [120, 70, 190], children: [] },
+  { name: '50_AUDIO', color: [120, 70, 190], children: ['50_01_MAINS', '50_02_SUBS', '50_03_FILLS', '50_04_MONITORS'] },
   { name: '60_SCENIC', color: [40, 150, 100], children: [] },
   { name: '70_AUDIENCE', color: [110, 110, 130], children: ['70_01_SEATING', '70_02_LAYOUT'] },
   { name: '90_TECHNICAL', color: [230, 40, 40], children: ['90_01_DIMENSIONS', '90_02_CENTERLINES', '90_03_REFERENCE'] },
@@ -50,6 +50,8 @@ export const RHINO_MATERIALS: Record<MaterialKey, { name: string; rgb: [number, 
   presenter: { name: 'SC_Reference_Figure', rgb: [200, 196, 190] },
   chairSeat: { name: 'SC_Chair_Seat', rgb: [34, 34, 37], gloss: 0.1 },
   chairFrame: { name: 'SC_Chair_Frame_Steel', rgb: [150, 150, 155], gloss: 0.5 },
+  speaker: { name: 'SC_Speaker_Cabinet', rgb: [26, 26, 29], gloss: 0.2 },
+  speakerGrille: { name: 'SC_Speaker_Grille', rgb: [12, 12, 14], gloss: 0.1 },
 };
 
 export interface RhinoExportOptions {
@@ -234,9 +236,10 @@ function partGeometry(rh: RhinoModule, part: Part): GeometryBase {
 }
 
 function placement(rh: RhinoModule, o: SceneObject) {
-  const t = rh.Transform.translationXYZ(o.position[0], o.position[1], o.position[2]);
-  if (!o.rotationZ) return t;
-  return rh.Transform.multiply(t, rh.Transform.rotation(o.rotationZ, [0, 0, 1], [0, 0, 0]));
+  let t = rh.Transform.translationXYZ(o.position[0], o.position[1], o.position[2]);
+  if (o.rotationZ) t = rh.Transform.multiply(t, rh.Transform.rotation(o.rotationZ, [0, 0, 1], [0, 0, 0]));
+  if (o.tilt) t = rh.Transform.multiply(t, rh.Transform.rotation(o.tilt, [1, 0, 0], [0, 0, 0]));
+  return t;
 }
 
 function signedArea(pts: [number, number][]) {

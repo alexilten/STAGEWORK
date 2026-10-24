@@ -62,5 +62,20 @@
     "seatPitch": 560,
     "aisleWidth": 1070,
     "seatsPerBlock": 14
+  },
+  "audio": {
+    "enabled": true,
+    "mainSpeakerId": "dbaudio.j8",
+    "mainsPerSide": 14,
+    "trim": 9000,
+    "spread": 11000,
+    "splayPerBox": 2,
+    "subSpeakerId": "dbaudio.j-sub",
+    "subs": 6,
+    "subMode": "ground",
+    "fillSpeakerId": "generic.fill",
+    "frontFills": 6,
+    "monitorSpeakerId": "generic.wedge",
+    "monitors": 4
   }
 }

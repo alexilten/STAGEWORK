@@ -131,3 +131,53 @@ describe('Shapes in Rhino', () => {
     expect(apron.bbox.max[2]).toBeCloseTo(s.report.stage.height.resolved, 1);
   });
 });
+
+import { getCatalogItem, type Speaker } from '../src/core/catalog';
+
+describe('Audio', () => {
+  const withAudio = (mut?: (p: Project['audio']) => void) => resolveScene(project((p) => { p.audio = { ...p.audio, enabled: true }; mut?.(p.audio); }));
+  const of = (s: ReturnType<typeof resolveScene>, g: string) => s.objects.filter((o) => o.group === g);
+
+  it('builds two main hangs with the requested box count, descending and raked', () => {
+    const s = withAudio((a) => { a.mainsPerSide = 12; a.splayPerBox = 2; a.trim = 9000; });
+    const L = of(s, 'audio:main:l'), R = of(s, 'audio:main:r');
+    expect(L).toHaveLength(12);
+    expect(R).toHaveLength(12);
+    const zs = R.map((o) => o.position[2]);
+    for (let i = 1; i < zs.length; i++) expect(zs[i]).toBeLessThan(zs[i - 1]); // each box lower than the one above
+    expect(R[0].tilt).toBeCloseTo(0, 6);
+    expect(R[11].tilt).toBeCloseTo(11 * 2 * Math.PI / 180, 6); // cumulative 2°/box
+    expect(Math.max(...zs)).toBeLessThanOrEqual(9000 + 1);
+  });
+
+  it('subs, fills and wedges honour their counts and layers; wedges face upstage', () => {
+    const s = withAudio((a) => { a.subs = 4; a.frontFills = 5; a.monitors = 3; });
+    expect(of(s, 'audio:sub')).toHaveLength(4);
+    expect(of(s, 'audio:fill')).toHaveLength(5);
+    const mon = of(s, 'audio:monitor');
+    expect(mon).toHaveLength(3);
+    expect(mon.every((o) => o.layer === '50_AUDIO::50_04_MONITORS' && Math.abs(o.rotationZ - Math.PI) < 1e-9)).toBe(true);
+    expect(s.objects.filter((o) => o.id.startsWith('SPK.SUB')).every((o) => o.layer === '50_AUDIO::50_02_SUBS')).toBe(true);
+  });
+
+  it('reports total weight from real box weights and can be switched off', () => {
+    const s = withAudio((a) => { a.mainsPerSide = 10; a.subs = 4; a.frontFills = 0; a.monitors = 0; });
+    const j8 = getCatalogItem<Speaker>('dbaudio.j8', 'speaker').weightKg!;
+    const jsub = getCatalogItem<Speaker>('dbaudio.j-sub', 'speaker').weightKg!;
+    expect(s.report.audio!.weightKg).toBeCloseTo(10 * 2 * j8 + 4 * jsub, 1);
+    expect(resolveScene(project()).objects.some((o) => o.system === 'audio')).toBe(false);
+  });
+
+  it('exports speaker cabinets as tilted block instances in Rhino on the audio layers', async () => {
+    const rh = await rhino3dm();
+    const p = project((q) => { q.audio = { ...q.audio, enabled: true, mainsPerSide: 6, subs: 0, frontFills: 0, monitors: 0 }; });
+    const s = resolveScene(p);
+    const info = inspect3dm(rh, exportRhino(rh, s, p));
+    const mains = info.objects.filter((o) => o.layer === '50_AUDIO::50_01_MAINS');
+    expect(mains).toHaveLength(12);
+    expect(mains.every((o) => o.type === 'InstanceReference')).toBe(true);
+    // a raked box is wider in Y than an upright cabinet depth → the tilt made it into the file
+    const low = mains.reduce((a, b) => (b.bbox.min[2] < a.bbox.min[2] ? b : a));
+    expect(low.bbox.max[1] - low.bbox.min[1]).toBeGreaterThan(570);
+  });
+});

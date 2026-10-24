@@ -80,6 +80,22 @@ export function dragTargetFor(group: string): DragTarget | null {
       },
     };
   }
+  if (group.startsWith('audio:main:') && project.audio && scene.report.audio) {
+    const side = group.endsWith(':r') ? 1 : -1;
+    const a0 = { ...project.audio };
+    const A = scene.report.audio;
+    const key = `drag:${group}:${performance.now()}`;
+    return {
+      group, label: side > 0 ? 'House-right hang' : 'House-left hang', anchor: [side * A.spread, -800, A.trim],
+      apply: (d, _shift, fine) => {
+        const sx = fine ? 1 : 250, sz = fine ? 1 : 250;
+        const spread = Math.max(2000, a0.spread + side * snap(d.x, sx));
+        const trim = Math.max(3000, a0.trim + snap(d.z, sz));
+        useStore.getState().edit((p) => { p.audio.spread = spread; p.audio.trim = trim; }, key);
+        return `Mains · spread ${formatLength(spread, units, { precise: true })} · trim ${formatLength(trim, units, { precise: true })}`;
+      },
+    };
+  }
   if (group === 'seating' && project.seating && scene.report.seating) {
     const s0 = { ...project.seating };
     const key = `drag:${group}:${performance.now()}`;
