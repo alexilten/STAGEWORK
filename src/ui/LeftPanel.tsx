@@ -65,7 +65,7 @@ export function LeftPanel() {
 
         <RiserSection />
 
-        <Section title="LED media" summary={L ? `${project.ledWalls.length} surface${project.ledWalls.length === 1 ? '' : 's'} · ${scene.report.led.reduce((a, l) => a + l.count, 0)} cabinets` : 'none'}>
+        <Section title="LED media" defaultOpen={false} summary={L ? `${project.ledWalls.length} surface${project.ledWalls.length === 1 ? '' : 's'} · ${scene.report.led.reduce((a, l) => a + l.count, 0)} cabinets` : 'none'}>
           <div className="surface-tabs">
             {project.ledWalls.map((w) => (
               <button key={w.id} className={w.id === wall?.id ? 'on' : ''} onClick={() => setActiveWall(w.id)}>{w.name.replace(/ (wall|screen)$/i, '')}</button>
@@ -165,10 +165,6 @@ export function LeftPanel() {
 
         <AudioSection />
         <ScenicSection />
-
-        <Section title="Scenic" defaultOpen={false} summary="Round 3">
-          <p className="muted small">Scenic panels, portals and architectural frames arrive in a later round. The <code>60_SCENIC</code> Rhino layer is already reserved in every export.</p>
-        </Section>
       </div>
     </aside>
   );
@@ -192,7 +188,7 @@ function AudienceSection() {
   const layout = LAYOUTS.find((l) => l.value === p.layout)!;
   const off = !p.enabled;
   return (
-    <Section title="Audience" summary={p.enabled && r ? `${r.count.toLocaleString()} seats · ${layout.label.toLowerCase()}` : 'off'}>
+    <Section title="Audience" defaultOpen={false} summary={p.enabled && r ? `${r.count.toLocaleString()} seats · ${layout.label.toLowerCase()}` : 'off'}>
       <Toggle label="Seating" checked={p.enabled} onChange={(v) => set((s) => { s.enabled = v; })} />
       <div className={`ctl ${off ? 'disabled' : ''}`}>
         <Segmented value={p.layout} onChange={(v) => { set((s) => { s.layout = v; }); select({ group: 'seating' }); }} options={LAYOUTS.map((l) => ({ value: l.value, label: l.label, title: l.hint }))} />
@@ -311,7 +307,7 @@ function RiserSection() {
   };
   const set = (patch: Partial<NonNullable<typeof r>>, key?: string) => edit((p) => { p.stage.risers![ri] = { ...p.stage.risers![ri], ...patch }; }, key);
   return (
-    <Section title="Risers" defaultOpen={risers.length > 0} summary={risers.length ? `${risers.length} riser${risers.length > 1 ? 's' : ''}` : 'none'}>
+    <Section title="Risers" defaultOpen={false} summary={risers.length ? `${risers.length} riser${risers.length > 1 ? 's' : ''}` : 'none'}>
       <div className="surface-tabs">
         {risers.map((x) => <button key={x.id} className={x.id === r?.id ? 'on' : ''} onClick={() => pick(x.id)}>{x.name}</button>)}
         <button className="add" onClick={add} title="Add a riser on the deck">+</button>
