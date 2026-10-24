@@ -169,6 +169,23 @@ export interface MediaParams {
   data?: string;
 }
 
+/**
+ * Scenic: a hard portal that frames the main screen, soft masking legs down the
+ * sides of the deck, and an upstage drape. Planning envelopes only — portal is
+ * custom carpentry; soft goods are drawn flat without fullness or pipe hardware.
+ */
+export interface ScenicParams {
+  portal: { enabled: boolean; margin: Mm; legWidth: Mm; headerHeight: Mm; thickness: Mm; finish: StageFinish };
+  masking: { enabled: boolean; pairs: number; legWidth: Mm; height: Mm };
+  drape: { enabled: boolean };
+}
+
+export const DEFAULT_SCENIC: ScenicParams = {
+  portal: { enabled: false, margin: 300, legWidth: 1200, headerHeight: 1200, thickness: 150, finish: 'white' },
+  masking: { enabled: false, pairs: 2, legWidth: 1830, height: 6000 },
+  drape: { enabled: false },
+};
+
 export interface Project {
   schema: typeof PROJECT_SCHEMA;
   version: number;
@@ -183,6 +200,7 @@ export interface Project {
   seating: SeatingParams;
   audio: AudioParams;
   media?: MediaParams | null;
+  scenic?: ScenicParams;
 }
 
 export function serializeProject(p: Project): string {
@@ -197,6 +215,7 @@ export function parseProject(text: string): Project {
   // additive fields from later rounds: fill defaults rather than bumping the version
   if (!data.seating) data.seating = { ...DEFAULT_SEATING, enabled: false };
   if (!data.audio) data.audio = { ...DEFAULT_AUDIO };
+  if (!data.scenic) data.scenic = structuredClone(DEFAULT_SCENIC);
   if (!data.lighting.electrics) data.lighting.electrics = { ...DEFAULT_LIGHTING_POSITIONS.electrics };
   if (!data.lighting.booms) data.lighting.booms = { ...DEFAULT_LIGHTING_POSITIONS.booms };
   return data as Project;

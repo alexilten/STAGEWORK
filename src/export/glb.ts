@@ -19,7 +19,7 @@ import { APP_VERSION } from './rhino';
 type Mat = { name: string; rgb: [number, number, number]; metal: number; rough: number; emissive?: [number, number, number] };
 
 const FINISH: Record<StageFinish, [number, number, number]> = { white: [242, 241, 238], black: [27, 27, 29], graphite: [58, 58, 61], oak: [185, 154, 116] };
-function materialTable(finish: StageFinish): Record<MaterialKey | 'ledFace', Mat> {
+function materialTable(finish: StageFinish, scenic: StageFinish): Record<MaterialKey | 'ledFace', Mat> {
   return {
     deckTop: { name: `SC_Deck_Top_${finish}`, rgb: FINISH[finish], metal: 0, rough: 0.5 },
     fascia: { name: `SC_Fascia_${finish}`, rgb: FINISH[finish], metal: 0, rough: 0.5 },
@@ -36,6 +36,8 @@ function materialTable(finish: StageFinish): Record<MaterialKey | 'ledFace', Mat
     chairFrame: { name: 'SC_Chair_Frame_Steel', rgb: [150, 150, 155], metal: 0.8, rough: 0.35 },
     speaker: { name: 'SC_Speaker_Cabinet', rgb: [26, 26, 29], metal: 0.2, rough: 0.6 },
     speakerGrille: { name: 'SC_Speaker_Grille', rgb: [12, 12, 14], metal: 0.5, rough: 0.45 },
+    scenicFlat: { name: `SC_Scenic_Flat_${scenic}`, rgb: FINISH[scenic], metal: 0, rough: 0.8 },
+    drape: { name: 'SC_Drape_Black_Velour', rgb: [14, 14, 15], metal: 0, rough: 1 },
   };
 }
 
@@ -114,10 +116,10 @@ const cross = (a: number[], b: number[]) => [a[1] * b[2] - a[2] * b[1], a[2] * b
  */
 export interface GlbMedia { image: Uint8Array; mimeType: 'image/png' | 'image/jpeg'; rect: { x0: number; z0: number; width: number; height: number } }
 
-export interface GlbOptions { systems?: SystemKey[]; finish?: StageFinish; media?: GlbMedia }
+export interface GlbOptions { systems?: SystemKey[]; finish?: StageFinish; scenicFinish?: StageFinish; media?: GlbMedia }
 
 export function exportGlb(scene: SceneGraph, projectName: string, opts: GlbOptions = {}): Uint8Array {
-  const mats = materialTable(opts.finish ?? 'white');
+  const mats = materialTable(opts.finish ?? 'white', opts.scenicFinish ?? 'white');
   const want = (s: SystemKey) => !opts.systems || opts.systems.includes(s);
   const objects = scene.objects.filter((o) => want(o.system));
 

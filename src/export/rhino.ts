@@ -31,7 +31,7 @@ export const LAYER_TREE: { name: string; color: [number, number, number]; childr
   { name: '30_RIGGING', color: [205, 120, 0], children: ['30_01_TRUSS', '30_02_HOISTS', '30_03_HARDWARE'] },
   { name: '40_LIGHTING', color: [200, 30, 90], children: ['40_01_FIXTURES', '40_02_ACCESSORIES', '40_03_POSITIONS'] },
   { name: '50_AUDIO', color: [120, 70, 190], children: ['50_01_MAINS', '50_02_SUBS', '50_03_FILLS', '50_04_MONITORS'] },
-  { name: '60_SCENIC', color: [40, 150, 100], children: [] },
+  { name: '60_SCENIC', color: [40, 150, 100], children: ['60_01_PORTAL', '60_02_MASKING', '60_03_DRAPES'] },
   { name: '70_AUDIENCE', color: [110, 110, 130], children: ['70_01_SEATING', '70_02_LAYOUT'] },
   { name: '90_TECHNICAL', color: [230, 40, 40], children: ['90_01_DIMENSIONS', '90_02_CENTERLINES', '90_03_REFERENCE'] },
 ];
@@ -52,6 +52,8 @@ export const RHINO_MATERIALS: Record<MaterialKey, { name: string; rgb: [number, 
   chairFrame: { name: 'SC_Chair_Frame_Steel', rgb: [150, 150, 155], gloss: 0.5 },
   speaker: { name: 'SC_Speaker_Cabinet', rgb: [26, 26, 29], gloss: 0.2 },
   speakerGrille: { name: 'SC_Speaker_Grille', rgb: [12, 12, 14], gloss: 0.1 },
+  scenicFlat: { name: 'SC_Scenic_Flat', rgb: [236, 235, 232], gloss: 0.05 },
+  drape: { name: 'SC_Drape_Black_Velour', rgb: [14, 14, 15] },
 };
 
 export interface RhinoExportOptions {

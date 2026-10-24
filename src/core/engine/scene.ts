@@ -3,6 +3,7 @@ import type { Chair, DeckSystem, Fixture, Hoist, LedCabinet, Speaker, TrussSyste
 import { resolveSeating, type SeatingReport } from './seating';
 import { resolveAudio, type AudioReport, type DeckLip } from './audio';
 import { resolveLighting, type LightingPositionsReport } from './lighting';
+import { resolveScenic, type ScenicReport } from './scenic';
 import type { Project } from '../schema';
 import { resolveDeck, type DeckLayout } from './deck';
 import { resolveLedWall, type LedLayout } from './led';
@@ -19,6 +20,7 @@ export interface ProductionReport {
   seating: SeatingReport | null;
   audio: AudioReport | null;
   lightingPositions: LightingPositionsReport | null;
+  scenic: ScenicReport | null;
 }
 
 export interface SceneGraph {
@@ -174,6 +176,14 @@ export function resolveScene(project: Project): SceneGraph {
     audio = r.report; addBlocks(r.blocks); objects.push(...r.objects); warnings.push(...r.warnings);
   }
 
+  // ── Scenic (portal, masking, upstage drape)
+  let scenic: ScenicReport | null = null;
+  const sc = project.scenic;
+  if (sc && (sc.portal.enabled || sc.masking.enabled || sc.drape.enabled)) {
+    const r = resolveScenic(sc, { stageWidth: W, stageDepth: D, stageTop: H, deckTopAt, led });
+    scenic = r.report; objects.push(...r.objects); annotations.push(...r.annotations); warnings.push(...r.warnings);
+  }
+
   // ── Technical annotations (exported to 90_TECHNICAL)
   const off = 900;
   annotations.push(
@@ -207,6 +217,8 @@ export function resolveScene(project: Project): SceneGraph {
     min[0] = Math.min(min[0], L.origin[0] - L.chord / 2); max[0] = Math.max(max[0], L.origin[0] + L.chord / 2);
     max[1] = Math.max(max[1], L.origin[1] + L.cabinet.depth); max[2] = Math.max(max[2], L.top);
   }
+  if (scenic?.maskingLegs && sc) { const mx = W / 2 + (sc.masking.legWidth * 2) / 3; min[0] = Math.min(min[0], -mx); max[0] = Math.max(max[0], mx); max[2] = Math.max(max[2], H + sc.masking.height); }
+  if (scenic?.drape) { max[1] = Math.max(max[1], D + 2000); max[2] = Math.max(max[2], scenic.drape.height); }
   for (const t of truss) { min[0] = Math.min(min[0], t.center[0] - t.length / 2); max[0] = Math.max(max[0], t.center[0] + t.length / 2); max[2] = Math.max(max[2], t.bottom + 290); }
 
   const hmin: [number, number, number] = [...min], hmax: [number, number, number] = [...max];
@@ -217,7 +229,7 @@ export function resolveScene(project: Project): SceneGraph {
 
   return {
     objects, blocks, annotations, warnings,
-    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions },
+    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions, scenic },
     bounds: { min, max },
     houseBounds: { min: hmin, max: hmax },
   };
