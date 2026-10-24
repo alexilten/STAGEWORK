@@ -15,4 +15,8 @@ export const Icon = {
   image: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><rect x="2" y="3" width="12" height="10" rx="2" /><circle cx="5.8" cy="6.4" r="1.1" /><path d="m2.5 11.5 3.5-3 2.5 2 2-1.6 3 2.6" /></svg>,
   camera: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><rect x="1.5" y="4.5" width="9" height="7" rx="1.5" /><path d="m10.5 7 4-2v6l-4-2" /></svg>,
   check: () => <svg width="12" height="12" viewBox="0 0 12 12" {...P}><path d="M2.5 6.2 5 8.5l4.5-5" /></svg>,
+  more: () => <svg width="16" height="16" viewBox="0 0 16 16" {...P}><circle cx="3.5" cy="8" r=".6" /><circle cx="8" cy="8" r=".6" /><circle cx="12.5" cy="8" r=".6" /></svg>,
+  grid: () => <svg width="18" height="18" viewBox="0 0 16 16" {...P}><rect x="2" y="2" width="5" height="5" rx="1.2" /><rect x="9" y="2" width="5" height="5" rx="1.2" /><rect x="2" y="9" width="5" height="5" rx="1.2" /><rect x="9" y="9" width="5" height="5" rx="1.2" /></svg>,
+  layers: () => <svg width="18" height="18" viewBox="0 0 16 16" {...P}><path d="M8 2 1.5 5.5 8 9l6.5-3.5z" /><path d="m1.5 8.2 6.5 3.5 6.5-3.5" /><path d="m1.5 10.9 6.5 3.5 6.5-3.5" /></svg>,
+  target: () => <svg width="18" height="18" viewBox="0 0 16 16" {...P}><path d="M3 2.5 12.5 7 8.3 8.3 7 12.5z" /></svg>,
 };

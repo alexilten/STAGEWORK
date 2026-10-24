@@ -57,19 +57,7 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [undo, redo, setMode]);
 
-  const openFile = async (f: File) => {
-    try {
-      if (f.name.endsWith('.3dm')) {
-        const rh = await loadRhino();
-        const doc = rh.File3dm.fromByteArray(new Uint8Array(await f.arrayBuffer()));
-        let json: string | null = null;
-        for (let i = 0; i < doc.strings().count; i++) { const [k, v] = doc.strings().get(i); if (k === 'stagecraft.project') json = v; }
-        if (!json) throw new Error('This .3dm was not created by STAGECRAFT (no embedded project).');
-        load(parseProject(json));
-      } else load(parseProject(await f.text()));
-      onToast(`Opened ${f.name}`);
-    } catch (e) { onToast(`Could not open: ${(e as Error).message}`); }
-  };
+  const openFile = (f: File) => openProjectFile(f, load, onToast);
 
   return (
     <header className="toolbar glass">
@@ -101,7 +89,22 @@ export function Toolbar({ onToast }: { onToast: (msg: string) => void }) {
   );
 }
 
-const SYSTEM_SETS: { label: string; systems?: SystemKey[] }[] = [
+/** open a .stagecraft.json, or a .3dm that STAGECRAFT wrote (the project rides along as a document string) */
+export async function openProjectFile(f: File, load: (p: ReturnType<typeof parseProject>) => void, onToast: (m: string) => void) {
+  try {
+    if (f.name.endsWith('.3dm')) {
+      const rh = await loadRhino();
+      const doc = rh.File3dm.fromByteArray(new Uint8Array(await f.arrayBuffer()));
+      let json: string | null = null;
+      for (let i = 0; i < doc.strings().count; i++) { const [k, v] = doc.strings().get(i); if (k === 'stagecraft.project') json = v; }
+      if (!json) throw new Error('This .3dm was not created by STAGECRAFT (no embedded project).');
+      load(parseProject(json));
+    } else load(parseProject(await f.text()));
+    onToast(`Opened ${f.name}`);
+  } catch (e) { onToast(`Could not open: ${(e as Error).message}`); }
+}
+
+export const SYSTEM_SETS: { label: string; systems?: SystemKey[] }[] = [
   { label: 'Entire stage' },
   { label: 'Stage only', systems: ['decking', 'supports', 'finishes'] },
   { label: 'LED only', systems: ['ledCabinets', 'ledSupports'] },
@@ -109,7 +112,7 @@ const SYSTEM_SETS: { label: string; systems?: SystemKey[] }[] = [
   { label: 'Audience only', systems: ['seating'] },
 ];
 
-function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast: (m: string) => void }) {
+export function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast: (m: string) => void }) {
   const [version, setVersion] = useState<'8' | '7'>('8');
   const [set, setSet] = useState(0);
   const [busy, setBusy] = useState(false);

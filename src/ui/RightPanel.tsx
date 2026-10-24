@@ -21,6 +21,21 @@ export function RightPanel() {
 }
 
 function Layers() {
+  const [open, setOpen] = useState(true);
+  return (
+    <section className={`section ${open ? 'open' : ''}`}>
+      <button className="section-head" onClick={() => setOpen(!open)}>
+        <span className="section-title">Layers</span>
+        <span className="chev"><Icon.chevron /></span>
+      </button>
+      <div className="section-body"><div>
+        <LayerList />
+      </div></div>
+    </section>
+  );
+}
+
+export function LayerList() {
   const layers = useStore((s) => s.layers);
   const toggle = useStore((s) => s.toggleLayer);
   const scene = useStore((s) => s.scene);
@@ -30,36 +45,27 @@ function Layers() {
     c.dimensions = scene.annotations.filter((a) => a.kind === 'dim').length;
     return c;
   }, [scene]);
-  const [open, setOpen] = useState(true);
   return (
-    <section className={`section ${open ? 'open' : ''}`}>
-      <button className="section-head" onClick={() => setOpen(!open)}>
-        <span className="section-title">Layers</span>
-        <span className="chev"><Icon.chevron /></span>
-      </button>
-      <div className="section-body"><div>
-        <ul className="layers">
-          {ALL_LAYERS.map((l) => {
-            const n = counts[l.key] ?? 0;
-            return (
-              <li key={l.key} className={`${layers[l.key] ? '' : 'off'} ${n ? '' : 'empty'}`}>
-                <button onClick={() => toggle(l.key)} title={layers[l.key] ? 'Hide' : 'Show'}>
-                  <span className="eye">{layers[l.key] ? <Icon.eye /> : <Icon.eyeOff />}</span>
-                  <span className="layer-name">{l.label}</span>
-                  <span className="layer-meta">{n || '—'}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div></div>
-    </section>
+    <ul className="layers">
+      {ALL_LAYERS.map((l) => {
+        const n = counts[l.key] ?? 0;
+        return (
+          <li key={l.key} className={`${layers[l.key] ? '' : 'off'} ${n ? '' : 'empty'}`}>
+            <button onClick={() => toggle(l.key)} title={layers[l.key] ? 'Hide' : 'Show'}>
+              <span className="eye">{layers[l.key] ? <Icon.eye /> : <Icon.eyeOff />}</span>
+              <span className="layer-name">{l.label}</span>
+              <span className="layer-meta">{n || '—'}</span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
 const Row = ({ k, v }: { k: string; v: ReactNode }) => <div className="kv"><span>{k}</span><span>{v}</span></div>;
 
-function Production() {
+export function Production() {
   const scene = useStore((s) => s.scene);
   const u = useStore((s) => s.project.units);
   const r = scene.report;
@@ -113,7 +119,7 @@ const Metric = ({ label, value, sub }: { label: string; value: string; sub?: str
   <div className="metric"><div className="metric-label">{label}</div><div className="metric-value">{value}</div>{sub && <div className="metric-sub">{sub}</div>}</div>
 );
 
-function Inspector() {
+export function Inspector() {
   const scene = useStore((s) => s.scene);
   const selection = useStore((s) => s.selection)!;
   const select = useStore((s) => s.select);
@@ -317,7 +323,7 @@ function CatalogRows({ id, u }: { id: string; u: DisplayUnits }) {
   }
 }
 
-function Warnings() {
+export function Warnings() {
   const warnings = useStore((s) => s.scene.warnings);
   const select = useStore((s) => s.select);
   const shown = warnings.filter((w) => w.level !== 'info' || ['engineering', 'deck.infill', 'seating.ada', 'seating.sightline'].includes(w.code));
