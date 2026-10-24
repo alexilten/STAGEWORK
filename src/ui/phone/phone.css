@@ -1,0 +1,110 @@
+/* ── phone portrait layout (only under .phone, which renders below 600 px; desktop styles are untouched) */
+.phone {
+  --pad: 8px;
+  --bar-h: 48px;
+  --sheet-h: 35dvh;
+  --dock-h: 25dvh;
+  --safe-top: max(env(safe-area-inset-top), 8px);
+  --safe-bottom: max(env(safe-area-inset-bottom), 8px);
+  --sheet-top: calc(var(--safe-top) + var(--bar-h) + var(--pad));
+  --stage-top: calc(var(--sheet-top) + var(--sheet-h));
+  --stage-bottom: calc(var(--safe-bottom) + var(--dock-h));
+  -webkit-tap-highlight-color: transparent;
+}
+.phone input, .phone select { font-size: 16px; } /* iOS zooms into anything smaller */
+
+/* centre band: the canvas lives only here, so the stage is always framed in the middle of the screen */
+.phone-stage { position: absolute; left: 0; right: 0; top: var(--stage-top); bottom: var(--stage-bottom); }
+.phone .drag-info { top: 8px; font-size: 12px; }
+.phone .toast { bottom: calc(var(--stage-bottom) + 58px); max-width: calc(100vw - 32px); }
+
+/* top bar */
+.phone-bar { position: absolute; top: var(--safe-top); left: var(--pad); right: var(--pad); height: var(--bar-h); border-radius: 16px; display: flex; align-items: center; gap: 2px; padding: 0 6px 0 14px; z-index: 12; animation: rise 0.6s var(--ease) both; }
+.phone-bar .logo-mark { flex: none; margin-right: 10px; }
+.phone-bar .icon-btn { width: 36px; height: 36px; flex: none; }
+.phone-bar .icon-btn.on { background: rgba(0,0,0,.06); }
+.phone .preset-wrap { flex: 1; min-width: 0; position: static; margin-right: 4px; }
+.phone .preset-btn { min-width: 0; width: 100%; height: 34px; gap: 6px; padding: 0 8px 0 10px; }
+.phone .preset-btn-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.phone .preset-btn-cat { display: none; }
+.phone .preset-menu { position: fixed; top: calc(var(--safe-top) + var(--bar-h) + 6px); left: var(--pad); right: var(--pad); width: auto; transform: none; max-height: calc(100dvh - var(--safe-top) - var(--bar-h) - var(--safe-bottom) - 14px); border-radius: 18px; z-index: 30; background: rgba(250, 250, 249, 0.985); }
+.phone .preset-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+.phone .preset-menu .segmented { display: flex; overflow-x: auto; scrollbar-width: none; }
+.phone .preset-menu .segmented::-webkit-scrollbar { display: none; }
+
+.phone-menu { top: calc(var(--bar-h) + 6px); right: 0; width: 272px; z-index: 30; }
+.phone-menu .project-name { width: 100%; font-weight: 600; color: var(--ink); padding: 6px 8px; }
+.phone-menu-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 4px 8px; color: var(--ink-2); }
+.phone-menu .menu-item { padding: 10px 8px; }
+.phone-menu .mi { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); font-family: var(--font); font-size: 13px; }
+.phone-menu .primary.wide { height: 40px; margin-top: 8px; }
+.phone-menu-wrap .menu { top: calc(var(--bar-h) + 6px); right: 0; width: 272px; z-index: 30; }
+
+/* top sheet: section rail + the one open section */
+.phone-sheet { position: absolute; top: var(--sheet-top); left: var(--pad); right: var(--pad); height: calc(var(--sheet-h) - var(--pad)); display: flex; flex-direction: column; gap: 6px; z-index: 6; }
+.phone-rail { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: none; padding: 1px 2px; scroll-padding-inline: 2px; mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
+.phone-rail::-webkit-scrollbar { display: none; }
+.phone-rail button { flex: none; height: 32px; padding: 0 14px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--ink-2); background: rgba(255,255,255,.72); box-shadow: 0 0 0 .5px var(--line-2), 0 1px 2px rgba(0,0,0,.04); transition: background .25s var(--ease), color .2s, transform .2s var(--ease); }
+.phone-rail button:active { transform: scale(.95); }
+.phone-rail button.on { background: var(--ink); color: #fff; box-shadow: 0 4px 12px -4px rgba(0,0,0,.35); }
+.phone-card { flex: 1; min-height: 0; animation: cardIn .34s var(--ease) both; }
+.phone .panel.left { position: relative; inset: auto; width: auto; height: 100%; animation: none; }
+.phone .panel-scroll { height: 100%; padding: 0 0 10px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.phone .panel.left .section { border: 0; }
+.phone .panel.left .section-head { position: sticky; top: 0; z-index: 2; padding: 13px 16px 9px; background: linear-gradient(rgba(250,250,251,.96) 75%, rgba(250,250,251,0)); cursor: default; }
+.phone .panel.left .section-title { font-size: 15px; }
+.phone .panel.left .section-head .chev { display: none; }
+.phone .panel.left .section-body > div { padding: 0 16px; }
+
+/* touch-sized controls */
+.phone .slider { height: 28px; }
+.phone .slider::-webkit-slider-thumb { width: 24px; height: 24px; margin-top: -10px; }
+.phone .slider::-moz-range-thumb { width: 24px; height: 24px; }
+.phone .segmented button { height: 32px; }
+.phone .swatch { width: 30px; height: 30px; }
+.phone .select select { height: 38px; }
+.phone .ctl-input { font-size: 16px; }
+
+/* floating view switch at the foot of the stage band */
+.phone-viewbar { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); border-radius: 12px; padding: 3px; display: flex; gap: 2px; align-items: center; z-index: 6; animation: riseB 0.7s var(--ease) both 0.15s; }
+.phone-viewbar .segmented { background: transparent; }
+.phone-viewbar .segmented button { height: 28px; padding: 0 8px; font-size: 12px; }
+.phone-viewbar .icon-btn { width: 28px; height: 28px; }
+.phone-viewbar .segmented button { padding: 0 7px; }
+
+/* bottom dock: content above, icon tabs at the thumb */
+.phone-dock { position: absolute; left: var(--pad); right: var(--pad); bottom: var(--safe-bottom); height: calc(var(--dock-h) - var(--pad)); border-radius: 20px; display: flex; flex-direction: column-reverse; overflow: hidden; z-index: 6; animation: riseB2 0.7s var(--ease) both 0.1s; }
+.dock-tabs { flex: none; display: flex; height: 52px; border-top: .5px solid var(--line); padding: 0 6px; }
+.dock-tabs button { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 10.5px; font-weight: 500; color: var(--ink-4); transition: color .2s; }
+.dock-tabs button.on { color: var(--ink); }
+.dock-icon { position: relative; display: grid; place-items: center; height: 20px; }
+.dock-icon svg { width: 19px; height: 19px; }
+.dock-icon i { position: absolute; top: -4px; left: 13px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 999px; background: var(--warn); color: #fff; font-style: normal; font-size: 9.5px; font-weight: 700; line-height: 15px; text-align: center; }
+.dock-pane { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px 0 8px; animation: fadeIn .25s var(--ease) both; scrollbar-width: none; }
+.dock-pane::-webkit-scrollbar { display: none; }
+.dock-pane > .section:not(.inspector) > .section-head { display: none; }
+.dock-pane > .section { border: 0; }
+.dock-pane .section-body > div { padding: 8px 12px 0; }
+.dock-pane .inspector .section-head { padding: 10px 12px 4px; }
+.dock-pane .metric-grid { grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+.dock-pane .metric { padding: 9px 10px; }
+.dock-pad { padding: 6px 16px; }
+.dock-pad .layers li button { padding: 8px 8px; }
+
+@keyframes cardIn { from { opacity: 0; transform: translateY(-6px) scale(.99); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes riseB2 { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* screen media inside the more menu: its own menu covers the more menu */
+.phone-menu .media-wrap { position: static; margin: 0; }
+.phone-menu .media-menu { top: 0; left: 0; right: 0; width: auto; z-index: 2; }
+
+/* camera view: the stage band takes the whole screen, the frame and shot bar sit on top */
+body[data-shot="1"] .phone-stage { top: 0; bottom: 0; }
+body[data-shot="1"] .phone-sheet, body[data-shot="1"] .phone-dock, body[data-shot="1"] .phone-viewbar, body[data-shot="1"] .phone-bar { display: none; }
+.phone .shot-bar { min-width: 0; width: calc(100vw - 16px); bottom: var(--safe-bottom); }
+.phone .shot-row { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.phone .shot-row::-webkit-scrollbar { display: none; }
+.phone .shot-row .segmented { flex: none; }
+.phone .shot-meta { gap: 4px 12px; font-size: 11px; }
+.phone .shot-row .chip { white-space: nowrap; flex: none; }

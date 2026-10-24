@@ -1,15 +1,20 @@
-import { useState, type ReactNode } from 'react';
+import { useContext, useState, type ReactNode } from 'react';
 import type { Resolved1D } from '../core/engine/types';
 import { formatLength, parseLength, type DisplayUnits } from '../core/units';
 import { Icon } from './icons';
+import { AccordionContext } from './phone/usePhone';
 
 export function Section({ title, summary, children, defaultOpen = true }: { title: string; summary?: ReactNode; children: ReactNode; defaultOpen?: boolean }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [ownOpen, setOwnOpen] = useState(defaultOpen);
+  const acc = useContext(AccordionContext);
+  // phone: only the open section is drawn — the others wait as chips in the section rail
+  if (acc && acc.open !== title) return null;
+  const open = acc ? true : ownOpen;
   return (
     <section className={`section ${open ? 'open' : ''}`}>
-      <button className="section-head" onClick={() => setOpen(!open)}>
+      <button className="section-head" onClick={() => (acc ? undefined : setOwnOpen(!open))}>
         <span className="section-title">{title}</span>
-        {!open && summary && <span className="section-summary">{summary}</span>}
+        {(!open || acc) && summary && <span className="section-summary">{summary}</span>}
         <span className="chev"><Icon.chevron /></span>
       </button>
       <div className="section-body"><div>{children}</div></div>

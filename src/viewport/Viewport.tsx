@@ -11,6 +11,7 @@ import { DragController } from './DragController';
 import { Gizmo } from './Gizmo';
 import type { Annotation } from '../core/engine/types';
 import { resolveShot, shotFrame } from '../ui/shot';
+import { isPhone } from '../ui/phone/usePhone';
 
 /** World is mm, Z-up (see core/schema.ts). three.js is Y-up metres → one wrapping transform. */
 const WORLD_ROTATION = new THREE.Euler(-Math.PI / 2, 0, 0);
@@ -167,6 +168,8 @@ function CameraRig({ scene }: { scene: SceneGraph }) {
     camera.near = 0.5;
     camera.aspect = size.width / size.height;
     const v = viewFor(view, view === 'house' ? scene.houseBounds : scene.bounds);
+    // the phone's stage band is narrower than a desktop window: back off so the whole width still fits
+    if (isPhone()) v.pos.sub(v.target).multiplyScalar(Math.max(1, 1.5 / camera.aspect)).add(v.target);
     const animate = !first.current;
     first.current = false;
     camera.fov = v.fov;

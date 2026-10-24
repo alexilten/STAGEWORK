@@ -7,6 +7,8 @@ import { RightPanel } from './RightPanel';
 import { useStore, type CameraView } from './store';
 import { Toolbar } from './Toolbar';
 import { CameraShot } from './CameraShot';
+import { PhoneApp } from './phone/PhoneApp';
+import { usePhone } from './phone/usePhone';
 
 export function App() {
   const [toast, setToast] = useState<string | null>(null);
@@ -20,6 +22,8 @@ export function App() {
   const setView = useStore((s) => s.setView);
   const mode = useStore((s) => s.mode);
   useEffect(() => { document.body.dataset.mode = mode; }, [mode]);
+  const phone = usePhone();
+  if (phone) return <PhoneApp />;
 
   return (
     <div className="app">
