@@ -95,6 +95,8 @@ export interface RiggingParams {
   trussId: string;
   header: { enabled: boolean; clearance: Mm; overhang: Mm; maxHoistSpacing: Mm };
   front: { enabled: boolean; distance: Mm; trim: Mm; width: Mm };
+  /** slide hoists along their truss onto the venue's rated rigging points (default on) */
+  snapToVenue?: boolean;
 }
 
 export interface LightingParams {

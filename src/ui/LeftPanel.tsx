@@ -5,7 +5,7 @@ import { ROOFS } from '../core/engine/structure';
 import { VENUE_ORDER, VENUE_SPECS, venueFit } from '../core/engine/venue';
 import { useState } from 'react';
 import { DEFAULT_VENUE, type VenueArchetype, type VenueParams, DEFAULT_AUDIENCE, DEFAULT_SHOW, DEFAULT_STRUCTURE, type AudienceParams, type RoofSystem, type ShowParams, type StructureParams, DEFAULT_AUDIO, DEFAULT_BROADCAST, type BroadcastParams, DEFAULT_SCENIC, DEFAULT_SEATING, type ScenicParams, DEFAULT_SHAPES, type AudioParams, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
-import { formatLength } from '../core/units';
+import { formatLength, formatWeight } from '../core/units';
 import { LengthControl, NumberControl, Section, Segmented, Select, Toggle, VerificationBadge } from './controls';
 import { useStore } from './store';
 import { Icon } from './icons';
@@ -137,6 +137,7 @@ export function LeftPanel() {
           <LengthControl label="Truss length" units={u} value={project.rigging.front.width} min={3000} max={30000} step={250} disabled={!project.rigging.front.enabled}
             hint={front ? <>Resolved {formatLength(front.length, u, { precise: true })} from {front.sections.map((s) => s / 1000).join(' + ')} m</> : undefined}
             onChange={(v) => edit((p) => { p.rigging.front.width = v; }, 'rig.width')} />
+          <RigLoads />
         </Section>
 
         <Section title="Lighting" defaultOpen={false} summary={`${scene.report.fixtures?.count ?? 0} FOH · ${scene.report.lightingPositions?.fixtureTotal ?? 0} positions`}>
@@ -840,4 +841,32 @@ function VenueSection() {
       </>)}
     </Section>
   );
+}
+
+/** hoist loads, and the venue's rated points they hang from */
+function RigLoads() {
+  const r = useStore((s) => s.scene.report);
+  const snap = useStore((s) => s.project.rigging.snapToVenue !== false);
+  const u = useStore((s) => s.project.units);
+  const edit = useStore((s) => s.edit);
+  const L = r.rigLoad;
+  if (!L.hoists) return null;
+  const rated = !!(r.venue?.built && r.venue.rigPoints && !r.structure?.roof);
+  const pct = L.ratingKg ? Math.round((L.maxPointKg / L.ratingKg) * 100) : 0;
+  return (<>
+    {rated && (
+      <Toggle label="Hang from venue rig points" checked={snap} onChange={(v) => edit((p) => { p.rigging.snapToVenue = v; })} />
+    )}
+    {rated && snap && (
+      <div className="ctl-hint">
+        {L.snapped} of {L.hoists} hoists on rated points{L.bridled ? ` · ${L.bridled} bridled` : ''}{L.unsnapped ? ` · ${L.unsnapped} without a point` : ''}<br />
+        Heaviest point {formatWeight(L.maxPointKg, u)} of {formatWeight(L.ratingKg ?? 0, u)} ({pct}%){L.over ? ` · ${L.over} over` : ''}
+      </div>
+    )}
+    <div className="ctl-hint">
+      Heaviest hoist ≈ {formatWeight(L.maxHoistKg, u)} of {formatWeight(L.hoistCapacityKg, u)} working load
+      {L.estimated ? ' · some truss weights estimated per metre' : ''}{L.incomplete ? ' · some weights unpublished' : ''}.
+      Lever-rule estimate for planning; the rigger's calculation governs.
+    </div>
+  </>);
 }

@@ -4,6 +4,7 @@ export * from './types';
 
 const ACCESSED = '2026-10-23';
 const ACCESS2 = '2026-10-24';
+const ACCESS3 = '2026-10-25';
 
 /* ───────────────────────────── LED cabinets ───────────────────────────── */
 
@@ -256,6 +257,40 @@ export const FIXTURES: Fixture[] = [
         note: '319 × 414 × 477 mm, 27 kg, 477 W at 120 V' },
     ],
     notes: ['The sheet gives 319 × 414 × 477 mm without axis labels; read as length × width × height.', '477 W is the highest listed draw (120 V); used as the planning max.'],
+  },
+  {
+    id: 'claypaky.ultimo-sharpy',
+    category: 'fixture',
+    manufacturer: 'Claypaky',
+    model: 'Ultimo Sharpy',
+    fixtureType: 'beam',
+    verification: 'manufacturer',
+    length: 253, width: 358, height: 534,
+    weightKg: 19.5, powerMaxW: 450,
+    mounting: 'Omega brackets; IP66 for outdoor use',
+    sources: [
+      { label: 'Claypaky — Ultimo Sharpy product page', url: 'https://claypaky.it/products/sharpy', accessed: ACCESS3,
+        note: 'Size (L × W × H) 253 × 358 × 534 mm, 19.5 kg, 250 W HID, 2° beam' },
+      { label: 'Claypaky — Ultimo Sharpy leaflet (PDF)', url: 'https://www.claypaky.it/wp-content/uploads/2025/06/Claypaky_UltimoSharpy_EN.pdf', accessed: ACCESS3,
+        note: 'Power consumption 450 VA; IP66' },
+    ],
+    notes: ['Claypaky publishes power as 450 VA; used as the planning maximum in watts (power factor taken as 1).'],
+  },
+  {
+    id: 'claypaky.xtylos-aqua',
+    category: 'fixture',
+    manufacturer: 'Claypaky',
+    model: 'Xtylos Aqua',
+    fixtureType: 'beam',
+    verification: 'manufacturer',
+    length: 294, width: 390, height: 608,
+    weightKg: 30.4, powerMaxW: 400,
+    mounting: 'Omega brackets; IP66 for outdoor use',
+    sources: [
+      { label: 'Claypaky — Xtylos Aqua product page', url: 'https://claypaky.it/products/xtylos-aqua', accessed: ACCESS3,
+        note: 'Base 390 × 294 mm, 608 mm high with the head vertical, 30.4 kg, max power consumption 400 VA, laser source, 1–7° beam' },
+    ],
+    notes: ['Claypaky publishes power as 400 VA; used as the planning maximum in watts (power factor taken as 1).'],
   },
   {
     id: 'glp.impression-x4-bar-20',

@@ -9,6 +9,7 @@ import { ACCENT, addVenueCut, lookFor, makeEdgeMaterial, makeLedFaceMaterial, VE
 import { beginDrag, isDragging } from './DragController';
 import { resolveMediaCanvas, type MediaRect } from '../core/engine/media';
 import { videoPlayer } from '../ui/media';
+import { People, usePeople } from './People';
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
 const CYL = new THREE.CylinderGeometry(1, 1, 1, 20, 1);
@@ -46,7 +47,11 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
   const scenicFinish = useStore((s) => s.project.scenic?.portal.finish ?? 'white');
   // looking through a camera hides that camera's own rig
   const hidden = useStore((s) => (s.shot ? `bcast:${s.shot.cam}` : null));
-  const visible = useMemo(() => scene.objects.filter((o) => layers[o.system] && o.group !== hidden), [scene, layers, hidden]);
+  const shown = useMemo(() => scene.objects.filter((o) => layers[o.system] && o.group !== hidden), [scene, layers, hidden]);
+  // people draw as sculpted figures once their meshes have loaded; until then (and in every export) as proxies
+  const people = usePeople();
+  const visible = useMemo(() => (people ? shown.filter((o) => !o.figure) : shown), [shown, people]);
+  const figures = useMemo(() => (people ? shown.filter((o) => o.figure) : []), [shown, people]);
 
   // group visible objects into instanced batches: one per (block|unique object, part)
   const batches = useMemo(() => {
@@ -84,6 +89,7 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
 
   return (
     <group>
+      {people && figures.length > 0 && <People objects={figures} meshes={people} />}
       {batches.map((b) => <InstancedBatch key={b.key + mode} batch={b} mode={mode} finish={finish} scenicFinish={scenicFinish} />)}
       {leds.map(({ L, objects }) => <LedFaces key={L.id} id={L.id} cols={L.cols} rows={L.rows} w={L.cabinet.width} h={L.cabinet.height} objects={objects} mode={mode} media={L.surface === 'wall' ? media : null} />)}
     </group>

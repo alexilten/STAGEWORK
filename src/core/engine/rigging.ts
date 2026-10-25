@@ -55,7 +55,7 @@ export function pickTrussSections(sys: TrussSystem, target: number) {
 
 export function buildTrussRun(
   sys: TrussSystem, hoist: Hoist,
-  opts: { id: string; name: string; target: number; center: Vec3; maxHoistSpacing: number; group: string; yaw?: number; layer?: '30_RIGGING::30_01_TRUSS' | '30_RIGGING::30_05_GRID' },
+  opts: { id: string; name: string; target: number; center: Vec3; maxHoistSpacing: number; group: string; yaw?: number; layer?: '30_RIGGING::30_01_TRUSS' | '30_RIGGING::30_05_GRID'; hungKg?: number },
 ) {
   const yaw = opts.yaw ?? 0, ux = Math.cos(yaw), uy = Math.sin(yaw);
   /** a point `d` along the run from its centre */
@@ -74,7 +74,7 @@ export function buildTrussRun(
     objects.push({
       id: `TRUSS.${opts.id}.S${String(i + 1).padStart(2, '0')}`, label: `${sys.model} ${L / 1000} m`, layer: opts.layer ?? '30_RIGGING::30_01_TRUSS', system: 'rigging', group: opts.group,
       block: key, position: [...at(x + L / 2), opts.center[2]], rotationZ: yaw,
-      meta: { catalogId: sys.id, length: L, weightKg: spec?.weightKg ?? null, lengthVerified: spec?.verified ?? false, connection: sys.connection, run: opts.name },
+      meta: { catalogId: sys.id, length: L, weightKg: spec?.weightKg ?? null, lengthVerified: spec?.verified ?? false, connection: sys.connection, run: opts.name, runId: opts.id },
     });
     x += L;
   });
@@ -82,7 +82,9 @@ export function buildTrussRun(
   // hoists: one at each end (inset 250 mm) plus intermediates so spacing ≤ max
   const inset = Math.min(250, length / 4);
   const span = length - 2 * inset;
-  const n = Math.max(2, Math.ceil(span / opts.maxHoistSpacing) + 1);
+  // enough hoists for the spacing limit, and for the hung load: an inner hoist of n evenly spaced carries
+  // about load / (n − 1), kept under 75% of the motor's working load
+  const n = Math.max(2, Math.ceil(span / opts.maxHoistSpacing) + 1, opts.hungKg ? Math.ceil(opts.hungKg / (hoist.capacityKg * 0.75)) + 1 : 0);
   const hKey = `SC_HOIST_${hoist.capacityKg}kg`;
   blocks.set(hKey, {
     key: hKey, description: `${hoist.manufacturer} ${hoist.model}`, catalogId: hoist.id,
@@ -97,7 +99,7 @@ export function buildTrussRun(
     objects.push({
       id: `HOIST.${opts.id}.${String(i + 1).padStart(2, '0')}`, label: hoist.model, layer: '30_RIGGING::30_02_HOISTS', system: 'rigging', group: opts.group,
       block: hKey, position: [...at(d), opts.center[2] + sys.height], rotationZ: yaw,
-      meta: { catalogId: hoist.id, capacityKg: hoist.capacityKg, verification: hoist.verification },
+      meta: { catalogId: hoist.id, capacityKg: hoist.capacityKg, verification: hoist.verification, run: opts.id, along: Math.round(d), runLength: length, maxSpacing: opts.maxHoistSpacing },
     });
   }
 

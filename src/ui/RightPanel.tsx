@@ -86,6 +86,7 @@ export function Production() {
           <Metric label="Platforms" value={String(r.stage.primaryCount + r.stage.infillCount)} sub={`${r.stage.primaryCount} × ${r.stage.system.label}${r.stage.infillCount ? ` + ${r.stage.infillCount} × ${r.stage.system.infill.label}` : ''}`} />
           <Metric label="LED cabinets" value={String(cabinets)} sub={`${formatArea(ledArea, u)} · ${r.led.length} surface${r.led.length === 1 ? '' : 's'}`} />
           <Metric label="Truss" value={`${sections} sections`} sub={`${formatLength(trussLen, u)} · ${hoists} hoists`} />
+          {r.rigLoad.snapped > 0 && r.rigLoad.ratingKg && <Metric label="Rig points" value={`${r.rigLoad.snapped} used`} sub={`max ${formatWeight(r.rigLoad.maxPointKg, u)} · ${Math.round((r.rigLoad.maxPointKg / r.rigLoad.ratingKg) * 100)}% of rating${r.rigLoad.over ? ` · ${r.rigLoad.over} over` : ''}`} />}
           {r.seating && <Metric label="Seats" value={r.seating.capacity.toLocaleString()} sub={`${r.seating.rows} rows · ${r.seating.wheelchairPlaced.length || r.seating.wheelchairSpaces} wheelchair${r.seating.wheelchairPlaced.length ? '' : ' (not placed)'}`} />}
           {r.audience?.standing && <Metric label="Standing" value={r.audience.standing.capacity.toLocaleString()} sub={`${r.audience.standing.areaM2.toLocaleString()} m² at ${r.audience.standing.density}/m²${r.audience.standing.barricadeM ? ` · ${Math.round(r.audience.standing.barricadeM)} m barricade` : ''}`} />}
           {r.audience && r.audience.stands.length > 0 && (() => {

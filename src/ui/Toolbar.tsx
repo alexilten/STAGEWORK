@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SystemKey } from '../core/engine/types';
 import { parseProject } from '../core/schema';
-import { export3dm, exportBom, exportDxfFile, exportFbxFile, exportGlbFile, exportProject, exportStepFile, loadRhino } from '../export/browser';
+import { export3dm, exportBom, exportDimensionScript, exportDxfFile, exportFbxFile, exportGlbFile, exportProject, exportStepFile, loadRhino } from '../export/browser';
 import { getCatalogItem, type LedCabinet } from '../core/catalog';
 import { PresetPicker } from './PresetPicker';
 import { Segmented } from './controls';
@@ -144,6 +144,7 @@ export function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast:
         const n = await export3dm(scene, project, { version: +version as 7 | 8, systems });
         return n;
       }, 'Rhino .3dm exported')}>{busy ? 'Preparing…' : 'Export .3dm'}</button>
+      <button className="menu-item" title="Run in Rhino 7 or 8 (RunPythonScript) after opening the .3dm: turns the dimension lines into native aligned dimensions" onClick={() => go(() => exportDimensionScript(), 'Dimension script saved — in Rhino run RunPythonScript and pick it')}>Rhino dimension script <span>.py</span></button>
       <div className="menu-sep" />
       <button className="menu-item" onClick={() => go(async () => {
         const data = project.media && (useStore.getState().assets[project.media.assetId] ?? project.media.poster);

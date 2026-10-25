@@ -12,7 +12,7 @@ export type MaterialKey =
   | 'scenicFlat' | 'drape'
   | 'camera' | 'platform' | 'glass' | 'screen'
   | 'crowd' | 'barricade' | 'stand' | 'structure' | 'roofSkin' | 'booth' | 'accessible'
-  | 'venueWall' | 'venueDark' | 'venueFloor' | 'venueCarpet' | 'venueSteel' | 'venueColumn' | 'venuePipe' | 'venueDoor' | 'venueGlass' | 'rigPoint' | 'venueTier' | 'venueTurf';
+  | 'venueWall' | 'venueDark' | 'venueFloor' | 'venueCarpet' | 'venueSteel' | 'venueColumn' | 'venuePipe' | 'venueDoor' | 'venueGlass' | 'rigPoint' | 'rigPointLoaded' | 'rigPointOver' | 'venueTier' | 'venueTurf';
 
 export type Part =
   | { kind: 'box'; min: Vec3; max: Vec3; mat: MaterialKey }
@@ -44,6 +44,9 @@ export interface BlockDef {
   catalogId?: string;
 }
 
+/** presenter: the detailed hero figure; crowd: low-poly audience; crew: camera operators; dj: the DJ */
+export type FigureKind = 'presenter' | 'crowd' | 'crew' | 'dj';
+
 export type MetaValue = string | number | boolean | null;
 
 export interface SceneObject {
@@ -60,6 +63,11 @@ export interface SceneObject {
   /** optional pitch about the object's local X axis, applied after rotationZ (radians) */
   tilt?: number;
   meta: Record<string, MetaValue>;
+  /**
+   * a person: the viewport draws a sculpted figure (see viewport/People.tsx) while every exporter
+   * keeps the light two-cylinder proxy in `parts` / the block, so CAD files stay small
+   */
+  figure?: FigureKind;
 }
 
 export interface Annotation {
