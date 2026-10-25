@@ -138,7 +138,7 @@ export function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast:
       }, 'Rhino .3dm exported')}>{busy ? 'Preparing…' : 'Export .3dm'}</button>
       <div className="menu-sep" />
       <button className="menu-item" onClick={() => go(async () => {
-        const data = project.media && useStore.getState().assets[project.media.assetId];
+        const data = project.media && (useStore.getState().assets[project.media.assetId] ?? project.media.poster);
         const media = project.media && data ? await glbMedia(scene.report.led, project.media, data) : undefined;
         exportGlbFile(scene, project, SYSTEM_SETS[set].systems, media);
       }, 'GLB exported')}>glTF binary (selection above) <span>.glb</span></button>

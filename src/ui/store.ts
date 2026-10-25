@@ -158,10 +158,13 @@ function withAssetsExtracted(p: Project): Project {
   return { ...p, media: rest };
 }
 
-/** the project as saved to disk: screen image inlined so the file reopens with its content */
+/**
+ * The project as saved to disk: screen content inlined so the file reopens with it.
+ * A video too big to inline (held as a blob: URL) saves its poster only and is relinked on open.
+ */
 export function projectForSave(p: Project): Project {
   const data = p.media ? useStore.getState().assets[p.media.assetId] : undefined;
-  return p.media && data ? { ...p, media: { ...p.media, data } } : p;
+  return p.media && data?.startsWith('data:') ? { ...p, media: { ...p.media, data } } : p;
 }
 
 function uniqueWallId(p: Project) {
