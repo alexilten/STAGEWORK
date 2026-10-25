@@ -163,6 +163,8 @@ function CameraRig({ scene }: { scene: SceneGraph }) {
   const shot = useStore((s) => s.shot);
   const boundsKey = useMemo(() => JSON.stringify(view === 'house' ? scene.houseBounds : scene.bounds), [scene, view]);
   const first = useRef(true);
+  // dev only: lets the screenshot scripts place the camera
+  useEffect(() => { if (import.meta.env?.DEV) (window as unknown as { __stagecraftControls?: CameraControls }).__stagecraftControls = ref.current; }, []);
   useEffect(() => {
     camera.clearViewOffset();
     camera.near = 0.5;

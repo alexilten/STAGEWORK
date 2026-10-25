@@ -59,6 +59,20 @@ Venue geometry on the side the camera looks in from is cut away above the cut he
 - amphitheatre: the stage house; the fan and lawn stay whole;
 - tent: cut along the ridge, so the half facing the camera drops away. The building does not take clicks. Turn the cut off, or change its height, in the Venue section.
 
+Cut faces are filled: where the cut opens a wall or a bowl row, its inside is painted a flat section grey, so the bowl reads as solid mass rather than hollow row shells.
+
+## Rigging points and hoists
+
+With a rated venue built and no ground-support roof, flown hoists hang from the venue's rated points (Rigging → **Hang from venue rig points**, on by default):
+
+1. Each truss run keeps its line. Its hoists slide along it, in order, to the nearest free rated point within 1 m of the line in plan and within reach of where the run wanted them (at least 1.5 m, or 60% of the hoist spacing). Two hoists never share a point or land closer than 600 mm.
+2. A chain drops from the hoist to the point (`30_03_HARDWARE`). A point more than 150 mm off the truss line is counted as a bridle (`rig.bridle`).
+3. A hoist with no point in reach stays where it was and is reported (`rig.unsnapped`): it needs a bridle between two points, a beam clamp or a sub-grid.
+4. Loads: truss self-weight (published section weights; sections without one take the per-metre weight of the system's published sections), fixtures within 600 mm of the run, and an LED wall on its header truss, split onto the hoists by the lever rule (each span simply supported, ends as cantilevers). Point load = hoist reaction + hoist and chain.
+5. Points carrying a hoist turn amber; points above 80% of their rating turn red. `rig.point.over` (error) and `rig.point.near` (warning) report them; `rig.span` flags a span that grew past the truss's limit after snapping; `rig.hoist.over` flags a hoist over its working load. Hoisted points carry `loadKg`, `hoist` and `utilisation` as user text in the .3dm.
+
+A continuous truss loads its inner hoists more than the simply supported estimate, which is why points above 80% are flagged too. This is a first look for planning; the venue's rigging plot and a qualified rigger decide.
+
 ## Export
 
 Everything is on system `venue`, under `05_VENUE`:

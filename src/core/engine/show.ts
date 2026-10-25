@@ -77,7 +77,7 @@ export function resolveShow(p: ShowParams, ctx: ShowContext) {
       parts: [
         { kind: 'cyl', from: [0, 0, 0], to: [0, 0, 1480], r: 170, mat: 'presenter' },
         { kind: 'cyl', from: [0, 0, 1530], to: [0, 0, 1750], r: 105, mat: 'presenter' },
-      ], position: [x, y + BOOTH.depth / 2 + 350, z], rotationZ: 0, meta: { height: 1750 } });
+      ], position: [x, y + BOOTH.depth / 2 + 350, z], rotationZ: 0, meta: { height: 1750 }, figure: 'dj' });
     if (gearWidth > w - 100) warnings.push({ level: 'warn', code: 'show.booth.width', target: 'show:booth', message: `${decks} players and a mixer need about ${Math.round(gearWidth + 200)} mm of booth; it's ${Math.round(w)} mm wide.` });
     booth = { width: w, decks, gearWidth };
   }

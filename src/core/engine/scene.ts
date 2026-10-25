@@ -13,6 +13,7 @@ import type { Project } from '../schema';
 import { resolveDeck, type DeckLayout } from './deck';
 import { resolveLedWall, type LedLayout } from './led';
 import { buildTrussRun, fixtureParts, type TrussRun } from './rigging';
+import { snapAndLoad, type RigLoadReport } from './rigload';
 import type { Annotation, BlockDef, SceneObject, Warning } from './types';
 
 export interface ProductionReport {
@@ -31,6 +32,7 @@ export interface ProductionReport {
   structure: StructureReport | null;
   show: ShowReport | null;
   venue: VenueReport | null;
+  rigLoad: RigLoadReport;
 }
 
 export interface SceneGraph {
@@ -113,7 +115,7 @@ export function resolveScene(project: Project): SceneGraph {
       const bottom = L.top + ledBarH + header.clearance;
       const r = buildTrussRun(trussSys, hoist, {
         id: `HDR_${L.id.toUpperCase()}`, name: `${L.name} header`, target: L.chord + 2 * header.overhang,
-        center: [L.origin[0], yC, bottom], maxHoistSpacing: header.maxHoistSpacing, group: `truss:header:${L.id}`,
+        center: [L.origin[0], yC, bottom], maxHoistSpacing: header.maxHoistSpacing, group: `truss:header:${L.id}`, hungKg: L.weightKg ?? undefined,
       });
       truss.push(r.run); addBlocks(r.blocks); objects.push(...r.objects);
     }
@@ -180,7 +182,7 @@ export function resolveScene(project: Project): SceneGraph {
         { kind: 'cyl', from: [0, 0, 0], to: [0, 0, 1480], r: 170, mat: 'presenter' },
         { kind: 'cyl', from: [0, 0, 1530], to: [0, 0, 1750], r: 105, mat: 'presenter' },
       ],
-      position: presenterAt, rotationZ: 0, meta: { height: 1750 },
+      position: presenterAt, rotationZ: 0, meta: { height: 1750 }, figure: 'presenter',
     });
   }
 
@@ -350,9 +352,13 @@ export function resolveScene(project: Project): SceneGraph {
     }
   }
 
+  // ── Hoists onto the venue's rated points (none under a ground-support roof), loads on every point
+  const rl = snapAndLoad(objects, hoist, led, { snap: !!venue?.built && project.rigging.snapToVenue !== false && !structure?.roof });
+  addBlocks(rl.blocks); objects.push(...rl.objects); warnings.push(...rl.warnings);
+
   return {
     objects, blocks, annotations, warnings,
-    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions, scenic, broadcast, audience, structure, show, venue },
+    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions, scenic, broadcast, audience, structure, show, venue, rigLoad: rl.report },
     bounds: { min, max },
     houseBounds: { min: hmin, max: hmax },
   };

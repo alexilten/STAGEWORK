@@ -1,5 +1,6 @@
 /** Browser-side export actions. rhino3dm (≈ 2.7 MB WASM, ~1 MB gzipped) is loaded lazily on first export. */
 import wasmUrl from 'rhino3dm/rhino3dm.wasm?url';
+import dimScript from './rhino/stagecraft_dimensions.py?raw';
 import type { SceneGraph } from '../core/engine/scene';
 import type { SystemKey } from '../core/engine/types';
 import { serializeProject, type Project } from '../core/schema';
@@ -41,3 +42,6 @@ export const exportStepFile = (s: SceneGraph, p: Project, systems?: SystemKey[])
   download(`${slug(p.name)}.step`, exportStep(s, p.name, { systems, finish: p.stage.finish, scenicFinish: p.scenic?.portal.finish, fileName: `${slug(p.name)}.step` }), 'model/step');
 export const exportGlbFile = (s: SceneGraph, p: Project, systems?: SystemKey[], media?: GlbMedia) =>
   download(`${slug(p.name)}.glb`, exportGlb(s, p.name, { systems, finish: p.stage.finish, scenicFinish: p.scenic?.portal.finish, media }) as BlobPart, 'model/gltf-binary');
+
+/** RhinoPython helper that turns the exported DIM.* lines into native Rhino aligned dimensions */
+export const exportDimensionScript = () => download('stagecraft_dimensions.py', dimScript, 'text/x-python');

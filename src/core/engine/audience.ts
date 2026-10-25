@@ -106,8 +106,9 @@ export function resolveAudience(p: AudienceParams, ctx: AudienceContext) {
         n++;
         objects.push({
           id: `GA.P${String(n).padStart(4, '0')}`, label: 'Standing audience', layer: '70_AUDIENCE::70_03_STANDING', system: 'seating', group: 'audience:standing',
-          block: fig.key, position: [Math.round(px), Math.round(py), 0], rotationZ: 0,
-          meta: { bomSkip: true, figure: n },
+          // facing the middle of the stage (figures face −Y in their own frame)
+          block: fig.key, position: [Math.round(px), Math.round(py), 0], rotationZ: +Math.atan2(centre[0] - px, -(centre[1] - py)).toFixed(3),
+          meta: { bomSkip: true, figure: n }, figure: 'crowd',
         });
       }
     if (n) blocks.push(fig);

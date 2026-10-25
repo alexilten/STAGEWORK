@@ -1,5 +1,7 @@
 # STAGECRAFT — Roadmap, status and known limitations
 
+**Current release: STAGECRAFT v1.0.0** (2026-10-25). The rounds below are the history that got it here; [v1.0.0](#stagecraft-v100--release-round) lists what the release round added and what comes next.
+
 ## Round 1 — functional proof of concept ✅ (checkpoint)
 
 Implemented and tested:
@@ -68,7 +70,7 @@ Done:
   Limits: dome tiles, barricade, mixer, roof members and scenic blocks are generic; roofs are envelopes, not engineered structures; crowd capacity is a planning figure, not a licensed capacity; media is front-projected and only onto upright walls.
 
 Next:
-Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, Claypaky and more LED products, lighting arrangement presets, seating follow-ups (~~placed wheelchair spaces~~ done), ~~jib / Steadicam / PTZ positions~~ (done), camera view for any point in the house, ~~video for screen media~~ (done), richer warnings (sightlines, trim vs. venue height).
+Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, ~~Claypaky~~ (two fixtures in v1.0.0) and more LED products, lighting arrangement presets, seating follow-ups (~~placed wheelchair spaces~~ done), ~~jib / Steadicam / PTZ positions~~ (done), camera view for any point in the house, ~~video for screen media~~ (done), richer warnings (sightlines, trim vs. venue height).
 
 ## Round 4 — interoperability
 Done:
@@ -76,13 +78,25 @@ Done:
 - **DXF R12** (`src/export/dxf.ts`) for AutoCAD / Vectorworks / BricsCAD: Rhino layer tree (`$` separator), equipment as BLOCK + INSERT, tilted parts as 3DFACEs. Verified with ezdxf (audit clean, extents match). DWG is Autodesk's closed format and cannot be written reliably in a browser, so the app exports DXF: open it in AutoCAD and save as DWG.
 - **STEP AP214** (`src/export/step.ts`): exact solids (planar B-rep boxes/prisms, true cylinders), blocks as mapped items, layers and colours. Verified with OpenCASCADE (7,812 valid solids for Minimal Keynote, extents match).
 
-Next: Rhino dimensions via Compute (decision needed), automated geometry validation in CI.
+Next: ~~Rhino dimensions~~ (done in v1.0.0 with a RhinoPython script rather than Compute), automated geometry validation in CI.
+
+## STAGECRAFT v1.0.0 — release round
+Done:
+- **People.** The viewport draws sculpted people while every exporter keeps the light two-cylinder proxy, so the .3dm / FBX / DXF / STEP / GLB files are unchanged in size (one person block, many instances). The figures are built offline (`scripts/people/`) from the CC0 MakeHuman body, posed on its skeleton and dressed with distance-field clothing, then shipped as tiny binary meshes (≈ 400 KB for all of them).
+  - Presenter: ≈ 36k triangles, smooth shaded, blazer and trousers, a presenting pose. It is the figure in every camera look-up (MCU, Full, Wide).
+  - Crowd: seven low-poly variants (cheering, phone up, arms crossed, hands in pockets…, ≈ 700 triangles) with a ≈ 400-triangle far level. Each GA figure picks a variant, a small yaw and a ±4% scale from its id, all drawn as instanced meshes (two draw calls per variant). Level of detail is re-bucketed at most four times a second and only when the camera moves, and slider changes only rewrite instance matrices, so dragging stays as fast as before. Camera operators and the DJ use crowd variants.
+- **Hoists on venue rigging points.** With a rated venue built (and no ground-support roof), each hoist slides along its truss to the nearest free rated point within 1 m of the truss line, a chain drops to the point, and points off the line are counted as bridles. Loads per point: truss self-weight (published section weights, or per metre from the system's published sections), fixtures on the run and the LED wall on its header, split by the lever rule; plus hoist and chain. Points turn amber when loaded and red above 80% of their rating; warnings for over-rated points, unsnapped hoists, long spans after snapping and over-capacity hoists. LED headers now get enough hoists for the wall they carry. Toggle **Hang from venue rig points** in Rigging; the Production panel shows points used, the heaviest point and its share of the rating. See [VENUES.md](VENUES.md#rigging-points-and-hoists).
+- **Section-cut fill.** With the venue cutaway on, cut faces of the arena and stadium bowls (and the walls) are painted solid, so the section reads as mass instead of hollow row shells.
+- **Claypaky**: Ultimo Sharpy and Xtylos Aqua, manufacturer-verified dimensions, weight and power (VA taken as W). Mythos 2 and Arolla Profile HP were left out: Claypaky publishes no full overall dimensions for them.
+- **Rhino dimensions.** rhino3dm cannot write dimension objects, so Export has **Rhino dimension script (.py)**: open the .3dm in Rhino 7 or 8, run `RunPythonScript` and pick the file. Every `DIM.*` line on `90_TECHNICAL::90_01_DIMENSIONS` becomes a native aligned dimension in a `STAGECRAFT` dimstyle (plan, elevation or upright, by direction); the source lines, ticks and labels move to a hidden `SC_SOURCE` sub-layer.
+
+Next (v1.x): bridles and sub-grids between venue points (today a hoist with no point within 1 m is reported, not solved), continuous-beam truss loads, Pier 80 venue import (on hold), more Claypaky once dimensions are published, a lighter presenter level for phones.
 
 ## Round 5 — production-quality app
 Performance (5k+ cabinets), catalogue search/filter UI, venue models (e.g. Pier 80 site model import), desktop packaging (Tauri/Electron), shared libraries, Grasshopper bridge.
 
 ## Known limitations (Round 1)
-- Rhino dimensions are lines + text dots, not native dimension objects.
+- ~~Rhino dimensions are lines + text dots, not native dimension objects.~~ v1.0.0: the .3dm still carries lines + text dots (rhino3dm cannot write dimensions); the exported RhinoPython script turns them into native dimensions.
 - Equipment geometry is accurate envelopes (boxes/tubes), not manufacturer CAD models.
 - Most catalogue data is *secondary* (dealer/rental listings) or *generic*; see docs/RESEARCH.md §2.3.
 - Deck legs are drawn 4 per platform; real systems share legs/clamps.

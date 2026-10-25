@@ -321,7 +321,8 @@ export function resolveBroadcast(p: BroadcastParams, ctx: BroadcastContext) {
       const at: Vec3 = o.op ?? [o.pivot[0] + ox, o.pivot[1] + oy, o.base];
       objects.push({
         id: `BC.CAM.${o.n}.OP`, label: `${name} operator`, layer: '80_BROADCAST::80_05_CREW', system: 'broadcast', group,
-        parts: figure(), position: at.map(r1) as Vec3, rotationZ: a.yaw, meta: { ...bom('Camera operator (crew)'), height: 1750 },
+        // figures face −Y in their own frame; the camera looks along its +Y, so the operator turns half round
+        parts: figure(), position: at.map(r1) as Vec3, rotationZ: a.yaw + Math.PI, meta: { ...bom('Camera operator (crew)'), height: 1750 }, figure: 'crew',
       });
     }
     cameras.push({ id, name, role: o.role, group, lens: o.lens, crew: o.crew, body, support: o.support, pivot: o.pivot, eye, yaw: a.yaw, tilt: a.tilt, distance: Math.hypot(chest[0] - eye[0], chest[1] - eye[1], chest[2] - eye[2]) });
