@@ -19,7 +19,7 @@ import { APP_VERSION } from './rhino';
 type Mat = { name: string; rgb: [number, number, number]; metal: number; rough: number; emissive?: [number, number, number]; alpha?: number };
 
 const FINISH: Record<StageFinish, [number, number, number]> = { white: [242, 241, 238], black: [27, 27, 29], graphite: [58, 58, 61], oak: [185, 154, 116] };
-function materialTable(finish: StageFinish, scenic: StageFinish): Record<MaterialKey | 'ledFace', Mat> {
+export function materialTable(finish: StageFinish, scenic: StageFinish): Record<MaterialKey | 'ledFace', Mat> {
   return {
     deckTop: { name: `SC_Deck_Top_${finish}`, rgb: FINISH[finish], metal: 0, rough: 0.5 },
     fascia: { name: `SC_Fascia_${finish}`, rgb: FINISH[finish], metal: 0, rough: 0.5 },
@@ -54,9 +54,9 @@ function materialTable(finish: StageFinish, scenic: StageFinish): Record<Materia
 
 const srgbToLinear = (c: number) => { const v = c / 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
 
-interface Prim { positions: number[]; normals: number[]; indices: number[] }
+export interface Prim { positions: number[]; normals: number[]; indices: number[] }
 
-function boxPrim(min: number[], max: number[], out: Prim) {
+export function boxPrim(min: number[], max: number[], out: Prim) {
   const [x0, y0, z0] = min, [x1, y1, z1] = max;
   const faces: [number[], number[][]][] = [
     [[1, 0, 0], [[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]]],
@@ -73,7 +73,7 @@ function boxPrim(min: number[], max: number[], out: Prim) {
   }
 }
 
-function cylPrim(from: number[], to: number[], r: number, out: Prim, seg = 16) {
+export function cylPrim(from: number[], to: number[], r: number, out: Prim, seg = 16) {
   const d = [to[0] - from[0], to[1] - from[1], to[2] - from[2]];
   const len = Math.hypot(d[0], d[1], d[2]);
   const w = d.map((v) => v / len);
@@ -100,7 +100,7 @@ function cylPrim(from: number[], to: number[], r: number, out: Prim, seg = 16) {
   }
 }
 /** Extruded plan polygon: flat-shaded sides plus triangulated caps. */
-function prismPrim(points: [number, number][], z0: number, z1: number, out: Prim) {
+export function prismPrim(points: [number, number][], z0: number, z1: number, out: Prim) {
   const pts = ShapeUtils.isClockWise(points.map(([x, y]) => new Vector2(x, y))) ? [...points].reverse() : points;
   const n = pts.length;
   for (let i = 0; i < n; i++) {

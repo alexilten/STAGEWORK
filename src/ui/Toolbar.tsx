@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SystemKey } from '../core/engine/types';
 import { parseProject } from '../core/schema';
-import { export3dm, exportBom, exportGlbFile, exportProject, loadRhino } from '../export/browser';
+import { export3dm, exportBom, exportDxfFile, exportFbxFile, exportGlbFile, exportProject, exportStepFile, loadRhino } from '../export/browser';
 import { getCatalogItem, type LedCabinet } from '../core/catalog';
 import { PresetPicker } from './PresetPicker';
 import { Segmented } from './controls';
@@ -144,7 +144,9 @@ export function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast:
       }, 'GLB exported')}>glTF binary (selection above) <span>.glb</span></button>
       <button className="menu-item" onClick={() => go(() => exportBom(scene, project), 'Bill of materials exported')}>Bill of materials <span>.csv</span></button>
       <button className="menu-item" onClick={() => go(() => exportProject(projectForSave(project)), 'Project saved')}>Project file <span>.json</span></button>
-      <div className="menu-item disabled" title="Round 4">FBX · DXF · DWG · STEP <span>planned</span></div>
+      <button className="menu-item" title="Maya, 3ds Max, Blender, Cinema 4D, Unreal, Unity — mm, Z-up, blocks as instances" onClick={() => go(() => exportFbxFile(scene, project, SYSTEM_SETS[set].systems), 'FBX exported')}>FBX (selection above) <span>.fbx</span></button>
+      <button className="menu-item" title="AutoCAD, Vectorworks, BricsCAD, SketchUp, Revit — open it and save as .dwg; DWG itself is a closed format" onClick={() => go(() => exportDxfFile(scene, project, SYSTEM_SETS[set].systems), 'DXF exported — open in AutoCAD and save as DWG if needed')}>DXF for AutoCAD / DWG <span>.dxf</span></button>
+      <button className="menu-item" title="SolidWorks, Inventor, Fusion, Creo, NX, CATIA, FreeCAD — exact solids, AP214" onClick={() => go(() => exportStepFile(scene, project, SYSTEM_SETS[set].systems), 'STEP exported')}>STEP solids (selection above) <span>.step</span></button>
     </div>
   );
 }
