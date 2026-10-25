@@ -126,4 +126,61 @@ describe('Broadcast', () => {
     expect(parseProject(JSON.stringify(old)).broadcast!.enabled).toBe(false);
     expect(parseProject(serializeProject(p)).broadcast).toEqual(p.broadcast);
   });
+
+  it('adds a jib off the downstage corner, nose up over the deck, clearing the seats its tail swings through', () => {
+    const p = keynote();
+    p.broadcast!.jib = { enabled: true, side: 'left', reachFt: 24 };
+    const s = resolveScene(p);
+    const b = s.report.broadcast!, j = b.jib!;
+    const cam = b.cameras.find((c) => c.support === 'jib')!;
+    expect(j.reach).toBeCloseTo(24 * 12 * 25.4, 6);
+    expect(j.base[0]).toBeLessThan(-s.report.stage.width.resolved / 2); // house left, off the deck
+    expect(j.base[1]).toBeLessThan(0);
+    // nose (lens) within reach of the fulcrum, and above the deck
+    expect(Math.hypot(cam.pivot[0] - j.base[0], cam.pivot[1] - j.base[1], cam.pivot[2] + 300 - 1800)).toBeCloseTo(j.reach, 0);
+    expect(cam.pivot[2]).toBeGreaterThan(s.report.stage.height.resolved + 1500);
+    expect(j.payloadKg).toBeLessThanOrEqual(j.ratedKg);
+    const seats = s.objects.filter((o) => o.system === 'seating');
+    for (const o of seats) expect(Math.hypot(o.position[0] - j.base[0], o.position[1] - j.base[1])).toBeGreaterThan(j.tailSwing);
+    const right = keynote(); right.broadcast!.jib = { enabled: true, side: 'right', reachFt: 30 };
+    const jr = resolveScene(right).report.broadcast!.jib!;
+    expect(jr.base[0]).toBeGreaterThan(0);
+    expect(jr.ratedKg).toBeCloseTo(11.3, 6); // 25 lb at 30′
+  });
+
+  it('adds a Steadicam on the deck and PTZs on the truss, falling back to the deck corners', () => {
+    const p = keynote();
+    p.broadcast!.steadicam = true;
+    p.broadcast!.ptz = { count: 3, mount: 'truss' };
+    let s = resolveScene(p);
+    let b = s.report.broadcast!;
+    const st = b.cameras.find((c) => c.support === 'steadicam')!;
+    expect(st.pivot[0]).toBeGreaterThan(0);
+    expect(st.pivot[2]).toBeCloseTo(s.report.stage.height.resolved + 1450, 0);
+    const ptz = b.cameras.filter((c) => c.support === 'ptz');
+    expect(ptz).toHaveLength(3);
+    for (const c of ptz) { expect(c.crew).toBe('robotic'); expect(c.body).toMatch(/AW-UE160/); expect(c.tilt).toBeLessThan(0); }
+    expect(b.ptz!.mount).toBe('truss');
+    p.rigging.front.enabled = false;
+    s = resolveScene(p); b = s.report.broadcast!;
+    expect(b.ptz!.mount).toBe('deck');
+    for (const c of b.cameras.filter((x) => x.support === 'ptz')) expect(c.pivot[2]).toBeGreaterThan(s.report.stage.height.resolved);
+    // every camera id is unique and every camera object exists
+    const ids = b.cameras.map((c) => c.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('the PTZ lens gives the same field of view as its 35 mm-equivalent range on the 16:9 frame', () => {
+    const p = keynote(); p.broadcast!.ptz = { count: 1, mount: 'truss' };
+    const c = resolveScene(p).report.broadcast!.cameras.find((x) => x.support === 'ptz')!;
+    const wide = lensState(c.lens, c.lens.fMin).hfov;
+    expect(wide).toBeCloseTo((2 * Math.atan(18 / 24.5) * 180) / Math.PI, 0); // 24.5 mm on a 36 mm-wide frame
+  });
+
+  it('older broadcast settings gain the new cameras switched off', () => {
+    const p = keynote();
+    const old = JSON.parse(serializeProject(p)); delete old.broadcast.jib; delete old.broadcast.ptz; delete old.broadcast.steadicam;
+    const b = parseProject(JSON.stringify(old)).broadcast!;
+    expect(b.jib.enabled).toBe(false); expect(b.ptz.count).toBe(0); expect(b.steadicam).toBe(false);
+  });
 });

@@ -1,4 +1,6 @@
-import { CAMERA_BODY, lensState, shotFor } from '../core/engine/broadcast';
+import { lensState, shotFor, type CameraSupport } from '../core/engine/broadcast';
+
+const SUPPORT: Record<CameraSupport, string> = { tripod: 'Tripod on platform', rail: 'Robotic dolly on track', handheld: 'Handheld (RF)', jib: 'Jib with remote head', steadicam: 'Steadicam (RF)', ptz: 'PTZ (robotic)' };
 import { useMemo, useState, type ReactNode } from 'react';
 import { CATALOG } from '../core/catalog';
 import type { SceneGraph } from '../core/engine/scene';
@@ -353,9 +355,11 @@ function BroadcastRows({ group, u }: { group: string; u: DisplayUnits }) {
     const tight = shotFor(cam, 'mcu', r.presenter, r.stageWidth);
     const st = lensState(cam.lens, tight.focal);
     return (<>
-      <Row k="Camera" v={`${CAMERA_BODY.manufacturer} ${CAMERA_BODY.model}`} />
+      <Row k="Camera" v={cam.body} />
+      <Row k="Support" v={SUPPORT[cam.support]} />
       <Row k="Lens" v={`${cam.lens.manufacturer} ${cam.lens.model}`} />
-      <Row k="Range" v={`${cam.lens.fMin}–${cam.lens.fMax} mm (×${cam.lens.extender})`} />
+      <Row k="Range" v={`${cam.lens.fMin}–${cam.lens.fMax} mm${cam.lens.extender > 1 ? ` (×${cam.lens.extender})` : ''}${cam.support === 'ptz' ? ' (2/3″ equiv.)' : ''}`} />
+      {cam.support === 'jib' && r.jib && <Row k="Jib" v={`${r.jib.reachFt}′ arm · ${r.jib.payloadKg.toFixed(1)} / ${r.jib.ratedKg} kg`} />}
       <Row k="To presenter" v={formatLength(cam.distance, u)} />
       <Row k="Lens height" v={formatLength(cam.pivot[2], u, { precise: true })} />
       <Row k="MCU needs" v={`${Math.round(tight.focal)} mm${st.outOfRange ? ' — out of range' : st.extender ? ' (extender)' : ''}`} />
