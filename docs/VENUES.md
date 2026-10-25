@@ -18,7 +18,7 @@ Loading a preset keeps the current venue, so you can try several shows in the sa
 | Hotel ballroom | 60–350 ft, short side ≤ 200 ft | ceiling 18 / 24 / 30 ft by area | coffers at ~30 × 40 ft, airwalls every ~70 ft | house points at 20 ft, 1,000 lb |
 | Convention hall | 150–2,000 ft | 35 ft to bottom chord | columns on a 90 ft module, trusses (depth = bay ÷ 12, 6–12 ft) | panel points every ~20 ft, 2,000 lb |
 | Warehouse | 80–1,000 ft | 32 ft to joists | columns on a 50 ft module, joist girders, joists at 6 ft | none: roof assumed unrated |
-| Sound stage | 60–300 ft | grid 30 ft (< 100 ft) or 38 ft | perimeter catwalks 8 ft below the grid | pipe grid at 8 ft, 500 lb |
+| Sound stage | 60–300 ft | grid 30 ft (< 100 ft) or 38 ft | perimeter catwalks 8 ft below the grid | pipe grid at 8 ft, points every 16 ft, 500 lb |
 
 Ratings are typical published values (for example the Henry B. González and Pennsylvania convention center rigging guides). The real venue's rigging plot governs.
 

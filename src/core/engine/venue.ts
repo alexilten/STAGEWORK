@@ -266,8 +266,8 @@ export function resolveVenue(p: VenueParams, ctx: VenueContext, units: DisplayUn
     }
     case 'ballroom': {
       const cx = bays(W, ft(30)), cy = bays(D, ft(40)), soffit: Part[] = [];
-      for (let i = 1; i < cx.n; i++) { const x = x0 + i * cx.b; soffit.push(box(x - 300, y0, clear - 600, x + 300, y1, clear, 'venueWall')); }
-      for (let j = 1; j < cy.n; j++) { const y = y1 - j * cy.b; soffit.push(box(x0, y - 300, clear - 600, x1, y + 300, clear, 'venueWall')); }
+      for (let i = 1; i < cx.n; i++) { const x = x0 + i * cx.b; soffit.push(box(x - 225, y0, clear - 300, x + 225, y1, clear, 'venueWall')); }
+      for (let j = 1; j < cy.n; j++) { const y = y1 - j * cy.b; soffit.push(box(x0, y - 225, clear - 300, x1, y + 225, clear, 'venueWall')); }
       unique('VENUE.SOFFITS', 'Ceiling coffers / soffits', L_SHELL, soffit);
       const nAir = Math.max(0, Math.round(D / ft(70)) - 1), air: Part[] = [];
       for (let k = 1; k <= nAir; k++) {
@@ -276,11 +276,11 @@ export function resolveVenue(p: VenueParams, ctx: VenueContext, units: DisplayUn
       }
       unique('VENUE.AIRWALLS', `Airwall tracks and stacks (${nAir})`, L_SHELL, air, { count: nAir });
       const ck = 'SC_VENUE_CHANDELIER';
-      blocks.push({ key: ck, description: 'Chandelier (planning envelope)', parts: [tube([0, 0, -1200], [0, 0, 0], 20, 'venueSteel'), tube([0, 0, -2700], [0, 0, -1200], 900, 'venueGlass')] });
+      blocks.push({ key: ck, description: 'Chandelier (planning envelope)', parts: [tube([0, 0, -900], [0, 0, 0], 20, 'venueSteel'), tube([0, 0, -1800], [0, 0, -900], 550, 'venueGlass')] });
       let n = 0;
       for (let i = 0; i < cx.n; i++) for (let j = 0; j < cy.n; j++) {
         const x = x0 + (i + 0.5) * cx.b, y = y1 - (j + 0.5) * cy.b;
-        if (y < -ft(15)) instance(`VENUE.CHANDELIER.${++n}`, 'Chandelier', L_FIX, ck, [x, y, clear - 600]);
+        if (y < -ft(15)) instance(`VENUE.CHANDELIER.${++n}`, 'Chandelier', L_FIX, ck, [x, y, clear - 300]);
       }
       const pts: [Mm, Mm][] = [];
       for (let x = x0 + ft(10); x < x1 - ft(5); x += ft(20)) for (let y = y1 - ft(10); y > y0 + ft(5); y -= ft(20)) pts.push([x, y]);
@@ -323,7 +323,7 @@ export function resolveVenue(p: VenueParams, ctx: VenueContext, units: DisplayUn
         box(x0 + cw, y1 - cw, z - 100, x1 - cw, y1, z, 'venueSteel'), box(x0 + cw, y0, z - 100, x1 - cw, y0 + cw, z, 'venueSteel'),
       ], { height: Math.round(z) });
       const pts: [Mm, Mm][] = [];
-      for (let x = x0 + inset; x <= x1 - inset + 1; x += step) for (let y = y1 - inset; y >= y0 + inset - 1; y -= step) pts.push([x, y]);
+      for (let x = x0 + inset + step; x < x1 - inset; x += 2 * step) for (let y = y1 - inset - step; y > y0 + inset; y -= 2 * step) pts.push([x, y]);
       rigPoints(pts, clear + 30, 'pipe grid');
       door('VENUE.DOOR.ELEPHANT', 'Elephant door', y0 + D * 0.45, ft(20), Math.min(ft(22), clear - 1000));
       break;
