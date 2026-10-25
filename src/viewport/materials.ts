@@ -13,7 +13,7 @@ export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish, s
   if (mode === 'technical') {
     if (key === 'glass') return { color: '#cfe3f0', metalness: 0, roughness: 0.1, edge: 0, opacity: 0.35 };
     if (key === 'roofSkin') return { color: '#eef0f4', metalness: 0, roughness: 0.9, edge: 0, opacity: 0.3 };
-    const tone: Partial<Record<MaterialKey, string>> = { crowd: '#c9cbd2', barricade: '#bdbdc2', stand: '#e6e6ea', structure: '#c9cbd0', booth: '#bcbcc2', camera: '#b9b9bf', platform: '#d6d6db', screen: '#9a9aa2', drape: '#d0d0d6', scenicFlat: '#ececef', speaker: '#d7d7dc', speakerGrille: '#bcbcc2', chairSeat: '#e4e4e8', chairFrame: '#c7c7cc', ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc' };
+    const tone: Partial<Record<MaterialKey, string>> = { crowd: '#c9cbd2', barricade: '#bdbdc2', stand: '#e6e6ea', structure: '#c9cbd0', booth: '#bcbcc2', camera: '#b9b9bf', platform: '#d6d6db', screen: '#9a9aa2', drape: '#d0d0d6', scenicFlat: '#ececef', speaker: '#d7d7dc', speakerGrille: '#bcbcc2', chairSeat: '#e4e4e8', chairFrame: '#c7c7cc', accessible: '#9db8e3', ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc' };
     return { color: tone[key] ?? '#f7f7f8', metalness: 0, roughness: 0.9, edge: 1, edgeColor: '#5d5d63' };
   }
   switch (key) {
@@ -29,6 +29,7 @@ export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish, s
     case 'presenter': return { color: '#ebe8e3', metalness: 0, roughness: 0.85, edge: 0 };
     case 'chairSeat': return { color: '#c9c9ce', metalness: 0, roughness: 0.7, edge: 0 };
     case 'chairFrame': return { color: '#a3a3a9', metalness: 0.8, roughness: 0.35, edge: 0 };
+    case 'accessible': return { color: '#2f6fd0', metalness: 0, roughness: 0.8, edge: 0 };
     case 'speaker': return { color: '#1a1a1d', metalness: 0.2, roughness: 0.6, edge: 0.4, edgeColor: '#000000' };
     case 'speakerGrille': return { color: '#0c0c0e', metalness: 0.5, roughness: 0.45, edge: 0 };
     case 'scenicFlat': return { color: FINISH[scenicFinish], metalness: 0, roughness: 0.8, edge: 0.35, edgeColor: scenicFinish === 'white' ? '#cfccc6' : '#0c0c0d' };

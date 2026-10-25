@@ -233,7 +233,7 @@ function AudienceSection() {
   const off = !p.enabled;
   const ar = useStore((s) => s.scene.report.audience);
   const audienceSummary = [
-    p.enabled && r && `${r.count.toLocaleString()} seats`,
+    p.enabled && r && `${r.capacity.toLocaleString()} seats`,
     ar?.standing && `${ar.standing.capacity.toLocaleString()} GA`,
     ar && ar.standSeats > 0 && `${ar.standSeats.toLocaleString()} in stands`,
   ].filter(Boolean).join(' · ') || 'off';
@@ -262,10 +262,11 @@ function AudienceSection() {
         <NumberControl label="Seats per block row" value={p.seatsPerBlock} min={6} max={30} step={1} disabled={off}
           onChange={(v) => set((s) => { s.seatsPerBlock = v; }, 'seat.block')} />
       )}
+      <Toggle label="Place wheelchair spaces" checked={!!p.accessible} onChange={(v) => set((s) => { s.accessible = v; })} />
       <div className="cab-meta">
         <VerificationBadge v={chair.verification} />
         <span>{chair.width}×{chair.depth} mm chair</span>
-        {r && <span>{r.wheelchairSpaces} wheelchair spaces (ADA)</span>}
+        {r && <span>{p.accessible ? `${r.wheelchairPlaced.length} of ${r.wheelchairSpaces} wheelchair spaces placed, each with a companion seat` : `${r.wheelchairSpaces} wheelchair spaces needed (ADA)`}</span>}
       </div>
       <StandingControls />
       <StandsControls />

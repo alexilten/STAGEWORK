@@ -34,8 +34,8 @@ describe('Broadcast', () => {
     expect(pl.placement).toBe('in-house');
     expect(b.cameras[0].distance).toBeLessThanOrEqual(maxThrow(BOX_LENS) + 1500);
     expect(b.seatKills).toBeGreaterThan(0);
-    expect(s.report.seating!.count).toBe(5000 - b.seatKills);
-    const seats = s.objects.filter((o) => o.system === 'seating');
+    expect(s.report.seating!.capacity).toBe(5000 - b.seatKills);
+    const seats = s.objects.filter((o) => o.layer === '70_AUDIENCE::70_01_SEATING');
     expect(seats.length).toBe(s.report.seating!.count);
     const inside = seats.filter((o) => Math.abs(o.position[0]) < pl.width / 2 && o.position[1] < pl.yFront && o.position[1] > pl.yFront - pl.depth);
     expect(inside).toHaveLength(0);

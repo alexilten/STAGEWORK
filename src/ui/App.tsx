@@ -65,7 +65,7 @@ function Hud() {
       <span>{scene.report.stage.primaryCount + scene.report.stage.infillCount} platforms</span>
       <span>{cabinets} cabinets</span>
       {L && <span>{L.pixelsW.toLocaleString()} × {L.pixelsH.toLocaleString()}</span>}
-      {scene.report.seating && <span>{scene.report.seating.count.toLocaleString()} seats</span>}
+      {scene.report.seating && <span>{scene.report.seating.capacity.toLocaleString()} seats</span>}
       <span>{scene.objects.length.toLocaleString()} objects</span>
       {errs > 0 && <span className="err">{errs} conflict{errs > 1 ? 's' : ''}</span>}
     </div>

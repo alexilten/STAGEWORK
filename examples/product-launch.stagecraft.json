@@ -100,7 +100,8 @@
     "rowPitch": 915,
     "seatPitch": 560,
     "aisleWidth": 1070,
-    "seatsPerBlock": 14
+    "seatsPerBlock": 14,
+    "accessible": true
   },
   "audio": {
     "enabled": false,
@@ -151,6 +152,16 @@
       "prompter": false
     },
     "handheld": true,
+    "steadicam": false,
+    "jib": {
+      "enabled": false,
+      "side": "left",
+      "reachFt": 24
+    },
+    "ptz": {
+      "count": 0,
+      "mount": "truss"
+    },
     "prompters": {
       "presidential": true,
       "dsm": "stand",

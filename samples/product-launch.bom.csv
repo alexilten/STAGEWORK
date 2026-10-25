@@ -34,7 +34,7 @@ broadcast,80_BROADCAST::80_01_CAMERAS,Sony / Canon,HDC-3500 + CJ15ex4.3B,HDC-350
 broadcast,80_BROADCAST::80_04_PROMPTERS,Autocue,Conference prompter (17″),"Conference prompter (17″), stand + monitor + glass",2,,,secondary,autocue.conference
 broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,FOH confidence screen 85″ (generic),2,,,generic,
 broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,Screen drop pipes (pair),2,,,generic,
-seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,2000,,,generic,generic.chair-stack
+seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,1984,,,generic,generic.chair-stack
 scenic,60_SCENIC::60_02_MASKING,Generic,—,Masking leg 1 — house left,1,,,generic,
 scenic,60_SCENIC::60_02_MASKING,Generic,—,Masking leg 1 — house right,1,,,generic,
 scenic,60_SCENIC::60_02_MASKING,Generic,—,Masking leg 2 — house left,1,,,generic,

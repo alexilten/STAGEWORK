@@ -188,7 +188,7 @@ export function resolveScene(project: Project): SceneGraph {
   if (project.seating?.enabled) {
     const chair = getCatalogItem<Chair>(project.seating.chairId, 'chair');
     const r = resolveSeating(project.seating, chair, { stageWidth: W, stageDepth: D, keepOut: deck.layout.keepOut, apronDepth: deck.layout.apron?.depth ?? 0 });
-    seating = r.report; addBlocks([r.block]); seatObjects = r.objects; annotations.push(...r.annotations); warnings.push(...r.warnings);
+    seating = r.report; addBlocks([r.block]); seatObjects = r.objects; objects.push(...r.accessible); annotations.push(...r.annotations); warnings.push(...r.warnings);
     if (seating.count) {
       // sightline: steepest look-up from the front row to the top of the main LED surface
       const main = led[0];
@@ -228,7 +228,7 @@ export function resolveScene(project: Project): SceneGraph {
     broadcast = r.report; addBlocks(r.blocks); objects.push(...r.objects); annotations.push(...r.annotations); warnings.push(...r.warnings);
     if (r.kills.size && seating) {
       seatObjects = seatObjects.filter((o) => !r.kills.has(o.id));
-      seating = { ...seating, count: seatObjects.length, seatKills: r.kills.size };
+      seating = { ...seating, count: seatObjects.length, capacity: seatObjects.length + seating.wheelchairPlaced.length, seatKills: r.kills.size };
     }
   }
   objects.push(...seatObjects);

@@ -135,11 +135,13 @@ export interface SeatingParams {
   aisleWidth: Mm;
   /** seats per row in each block (block / radial layouts) */
   seatsPerBlock: number;
+  /** place the ADA wheelchair spaces and companion seats in the plan (else only report how many) */
+  accessible?: boolean;
 }
 
 export const DEFAULT_SEATING: SeatingParams = {
   enabled: true, layout: 'block', count: 1000, chairId: 'generic.chair-stack',
-  frontDistance: 3050, rowPitch: 915, seatPitch: 560, aisleWidth: 1070, seatsPerBlock: 14,
+  frontDistance: 3050, rowPitch: 915, seatPitch: 560, aisleWidth: 1070, seatsPerBlock: 14, accessible: true,
 };
 
 export interface AudioParams {
