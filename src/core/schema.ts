@@ -359,6 +359,30 @@ export const DEFAULT_SHOW: ShowParams = {
   dome: { enabled: false, diameter: 26500, springing: 2000, openingDeg: 0, cx: 0, cy: 0 },
 };
 
+/**
+ * Venue shell (see engine/venue.ts): the building the stage sits in. The footprint is the interior
+ * width (across the stage, X) × depth (stage wall to the back of house, Y); the archetype fits its
+ * structure to it. The stage wall is the +Y wall, `upstage` behind everything on the stage.
+ */
+export type VenueArchetype = 'black-box' | 'ballroom' | 'convention' | 'warehouse' | 'sound-stage';
+export interface VenueParams {
+  enabled: boolean;
+  archetype: VenueArchetype;
+  width: Mm;
+  depth: Mm;
+  /** clear distance from the most upstage element of the show to the stage wall */
+  upstage: Mm;
+  /** build even though the footprint is outside the archetype's range (the user confirmed it) */
+  override: boolean;
+  /** clear height override (bottom of steel / grid / ceiling); default from the archetype */
+  clearHeight?: Mm;
+  /** viewport cutaway: walls between the camera and the room drop to `height` */
+  cut: { enabled: boolean; height: Mm };
+}
+export const DEFAULT_VENUE: VenueParams = {
+  enabled: false, archetype: 'convention', width: 91440, depth: 128016, upstage: 3000, override: false, cut: { enabled: true, height: 1200 },
+};
+
 export interface Project {
   schema: typeof PROJECT_SCHEMA;
   version: number;
@@ -378,6 +402,7 @@ export interface Project {
   audience?: AudienceParams;
   structure?: StructureParams;
   show?: ShowParams;
+  venue?: VenueParams;
 }
 
 export function serializeProject(p: Project): string {
@@ -400,6 +425,7 @@ export function parseProject(text: string): Project {
   if (!data.audience) data.audience = structuredClone(DEFAULT_AUDIENCE);
   if (!data.structure) data.structure = structuredClone(DEFAULT_STRUCTURE);
   if (!data.show) data.show = structuredClone(DEFAULT_SHOW);
+  if (!data.venue) data.venue = structuredClone(DEFAULT_VENUE);
   if (!data.lighting.electrics) data.lighting.electrics = { ...DEFAULT_LIGHTING_POSITIONS.electrics };
   if (!data.lighting.booms) data.lighting.booms = { ...DEFAULT_LIGHTING_POSITIONS.booms };
   return data as Project;

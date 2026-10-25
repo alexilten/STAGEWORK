@@ -24,6 +24,7 @@ export const ALL_LAYERS: { key: SystemKey; label: string; rhino: string }[] = [
   { key: 'broadcast', label: 'Broadcast', rhino: '80' },
   { key: 'dimensions', label: 'Dimensions', rhino: '90_01' },
   { key: 'reference', label: 'Reference', rhino: '00' },
+  { key: 'venue', label: 'Venue', rhino: '05' },
 ];
 
 interface State {
@@ -70,7 +71,7 @@ const urlPreset = typeof window !== 'undefined' ? new URLSearchParams(window.loc
 const initial = (urlPreset ? getPreset(urlPreset) : DEFAULT_PRESET).build();
 const layersFor = (mode: ViewMode): Record<SystemKey, boolean> => ({
   decking: true, supports: mode === 'technical', finishes: true, ledCabinets: true, ledSupports: true,
-  rigging: true, structure: true, lighting: true, audio: true, scenic: true, seating: true, broadcast: true, dimensions: mode === 'technical', reference: true,
+  rigging: true, structure: true, lighting: true, audio: true, scenic: true, seating: true, broadcast: true, dimensions: mode === 'technical', reference: true, venue: true,
 });
 
 export const useStore = create<State>((set, get) => ({
@@ -100,7 +101,13 @@ export const useStore = create<State>((set, get) => ({
     const p = withAssetsExtracted(raw);
     set({ project: p, scene: resolveScene(p), past: [...get().past, get().project], future: [], selection: null, activeWall: p.ledWalls[0]?.id ?? '', lastEditKey: null });
   },
-  loadPreset: (id) => { get().load(getPreset(id).build()); set({ viewNonce: get().viewNonce + 1 }); },
+  loadPreset: (id) => {
+    const p = getPreset(id).build();
+    // the building doesn't change when the show does
+    const v = get().project.venue;
+    if (v?.enabled) p.venue = structuredClone(v);
+    get().load(p); set({ viewNonce: get().viewNonce + 1 });
+  },
   undo: () => {
     const { past, project, future } = get();
     if (!past.length) return;

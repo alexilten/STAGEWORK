@@ -23,7 +23,7 @@ export interface DxfOptions { systems?: SystemKey[] }
 
 /** AutoCAD colour index nearest each top-level layer colour */
 const ACI: Record<string, number> = {
-  '00_REFERENCE': 8, '10_STAGE': 250, '20_LED': 5, '30_RIGGING': 30, '40_LIGHTING': 6,
+  '00_REFERENCE': 8, '05_VENUE': 252, '10_STAGE': 250, '20_LED': 5, '30_RIGGING': 30, '40_LIGHTING': 6,
   '50_AUDIO': 200, '60_SCENIC': 3, '70_AUDIENCE': 9, '80_BROADCAST': 4, '90_TECHNICAL': 1,
 };
 

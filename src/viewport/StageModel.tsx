@@ -5,7 +5,7 @@ import type { MaterialKey, Part, SceneObject } from '../core/engine/types';
 import type { SceneGraph } from '../core/engine/scene';
 import type { StageFinish } from '../core/schema';
 import { useStore, type ViewMode } from '../ui/store';
-import { ACCENT, lookFor, makeEdgeMaterial, makeLedFaceMaterial } from './materials';
+import { ACCENT, addVenueCut, lookFor, makeEdgeMaterial, makeLedFaceMaterial, VENUE_CUT } from './materials';
 import { beginDrag, isDragging } from './DragController';
 import { resolveMediaCanvas, type MediaRect } from '../core/engine/media';
 import { videoPlayer } from '../ui/media';
@@ -68,6 +68,20 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
     L, objects: visible.filter((o) => o.group === `led:${L.id}` && o.system === 'ledCabinets'),
   })).filter((x) => x.objects.length), [scene, visible]);
 
+  // venue cutaway: walls on the camera's side drop to the cut height
+  const venue = scene.report.venue;
+  const cut = useStore((s) => s.project.venue?.cut);
+  useLayoutEffect(() => {
+    VENUE_CUT.uCut.value = venue?.built && cut?.enabled ? 1 : 0;
+    VENUE_CUT.uCutZ.value = cut?.height ?? 1200;
+    if (venue) VENUE_CUT.uBox.value.set(venue.box.x0, venue.box.y0, venue.box.x1, venue.box.y1);
+  }, [venue, cut]);
+  useFrame(({ camera }) => {
+    // three.js Y-up metres → model mm, Z-up (inverse of the Viewport's world wrapper)
+    const c = camera.position;
+    VENUE_CUT.uCam.value.set(c.x * 1000, -c.z * 1000, c.y * 1000);
+  });
+
   return (
     <group>
       {batches.map((b) => <InstancedBatch key={b.key + mode} batch={b} mode={mode} finish={finish} scenicFinish={scenicFinish} />)}
@@ -78,7 +92,8 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
 
 function InstancedBatch({ batch, mode, finish, scenicFinish }: { batch: Batch; mode: ViewMode; finish: StageFinish; scenicFinish: StageFinish }) {
   const ref = useRef<THREE.InstancedMesh>(null!);
-  const material = useMemo(() => makeEdgeMaterial(), []);
+  const isVenue = batch.objects[0]?.system === 'venue';
+  const material = useMemo(() => (isVenue ? addVenueCut(makeEdgeMaterial()) : makeEdgeMaterial()), [isVenue]);
   const selection = useStore((s) => s.selection);
   const hover = useStore((s) => s.hover);
   const select = useStore((s) => s.select);
@@ -150,7 +165,9 @@ function InstancedBatch({ batch, mode, finish, scenicFinish }: { batch: Batch; m
     <instancedMesh
       ref={ref}
       args={[geom, material, n]}
-      castShadow={!batch.part.mat.startsWith('chair')} receiveShadow
+      castShadow={!batch.part.mat.startsWith('chair') && batch.part.mat !== 'venueWall' && batch.part.mat !== 'venueDark' && batch.part.mat !== 'venueFloor' && batch.part.mat !== 'venueCarpet'} receiveShadow
+      // the building is context, not a pickable part of the show: clicks pass through it
+      {...(isVenue ? { raycast: () => null } : {})}
       onClick={pick}
       onPointerDown={(e) => {
         const o = batch.objects[e.instanceId ?? 0];

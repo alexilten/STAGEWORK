@@ -1,6 +1,6 @@
 import { ft } from './units';
 import type { Mm } from './units';
-import { DEFAULT_AUDIENCE, DEFAULT_AUDIO, DEFAULT_LIGHTING_POSITIONS, DEFAULT_SCENIC, DEFAULT_BROADCAST, DEFAULT_SEATING, DEFAULT_SHOW, DEFAULT_STRUCTURE, PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project, type StandParams } from './schema';
+import { DEFAULT_AUDIENCE, DEFAULT_AUDIO, DEFAULT_LIGHTING_POSITIONS, DEFAULT_SCENIC, DEFAULT_BROADCAST, DEFAULT_SEATING, DEFAULT_SHOW, DEFAULT_STRUCTURE, DEFAULT_VENUE, PROJECT_SCHEMA, PROJECT_VERSION, type LedWallParams, type Project, type StandParams } from './schema';
 
 export type PresetCategory = 'tech' | 'concert' | 'edm' | 'immersive';
 
@@ -43,6 +43,7 @@ function base(name: string, presetId: string): Project {
     audience: structuredClone(DEFAULT_AUDIENCE),
     structure: structuredClone(DEFAULT_STRUCTURE),
     show: structuredClone(DEFAULT_SHOW),
+    venue: structuredClone(DEFAULT_VENUE),
   };
 }
 

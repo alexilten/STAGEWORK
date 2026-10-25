@@ -49,6 +49,16 @@ export function materialTable(finish: StageFinish, scenic: StageFinish): Record<
     structure: { name: 'SC_Ground_Support_Steel', rgb: [110, 112, 118], metal: 0.8, rough: 0.4 },
     roofSkin: { name: 'SC_Roof_Skin', rgb: [228, 228, 230], metal: 0, rough: 0.8, alpha: 0.45 },
     booth: { name: 'SC_DJ_Booth', rgb: [22, 22, 24], metal: 0.3, rough: 0.5 },
+    venueWall: { name: 'SC_Venue_Wall', rgb: [228, 226, 221], metal: 0, rough: 0.9 },
+    venueDark: { name: 'SC_Venue_Black', rgb: [52, 54, 60], metal: 0, rough: 0.95 },
+    venueFloor: { name: 'SC_Venue_Slab', rgb: [214, 211, 204], metal: 0, rough: 0.9 },
+    venueCarpet: { name: 'SC_Venue_Carpet', rgb: [196, 186, 172], metal: 0, rough: 1 },
+    venueSteel: { name: 'SC_Venue_Steel', rgb: [125, 129, 137], metal: 0.7, rough: 0.45 },
+    venueColumn: { name: 'SC_Venue_Column', rgb: [169, 173, 181], metal: 0.3, rough: 0.6 },
+    venuePipe: { name: 'SC_Venue_Pipe_Grid', rgb: [85, 88, 95], metal: 0.7, rough: 0.45 },
+    venueDoor: { name: 'SC_Venue_Door', rgb: [154, 160, 170], metal: 0.5, rough: 0.5 },
+    venueGlass: { name: 'SC_Venue_Chandelier', rgb: [214, 226, 236], metal: 0, rough: 0.1, alpha: 0.5 },
+    rigPoint: { name: 'SC_Venue_Rig_Point', rgb: [58, 107, 255], metal: 0, rough: 0.6 },
   };
 }
 
