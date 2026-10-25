@@ -5,6 +5,7 @@ import { resolveScene } from '../src/core/engine/scene';
 import { getPreset } from '../src/core/presets';
 import { parseProject, serializeProject } from '../src/core/schema';
 import { exportGlb } from '../src/export/glb';
+import { projectForSave, useStore } from '../src/ui/store';
 
 const ledOf = (id: string, mut?: (p: ReturnType<ReturnType<typeof getPreset>['build']>) => void) => {
   const p = getPreset(id).build(); mut?.(p); return resolveScene(p).report.led;
@@ -71,6 +72,20 @@ describe('Screen media mapping', () => {
     expect(parseProject(serializeProject(p)).media?.data).toBe('data:image/png;base64,AAAA');
     const old = JSON.parse(serializeProject(getPreset('minimal-keynote').build()));
     expect(parseProject(JSON.stringify(old)).media ?? null).toBeNull();
+  });
+
+  it('a video project saves small videos inline and big ones as poster + relink', () => {
+    const p = getPreset('minimal-keynote').build();
+    const poster = 'data:image/jpeg;base64,BBBB';
+    p.media = { assetId: 'v', name: 'loop', width: 3840, height: 1080, fit: 'span', kind: 'video', duration: 12.5, loop: true, poster, bytes: 1e6 };
+    const st = useStore.getState();
+    st.addAsset('v', 'data:video/mp4;base64,CCCC');
+    const small = parseProject(serializeProject(projectForSave(p))).media!;
+    expect(small).toMatchObject({ kind: 'video', duration: 12.5, loop: true, poster, data: 'data:video/mp4;base64,CCCC' });
+    st.addAsset('v', 'blob:http://localhost/123');
+    const big = parseProject(serializeProject(projectForSave(p))).media!;
+    expect(big.data).toBeUndefined(); // a blob: URL dies with the tab; the poster stands in until relinked
+    expect(big.poster).toBe(poster);
   });
 
   it('GLB carries the image as an emissive texture on one face mesh per wall, valid glTF', async () => {

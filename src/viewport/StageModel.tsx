@@ -8,6 +8,7 @@ import { useStore, type ViewMode } from '../ui/store';
 import { ACCENT, lookFor, makeEdgeMaterial, makeLedFaceMaterial } from './materials';
 import { beginDrag, isDragging } from './DragController';
 import { resolveMediaCanvas, type MediaRect } from '../core/engine/media';
+import { videoPlayer } from '../ui/media';
 
 const BOX = new THREE.BoxGeometry(1, 1, 1);
 const CYL = new THREE.CylinderGeometry(1, 1, 1, 20, 1);
@@ -169,18 +170,29 @@ function InstancedBatch({ batch, mode, finish, scenicFinish }: { batch: Batch; m
 
 interface ScreenMedia { texture: THREE.Texture; rect: MediaRect }
 
-/** the uploaded screen image as a texture, plus where it lands in world X/Z for the current walls */
+/**
+ * The screen content as a texture, plus where it lands in world X/Z for the current walls.
+ * A video plays through a VideoTexture; one saved without its file shows its poster.
+ */
 function useScreenMedia(scene: SceneGraph): ScreenMedia | null {
   const media = useStore((s) => s.project.media);
   const data = useStore((s) => (media ? s.assets[media.assetId] : undefined));
+  const video = media?.kind === 'video';
+  const loop = media?.loop ?? true;
+  const src = data ?? (video ? media?.poster : undefined);
   const texture = useMemo(() => {
-    if (!data) return null;
-    const t = new THREE.TextureLoader().load(data, () => { t.needsUpdate = true; });
+    if (!src) return null;
+    let t: THREE.Texture;
+    if (video && data) t = new THREE.VideoTexture(videoPlayer(data));
+    else {
+      t = new THREE.TextureLoader().load(src, () => { t.needsUpdate = true; });
+      t.anisotropy = 8;
+      t.minFilter = THREE.LinearMipmapLinearFilter;
+    }
     t.colorSpace = THREE.SRGBColorSpace; // decoded to linear; the output pass re-encodes, so it shows as authored
-    t.anisotropy = 8;
-    t.minFilter = THREE.LinearMipmapLinearFilter;
     return t;
-  }, [data]);
+  }, [src, video, data]);
+  useEffect(() => { if (video && data) videoPlayer(data, loop); }, [video, data, loop]);
   useEffect(() => () => texture?.dispose(), [texture]);
   return useMemo(() => {
     if (!texture || !media) return null;

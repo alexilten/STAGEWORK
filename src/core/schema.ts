@@ -179,9 +179,10 @@ export const DEFAULT_AUDIO: AudioParams = {
 };
 
 /**
- * Screen content: one still image mapped across the LED surfaces (see engine/media.ts).
- * The pixels themselves live outside the undo history; a saved project file carries
- * them inline as `data` (a data: URL) so it reopens with its content.
+ * Screen content: one still image or video loop mapped across the LED surfaces
+ * (see engine/media.ts). The pixels themselves live outside the undo history; a saved
+ * project file carries them inline as `data` (a data: URL) so it reopens with its content.
+ * Videos too large to inline are saved with their poster frame only and relinked on open.
  */
 export interface MediaParams {
   assetId: string;
@@ -192,6 +193,16 @@ export interface MediaParams {
   /** span = cover every screen; main = fit inside the main screen */
   fit: 'span' | 'main';
   data?: string;
+  /** still (default) or a video that plays on the screens */
+  kind?: 'image' | 'video';
+  /** video only: length in seconds */
+  duration?: number;
+  /** video only: loop at the end (default on) */
+  loop?: boolean;
+  /** video only: a small JPEG of the first frames, shown until the video is linked and in exports */
+  poster?: string;
+  /** video only: source file size in bytes */
+  bytes?: number;
 }
 
 /**
