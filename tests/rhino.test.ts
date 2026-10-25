@@ -18,6 +18,16 @@ const build = (mut?: (p: ReturnType<ReturnType<typeof getPreset>['build']>) => v
 };
 
 describe('Test 5 — Rhino export reopens with correct structure', () => {
+  it('jib, Steadicam and PTZ cameras export as named blocks / solids on the broadcast layers', () => {
+    const project = build((p) => { p.broadcast!.jib.enabled = true; p.broadcast!.steadicam = true; p.broadcast!.ptz = { count: 2, mount: 'truss' }; });
+    const scene = resolveScene(project);
+    const info = inspect3dm(rh, exportRhino(rh, scene, project));
+    expect(info.blocks.map((b) => b.name)).toContain('SC_CAM_PANASONIC_AW_UE160');
+    const cams = info.objects.filter((o) => o.layer === '80_BROADCAST::80_01_CAMERAS');
+    expect(cams.some((o) => o.name.startsWith('BC.JIB'))).toBe(true);
+    expect(cams.filter((o) => o.block === 'SC_CAM_PANASONIC_AW_UE160')).toHaveLength(2);
+  });
+
   it('units, layers, blocks, object counts, names, metadata', () => {
     const project = build();
     const scene = resolveScene(project);

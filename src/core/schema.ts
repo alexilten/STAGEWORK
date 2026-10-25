@@ -244,6 +244,12 @@ export interface BroadcastParams {
   rail: { enabled: boolean; length: Mm; prompter: boolean };
   /** roaming RF handheld, shown at its start position */
   handheld: boolean;
+  /** Steadicam on the deck (house right), shown at its start position */
+  steadicam: boolean;
+  /** camera jib on the house floor off a downstage corner */
+  jib: { enabled: boolean; side: 'left' | 'right'; reachFt: number };
+  /** robotic PTZ cameras: under the front truss, or on the deck corners */
+  ptz: { count: number; mount: 'truss' | 'deck' };
   prompters: {
     /** presidential (conference) glass pair either side of the presenter */
     presidential: boolean;
@@ -261,6 +267,9 @@ export const DEFAULT_BROADCAST: BroadcastParams = {
   sideCams: true,
   rail: { enabled: true, length: 9000, prompter: false },
   handheld: true,
+  steadicam: false,
+  jib: { enabled: false, side: 'left', reachFt: 24 },
+  ptz: { count: 0, mount: 'truss' },
   prompters: { presidential: true, dsm: 'stand', dsmCount: 2, foh: 'truss' },
 };
 
@@ -383,6 +392,9 @@ export function parseProject(text: string): Project {
   if (!data.audio) data.audio = { ...DEFAULT_AUDIO };
   if (!data.scenic) data.scenic = structuredClone(DEFAULT_SCENIC);
   if (!data.broadcast) data.broadcast = structuredClone(DEFAULT_BROADCAST);
+  data.broadcast.steadicam ??= false;
+  data.broadcast.jib ??= structuredClone(DEFAULT_BROADCAST.jib);
+  data.broadcast.ptz ??= structuredClone(DEFAULT_BROADCAST.ptz);
   if (!data.audience) data.audience = structuredClone(DEFAULT_AUDIENCE);
   if (!data.structure) data.structure = structuredClone(DEFAULT_STRUCTURE);
   if (!data.show) data.show = structuredClone(DEFAULT_SHOW);

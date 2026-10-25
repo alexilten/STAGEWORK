@@ -510,7 +510,7 @@ function BroadcastSection() {
         {r.cameras.length > 0 && (
           <div className="cam-list">
             {r.cameras.map((c) => (
-              <button key={c.id} title={`Look through ${c.name}`} onClick={() => setShot({ cam: c.id, shot: c.role.includes('wide') ? 'wide' : 'mcu', focal: null })}>
+              <button key={c.id} title={`Look through ${c.name}`} onClick={() => setShot({ cam: c.id, shot: c.role.includes('wide') || c.support === 'jib' ? 'wide' : 'mcu', focal: null })}>
                 <span>{c.name}</span><span>{c.role}</span><Icon.camera />
               </button>
             ))}
@@ -544,6 +544,29 @@ function BroadcastSection() {
           <Toggle label="On-camera prompter" checked={b.rail.prompter} onChange={(v) => set((x) => { x.rail.prompter = v; })} />
         </>)}
         <Toggle label="RF handheld" checked={b.handheld} onChange={(v) => set((x) => { x.handheld = v; })} />
+        <Toggle label="Steadicam" checked={b.steadicam} onChange={(v) => set((x) => { x.steadicam = v; })} />
+        <div className="sub-label">Specialty</div>
+        <Toggle label="Camera jib" checked={b.jib.enabled} onChange={(v) => set((x) => { x.jib.enabled = v; })} />
+        {b.jib.enabled && (<>
+          <div className="ctl">
+            <Segmented value={b.jib.side} onChange={(v) => set((x) => { x.jib.side = v; })} options={[{ value: 'left', label: 'House left' }, { value: 'right', label: 'House right' }]} />
+          </div>
+          <div className="ctl">
+            <div className="ctl-row"><span className="ctl-label">Arm reach</span>{r.jib && <span className="ctl-value static">lens at {formatLength(r.jib.lensHeight, u, { precise: true })}</span>}</div>
+            <Segmented value={String(b.jib.reachFt)} onChange={(v) => set((x) => { x.jib.reachFt = +v; })} options={[12, 18, 24, 30].map((f) => ({ value: String(f), label: `${f}′`, title: f >= 30 ? 'Payload drops to 25 lb at 30′' : undefined }))} />
+          </div>
+        </>)}
+        <NumberControl label="PTZ cameras" value={b.ptz.count} min={0} max={4} step={1}
+          hint={b.ptz.count > 0 ? 'Panasonic AW-UE160 · robotic' : 'Robotic pan/tilt/zoom cameras'}
+          onChange={(v) => set((x) => { x.ptz.count = v; }, 'bc.ptz')} />
+        {b.ptz.count > 0 && (
+          <div className="ctl">
+            <Segmented value={b.ptz.mount} onChange={(v) => set((x) => { x.ptz.mount = v; })} options={[
+              { value: 'truss', label: 'Front truss', title: 'Hung inverted under the front truss' },
+              { value: 'deck', label: 'Deck corners', title: 'Low at the downstage corners, then upstage for reverse shots' },
+            ]} />
+          </div>
+        )}
         <div className="sub-label">Prompters</div>
         <Toggle label="Presidential glass (pair)" checked={b.prompters.presidential} onChange={(v) => set((x) => { x.prompters.presidential = v; })} />
         <div className="ctl">
