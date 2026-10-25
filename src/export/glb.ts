@@ -34,6 +34,7 @@ function materialTable(finish: StageFinish, scenic: StageFinish): Record<Materia
     presenter: { name: 'SC_Reference_Figure', rgb: [235, 232, 227], metal: 0, rough: 0.85 },
     chairSeat: { name: 'SC_Chair_Seat', rgb: [34, 34, 37], metal: 0, rough: 0.7 },
     chairFrame: { name: 'SC_Chair_Frame_Steel', rgb: [150, 150, 155], metal: 0.8, rough: 0.35 },
+    accessible: { name: 'SC_Wheelchair_Space', rgb: [30, 96, 190], metal: 0, rough: 0.8 },
     speaker: { name: 'SC_Speaker_Cabinet', rgb: [26, 26, 29], metal: 0.2, rough: 0.6 },
     speakerGrille: { name: 'SC_Speaker_Grille', rgb: [12, 12, 14], metal: 0.5, rough: 0.45 },
     scenicFlat: { name: `SC_Scenic_Flat_${scenic}`, rgb: FINISH[scenic], metal: 0, rough: 0.8 },

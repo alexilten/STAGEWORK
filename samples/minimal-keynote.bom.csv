@@ -27,4 +27,4 @@ broadcast,80_BROADCAST::80_04_PROMPTERS,Autocue,Conference prompter (17″),"Con
 broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,Confidence monitor 55″ on floor stand (generic),2,,,generic,
 broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,FOH confidence screen 85″ (generic),2,,,generic,
 broadcast,80_BROADCAST::80_04_PROMPTERS,Generic,—,Screen drop pipes (pair),2,,,generic,
-seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,1000,,,generic,generic.chair-stack
+seating,70_AUDIENCE::70_01_SEATING,Generic,Stacking event chair,Stacking event chair A1,990,,,generic,generic.chair-stack

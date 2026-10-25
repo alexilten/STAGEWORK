@@ -130,7 +130,8 @@ describe('Seating in Rhino', () => {
     const scene = resolveScene(project);
     const info = inspect3dm(rh, exportRhino(rh, scene, project));
     const chairs = info.objects.filter((o) => o.layer === '70_AUDIENCE::70_01_SEATING');
-    expect(chairs).toHaveLength(750);
+    expect(chairs).toHaveLength(scene.report.seating!.count);
+    expect(new Set(info.objects.filter((o) => o.layer === '70_AUDIENCE::70_06_ACCESSIBLE').map((o) => o.user['stagecraft.id'])).size).toBe(scene.report.seating!.wheelchairPlaced.length);
     expect(chairs.every((c) => c.type === 'InstanceReference' && c.block === 'SC_CHAIR_GENERIC_CHAIR_STACK')).toBe(true);
     expect(chairs[0].name).toBe('SEAT.A.1');
     expect(chairs[0].user['stagecraft.row']).toBe('A');

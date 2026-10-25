@@ -6,7 +6,8 @@ import { parseProject, serializeProject, type Project, type SeatingLayout } from
 
 // broadcast off: camera positions remove seats ("seat kills"), tested in broadcast.test.ts
 const project = (mut?: (p: Project) => void) => { const p = getPreset('minimal-keynote').build(); p.broadcast!.enabled = false; mut?.(p); return p; };
-const seats = (s: ReturnType<typeof resolveScene>) => s.objects.filter((o) => o.system === 'seating');
+const seats = (s: ReturnType<typeof resolveScene>) => s.objects.filter((o) => o.system === 'seating' && o.layer === '70_AUDIENCE::70_01_SEATING');
+const places = (s: ReturnType<typeof resolveScene>) => s.objects.filter((o) => o.system === 'seating' && (o.layer === '70_AUDIENCE::70_01_SEATING' || o.layer === '70_AUDIENCE::70_06_ACCESSIBLE'));
 const LAYOUTS: SeatingLayout[] = ['block', 'grid', 'radial'];
 
 describe('Seating — code rules', () => {
@@ -38,9 +39,12 @@ describe('Seating — layouts', () => {
     it(`${layout}: exact count at every 250 step from ${SEAT_COUNT.min} to ${SEAT_COUNT.max}`, () => {
       for (let n = SEAT_COUNT.min; n <= SEAT_COUNT.max; n += SEAT_COUNT.step) {
         const s = resolveScene(project((p) => { p.seating.layout = layout; p.seating.count = n; }));
-        expect(seats(s)).toHaveLength(n);
-        expect(s.report.seating!.count).toBe(n);
-        expect(new Set(seats(s).map((o) => o.id)).size).toBe(n);
+        // capacity = chairs + placed wheelchair spaces
+        expect(places(s)).toHaveLength(n);
+        expect(s.report.seating!.capacity).toBe(n);
+        expect(s.report.seating!.count).toBe(seats(s).length);
+        expect(s.report.seating!.wheelchairPlaced).toHaveLength(wheelchairSpaces(n));
+        expect(new Set(places(s).map((o) => o.id)).size).toBe(n);
       }
     });
 
@@ -112,3 +116,52 @@ describe('Seating — layouts', () => {
     expect(seats(resolveScene(p))).toHaveLength(0);
   });
 });
+
+describe('Seating — wheelchair spaces (2010 ADA 802)', () => {
+  const IN = 25.4;
+  for (const layout of LAYOUTS) for (const n of [250, 1000, 3000]) {
+    it(`${layout} ${n}: every required space placed, ADA-sized, clear of chairs, each with a shoulder-aligned companion`, () => {
+      const s = resolveScene(project((p) => { p.seating.layout = layout; p.seating.count = n; }));
+      const r = s.report.seating!, chair = r.chair;
+      const ws = r.wheelchairPlaced;
+      expect(ws).toHaveLength(wheelchairSpaces(n));
+      expect(s.warnings.some((w) => w.code === 'seating.ada.short')).toBe(false);
+      const chairs = seats(s);
+      for (const w of ws) {
+        expect(w.width).toBeGreaterThanOrEqual(33 * IN - 0.5);
+        expect(w.depth).toBeGreaterThanOrEqual((w.entry === 'side' ? 60 : 48) * IN - 0.5);
+        // in the space's own frame, no chair footprint overlaps it
+        const t = [Math.cos(w.rot), Math.sin(w.rot)], f = [-Math.sin(w.rot), Math.cos(w.rot)];
+        for (const c of chairs) {
+          const dx = c.position[0] - w.x, dy = c.position[1] - w.y;
+          const u = dx * t[0] + dy * t[1], v = dx * f[0] + dy * f[1];
+          const overlap = Math.abs(u) < w.width / 2 + chair.width / 2 - 5 && Math.abs(v) < w.depth / 2 + chair.depth / 2 - 5;
+          expect(overlap, `${c.id} overlaps wheelchair space in row ${w.row}`).toBe(false);
+        }
+        // a companion beside it, its back rest on the shoulder line 36″ behind the space front
+        const comp = chairs.filter((c) => c.meta.companion).find((c) => {
+          const dx = c.position[0] - w.x, dy = c.position[1] - w.y;
+          const u = dx * t[0] + dy * t[1], v = dx * f[0] + dy * f[1];
+          const backRest = v - chair.depth / 2 + 60; // chair back-rest face from its centre
+          const shoulder = w.depth / 2 - 36 * IN;
+          return Math.abs(u) <= w.width * 1.5 + chair.width + 40 && Math.abs(backRest - shoulder) < 60;
+        });
+        expect(comp, `no companion for the space in row ${w.row}`).toBeTruthy();
+      }
+      expect(chairs.filter((c) => c.meta.companion)).toHaveLength(ws.length);
+      // dispersed at more than one distance from the stage over 300 seats (221.2.3.2)
+      if (n > 300) expect(new Set(ws.map((w) => w.row)).size).toBeGreaterThanOrEqual(2);
+      // and across the house: not all on one side (221.2.3.1)
+      if (n > 300) expect(Math.max(...ws.map((w) => w.x)) - Math.min(...ws.map((w) => w.x))).toBeGreaterThan(3000);
+    });
+  }
+
+  it('off: nothing placed, just reported; older files open with placement off', () => {
+    const s = resolveScene(project((p) => { p.seating.accessible = false; }));
+    expect(s.report.seating!.wheelchairPlaced).toHaveLength(0);
+    expect(s.report.seating!.count).toBe(1000);
+    const old = JSON.parse(serializeProject(project())); delete old.seating.accessible;
+    expect(parseProject(JSON.stringify(old)).seating.accessible).toBeUndefined();
+  });
+});
+

@@ -22,7 +22,7 @@ Tests (`npm test`, 24 passing): LED modularity, stage geometry, modular constrai
 - Transform gizmo: axis handles on the selected LED wall (x / upstage / height), front truss (distance / trim) and seating (distance). Each handle constrains the drag to its axis; same snapping and undo as free drag.
 - Add, duplicate, rename and remove LED surfaces.
 - **Audience seating** (`src/core/engine/seating.ts`): Block, Grid (continental) and Radial layouts, 250–5000 seats in steps of 250, its own layer (`70_AUDIENCE::70_01_SEATING`) and every seat a named chair-block instance with row / seat user text in Rhino.
-  - Code rules applied: clear width between rows ≥ 12″ for ≤ 14 seats, +0.3″ per extra seat, max 22″ / 100 seats (IBC/IFC Ch. 10, NFPA 101 Ch. 12–13). Grid widens the row pitch automatically; Block and Radial flag rows that exceed the limit. Wheelchair spaces and companion seats per 2010 ADA 221.2.1.1 / 221.3 are reported (not placed).
+  - Code rules applied: clear width between rows ≥ 12″ for ≤ 14 seats, +0.3″ per extra seat, max 22″ / 100 seats (IBC/IFC Ch. 10, NFPA 101 Ch. 12–13). Grid widens the row pitch automatically; Block and Radial flag rows that exceed the limit. Wheelchair spaces and companion seats per 2010 ADA 221.2.1.1 / 221.3 are placed (toggle *Place wheelchair spaces*, on for new projects): paired 33″ spaces with a companion either side, 48″ deep, in rows with open floor in front (front row, first row behind each cross aisle) or behind (last row); where those run out, single 36″ × 60″ side-entry spaces at block ends beside an aisle, part-way back. Companions are shoulder-aligned 36″ behind the space front (802.3.1) and flagged movable. Spaces are dispersed across blocks and, over 300 seats, at more than one distance (221.2.3). Chairs taken by bays are added back so chairs + spaces = the requested count. Accessible routes to the spaces are not modelled.
   - Planning defaults (labelled as such, not code): 36″ row pitch, 22″ seat pitch, 42″ aisles, a cross aisle every 20 rows, 10′ from the deck to the front row, generic 460 × 540 mm stacking chair.
   - Radial rows are concentric about the middle of the deck in a 90° fan; aisles are re-divided at each cross aisle so blocks stay ≤ the per-block seat limit; curved rows always keep at least an aisle width from the deck.
   - Sightline note when the front row looks up more than ~35° to the top of the main wall.
@@ -68,7 +68,7 @@ Done:
   Limits: dome tiles, barricade, mixer, roof members and scenic blocks are generic; roofs are envelopes, not engineered structures; crowd capacity is a planning figure, not a licensed capacity; media is front-projected and only onto upright walls.
 
 Next:
-Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, Claypaky and more LED products, lighting arrangement presets, seating follow-ups (placed wheelchair spaces), ~~jib / Steadicam / PTZ positions~~ (done), camera view for any point in the house, ~~video for screen media~~ (done), richer warnings (sightlines, trim vs. venue height).
+Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, Claypaky and more LED products, lighting arrangement presets, seating follow-ups (~~placed wheelchair spaces~~ done), ~~jib / Steadicam / PTZ positions~~ (done), camera view for any point in the house, ~~video for screen media~~ (done), richer warnings (sightlines, trim vs. venue height).
 
 ## Round 4 — interoperability
 Rhino dimensions via Compute (decision needed), FBX (local converter), DXF, DWG (ODA), STEP (opencascade.js), export dialog, automated geometry validation.
@@ -83,6 +83,6 @@ Performance (5k+ cabinets), catalogue search/filter UI, venue models (e.g. Pier 
 - Deck legs are drawn 4 per platform; real systems share legs/clamps.
 - Curved walls hang from a straight header truss with no pickup geometry.
 - Rectangular single-level stages only.
-- Seating: wheelchair locations, exits, egress width and venue walls are not modelled; the chair is a generic envelope. Every seating plan needs venue / AHJ approval.
+- Seating: accessible routes to the wheelchair spaces, exits, egress width and venue walls are not modelled; the chair is a generic envelope. Every seating plan needs venue / AHJ approval.
 - No FBX/DXF/DWG/STEP yet (GLB done in Round 2).
 - The .3dm has not been opened in desktop Rhino from the build environment; it is verified with two openNURBS readers.

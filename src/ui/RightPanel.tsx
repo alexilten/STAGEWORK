@@ -86,7 +86,7 @@ export function Production() {
           <Metric label="Platforms" value={String(r.stage.primaryCount + r.stage.infillCount)} sub={`${r.stage.primaryCount} × ${r.stage.system.label}${r.stage.infillCount ? ` + ${r.stage.infillCount} × ${r.stage.system.infill.label}` : ''}`} />
           <Metric label="LED cabinets" value={String(cabinets)} sub={`${formatArea(ledArea, u)} · ${r.led.length} surface${r.led.length === 1 ? '' : 's'}`} />
           <Metric label="Truss" value={`${sections} sections`} sub={`${formatLength(trussLen, u)} · ${hoists} hoists`} />
-          {r.seating && <Metric label="Seats" value={r.seating.count.toLocaleString()} sub={`${r.seating.rows} rows · ${r.seating.wheelchairSpaces} wheelchair`} />}
+          {r.seating && <Metric label="Seats" value={r.seating.capacity.toLocaleString()} sub={`${r.seating.rows} rows · ${r.seating.wheelchairPlaced.length || r.seating.wheelchairSpaces} wheelchair${r.seating.wheelchairPlaced.length ? '' : ' (not placed)'}`} />}
           {r.audience?.standing && <Metric label="Standing" value={r.audience.standing.capacity.toLocaleString()} sub={`${r.audience.standing.areaM2.toLocaleString()} m² at ${r.audience.standing.density}/m²${r.audience.standing.barricadeM ? ` · ${Math.round(r.audience.standing.barricadeM)} m barricade` : ''}`} />}
           {r.audience && r.audience.stands.length > 0 && (() => {
             const cs = r.audience.stands.map((x) => x.minC).filter((c): c is number => c != null);
@@ -160,7 +160,14 @@ export function Inspector() {
           </>
         ) : (
           <>
-            {selection.group === 'seating' ? <Row k={sample.label.replace(/ \S+$/, '')} v={`× ${members.length.toLocaleString()}`} /> : [...counts].map(([k, n]) => <Row key={k} k={k} v={`× ${n}`} />)}
+            {selection.group === 'seating' ? (() => {
+              const chairs = members.filter((m) => m.layer === '70_AUDIENCE::70_01_SEATING');
+              const wc = members.length - chairs.length;
+              return (<>
+                {chairs[0] && <Row k={chairs[0].label.replace(/ \S+$/, '')} v={`× ${chairs.length.toLocaleString()}`} />}
+                {wc > 0 && <Row k="Wheelchair spaces" v={`× ${wc}`} />}
+              </>);
+            })() : [...counts].map(([k, n]) => <Row key={k} k={k} v={`× ${n}`} />)}
             <GroupRows group={selection.group} scene={scene} u={u} />
             <p className="muted small">Click again on a component to inspect it individually.</p>
           </>
@@ -271,7 +278,8 @@ function GroupRows({ group, scene, u }: { group: string; scene: SceneGraph; u: D
       <Row k="Front row" v={`${formatLength(S.frontDistance, u, { precise: true })} from deck`} />
       <Row k="Row pitch / clear" v={`${formatLength(S.rowPitch, u, { precise: true })} / ${formatLength(S.rowClear, u, { precise: true })}`} />
       <Row k="Longest block row" v={`${S.longestRow} seats (limit ${S.maxSeatsPerRow})`} />
-      <Row k="Wheelchair spaces" v={`${S.wheelchairSpaces} + ${S.wheelchairSpaces} companion`} />
+      <Row k="Wheelchair spaces" v={S.wheelchairPlaced.length ? `${S.wheelchairPlaced.length} placed + ${S.wheelchairPlaced.length} companion` : `${S.wheelchairSpaces} + ${S.wheelchairSpaces} companion (not placed)`} />
+      {S.wheelchairPlaced.length > 0 && <Row k="Spaces in rows" v={[...new Set(S.wheelchairPlaced.map((w) => w.row))].join(', ')} />}
       <p className="muted small">Code checks follow IBC / IFC Chapter 10 and the 2010 ADA Standards. Egress and exits need venue / AHJ review.</p>
     </>);
   }

@@ -80,7 +80,7 @@ describe('Stage shapes', () => {
       expect(Math.hypot(dx, dy)).toBeGreaterThanOrEqual(1070 - 1);
       if (dx === 0) expect(dy).toBeGreaterThanOrEqual(3050 - 1);
     }
-    expect(s.report.seating!.count).toBe(1000);
+    expect(s.report.seating!.capacity).toBe(1000);
   });
 });
 
