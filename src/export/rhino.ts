@@ -77,6 +77,8 @@ export const RHINO_MATERIALS: Record<MaterialKey, { name: string; rgb: [number, 
   venueDoor: { name: 'SC_Venue_Door', rgb: [154, 160, 170], gloss: 0.3 },
   venueGlass: { name: 'SC_Venue_Chandelier', rgb: [214, 226, 236], gloss: 0.9, transparency: 0.5 },
   rigPoint: { name: 'SC_Venue_Rig_Point', rgb: [58, 107, 255], gloss: 0.3 },
+  venueTier: { name: 'SC_Venue_Seating_Tier', rgb: [205, 210, 220] },
+  venueTurf: { name: 'SC_Venue_Turf', rgb: [150, 176, 140] },
 };
 
 export interface RhinoExportOptions {

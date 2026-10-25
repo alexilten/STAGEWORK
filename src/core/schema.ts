@@ -364,7 +364,7 @@ export const DEFAULT_SHOW: ShowParams = {
  * width (across the stage, X) × depth (stage wall to the back of house, Y); the archetype fits its
  * structure to it. The stage wall is the +Y wall, `upstage` behind everything on the stage.
  */
-export type VenueArchetype = 'black-box' | 'ballroom' | 'convention' | 'warehouse' | 'sound-stage';
+export type VenueArchetype = 'black-box' | 'ballroom' | 'convention' | 'warehouse' | 'sound-stage' | 'proscenium' | 'arena' | 'stadium' | 'amphitheatre' | 'tent';
 export interface VenueParams {
   enabled: boolean;
   archetype: VenueArchetype;
