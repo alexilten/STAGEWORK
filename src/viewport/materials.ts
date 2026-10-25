@@ -13,7 +13,7 @@ export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish, s
   if (mode === 'technical') {
     if (key === 'glass') return { color: '#cfe3f0', metalness: 0, roughness: 0.1, edge: 0, opacity: 0.35 };
     if (key === 'roofSkin') return { color: '#eef0f4', metalness: 0, roughness: 0.9, edge: 0, opacity: 0.3 };
-    const tone: Partial<Record<MaterialKey, string>> = { crowd: '#c9cbd2', barricade: '#bdbdc2', stand: '#e6e6ea', structure: '#c9cbd0', booth: '#bcbcc2', camera: '#b9b9bf', platform: '#d6d6db', screen: '#9a9aa2', drape: '#d0d0d6', scenicFlat: '#ececef', speaker: '#d7d7dc', speakerGrille: '#bcbcc2', chairSeat: '#e4e4e8', chairFrame: '#c7c7cc', accessible: '#9db8e3', ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc', venueDark: '#e2e2e6', venueFloor: '#efefef', venueCarpet: '#ececee', venueSteel: '#c9cbd0', venueColumn: '#d9dade', venuePipe: '#b9bbc1', venueDoor: '#d4d5da', rigPoint: '#3a6bff' };
+    const tone: Partial<Record<MaterialKey, string>> = { crowd: '#c9cbd2', barricade: '#bdbdc2', stand: '#e6e6ea', structure: '#c9cbd0', booth: '#bcbcc2', camera: '#b9b9bf', platform: '#d6d6db', screen: '#9a9aa2', drape: '#d0d0d6', scenicFlat: '#ececef', speaker: '#d7d7dc', speakerGrille: '#bcbcc2', chairSeat: '#e4e4e8', chairFrame: '#c7c7cc', accessible: '#9db8e3', ledBody: '#dcdce1', truss: '#c9cbd0', hoist: '#bdbdc2', fixture: '#bdbdc2', presenter: '#e9e6e1', leg: '#c7c7cc', venueDark: '#e2e2e6', venueFloor: '#efefef', venueCarpet: '#ececee', venueSteel: '#c9cbd0', venueColumn: '#d9dade', venuePipe: '#b9bbc1', venueDoor: '#d4d5da', rigPoint: '#3a6bff', venueTier: '#e6e7eb', venueTurf: '#dfe6dc' };
     if (key === 'venueGlass') return { color: '#cfe3f0', metalness: 0, roughness: 0.1, edge: 0, opacity: 0.35 };
     return { color: tone[key] ?? '#f7f7f8', metalness: 0, roughness: 0.9, edge: 1, edgeColor: '#5d5d63' };
   }
@@ -55,6 +55,8 @@ export function lookFor(key: MaterialKey, mode: ViewMode, finish: StageFinish, s
     case 'venueDoor': return { color: '#9aa0aa', metalness: 0.4, roughness: 0.55, edge: 0 };
     case 'venueGlass': return { color: '#dbe7f1', metalness: 0, roughness: 0.1, edge: 0, opacity: 0.45 };
     case 'rigPoint': return { color: '#3a6bff', metalness: 0, roughness: 0.6, edge: 0 };
+    case 'venueTier': return { color: '#d3d8e2', metalness: 0, roughness: 0.85, edge: 0 };
+    case 'venueTurf': return { color: '#a7bb9c', metalness: 0, roughness: 1, edge: 0 };
   }
 }
 
@@ -109,7 +111,7 @@ export function addVenueCut(mat: THREE.MeshStandardMaterial) {
       .replace('#include <common>', '#include <common>\nvarying vec3 vCutPos;\nuniform float uCut;\nuniform float uCutZ;\nuniform vec4 uBox;\nuniform vec3 uCam;')
       .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
         if (uCut > 0.5 && vCutPos.z > uCutZ) {
-          const float m = 800.0;
+          const float m = 0.0;
           bool cut = (vCutPos.x < uBox.x + m && uCam.x < uBox.x) || (vCutPos.x > uBox.z - m && uCam.x > uBox.z)
             || (vCutPos.y < uBox.y + m && uCam.y < uBox.y) || (vCutPos.y > uBox.w - m && uCam.y > uBox.w);
           if (cut) discard;

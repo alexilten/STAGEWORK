@@ -59,6 +59,8 @@ export function materialTable(finish: StageFinish, scenic: StageFinish): Record<
     venueDoor: { name: 'SC_Venue_Door', rgb: [154, 160, 170], metal: 0.5, rough: 0.5 },
     venueGlass: { name: 'SC_Venue_Chandelier', rgb: [214, 226, 236], metal: 0, rough: 0.1, alpha: 0.5 },
     rigPoint: { name: 'SC_Venue_Rig_Point', rgb: [58, 107, 255], metal: 0, rough: 0.6 },
+    venueTier: { name: 'SC_Venue_Seating_Tier', rgb: [205, 210, 220], metal: 0, rough: 0.85 },
+    venueTurf: { name: 'SC_Venue_Turf', rgb: [150, 176, 140], metal: 0, rough: 1 },
   };
 }
 

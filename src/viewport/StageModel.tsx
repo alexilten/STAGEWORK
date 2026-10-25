@@ -74,7 +74,7 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
   useLayoutEffect(() => {
     VENUE_CUT.uCut.value = venue?.built && cut?.enabled ? 1 : 0;
     VENUE_CUT.uCutZ.value = cut?.height ?? 1200;
-    if (venue) VENUE_CUT.uBox.value.set(venue.box.x0, venue.box.y0, venue.box.x1, venue.box.y1);
+    if (venue) VENUE_CUT.uBox.value.set(venue.inner.x0, venue.inner.y0, venue.inner.x1, venue.inner.y1);
   }, [venue, cut]);
   useFrame(({ camera }) => {
     // three.js Y-up metres → model mm, Z-up (inverse of the Viewport's world wrapper)
@@ -93,7 +93,10 @@ export function StageModel({ scene }: { scene: SceneGraph }) {
 function InstancedBatch({ batch, mode, finish, scenicFinish }: { batch: Batch; mode: ViewMode; finish: StageFinish; scenicFinish: StageFinish }) {
   const ref = useRef<THREE.InstancedMesh>(null!);
   const isVenue = batch.objects[0]?.system === 'venue';
-  const material = useMemo(() => (isVenue ? addVenueCut(makeEdgeMaterial()) : makeEdgeMaterial()), [isVenue]);
+  // raked houses, fans and lawns stay whole so the section reads; a bowl is cut so the floor shows
+  const cutTiers = useStore((s) => !!s.scene.report.venue?.cutTiers);
+  const cutAway = isVenue && (cutTiers || (batch.part.mat !== 'venueTier' && batch.part.mat !== 'venueTurf'));
+  const material = useMemo(() => (cutAway ? addVenueCut(makeEdgeMaterial()) : makeEdgeMaterial()), [cutAway]);
   const selection = useStore((s) => s.selection);
   const hover = useStore((s) => s.hover);
   const select = useStore((s) => s.select);

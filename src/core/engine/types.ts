@@ -12,7 +12,7 @@ export type MaterialKey =
   | 'scenicFlat' | 'drape'
   | 'camera' | 'platform' | 'glass' | 'screen'
   | 'crowd' | 'barricade' | 'stand' | 'structure' | 'roofSkin' | 'booth' | 'accessible'
-  | 'venueWall' | 'venueDark' | 'venueFloor' | 'venueCarpet' | 'venueSteel' | 'venueColumn' | 'venuePipe' | 'venueDoor' | 'venueGlass' | 'rigPoint';
+  | 'venueWall' | 'venueDark' | 'venueFloor' | 'venueCarpet' | 'venueSteel' | 'venueColumn' | 'venuePipe' | 'venueDoor' | 'venueGlass' | 'rigPoint' | 'venueTier' | 'venueTurf';
 
 export type Part =
   | { kind: 'box'; min: Vec3; max: Vec3; mat: MaterialKey }

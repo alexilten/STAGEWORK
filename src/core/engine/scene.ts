@@ -333,8 +333,15 @@ export function resolveScene(project: Project): SceneGraph {
       }
       // overhead: the rig must trim under the venue's clear height
       const rigTop = max[2];
-      if (rigTop > venue.clear - 600) warnings.push({ level: 'warn', code: 'venue.clear', target: 'venue', message: `The show reaches ${(rigTop / 1000).toFixed(1)} m but the ${venue.name.toLowerCase()} clears ${(venue.clear / 1000).toFixed(1)} m to ${venue.archetype === 'ballroom' ? 'the ceiling' : 'steel'}. Lower the trims or the LED.` });
-      if (!venue.rating && truss.length) warnings.push({ level: 'warn', code: 'venue.roof.unrated', target: 'venue', message: 'Warehouse roof joists are usually not rated for production loads. Hang from a ground-supported grid or get the roof rated by an engineer.' });
+      if (!venue.openAir && rigTop > venue.clear - 600) warnings.push({ level: 'warn', code: 'venue.clear', target: 'venue', message: `The show reaches ${(rigTop / 1000).toFixed(1)} m but the ${venue.name.toLowerCase()} clears ${(venue.clear / 1000).toFixed(1)} m (${venue.clearLabel.toLowerCase()}). Lower the trims or the LED.` });
+      if (!venue.openAir && !venue.rating && truss.length) warnings.push({ level: 'warn', code: 'venue.roof.unrated', target: 'venue', message: 'Warehouse roof joists are usually not rated for production loads. Hang from a ground-supported grid or get the roof rated by an engineer.' });
+      if (venue.openAir && truss.length && !structure) warnings.push({ level: 'warn', code: 'venue.openair', target: 'venue', message: `A ${venue.name.toLowerCase()} has no roof to hang the rig from. Add a ground-supported roof in Structure.` });
+      if (venue.fixedSeating && seating) warnings.push({ level: 'info', code: 'venue.seating.fixed', target: 'seating', message: `The ${venue.name.toLowerCase()} has its own house seats (about ${venue.houseSeats.toLocaleString()}). Turn Audience seating off to use them, or keep it for a floor-seated layout.` });
+      if (venue.bowl) {
+        const { inner } = venue;
+        const sx = Math.max(0, ...deck.layout.areas.map((a) => Math.max(-a.minX, a.maxX)));
+        if (sx > (inner.x1 - inner.x0) / 2 || hmin[1] < inner.y0) warnings.push({ level: 'warn', code: 'venue.floor', target: 'venue', message: `The show or audience runs off the ${((inner.x1 - inner.x0) / 1000).toFixed(0)} × ${((inner.y1 - inner.y0) / 1000).toFixed(0)} m event floor into the bowl.` });
+      }
       // the show must sit inside the walls
       const sx = Math.max(-hmin[0], hmax[0]);
       if (sx > (x1 - x0) / 2) warnings.push({ level: 'warn', code: 'venue.width', target: 'venue', message: `The show is ${((2 * sx) / 1000).toFixed(1)} m wide; the venue is ${((x1 - x0) / 1000).toFixed(1)} m.` });

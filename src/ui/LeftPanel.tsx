@@ -805,7 +805,7 @@ function VenueSection() {
         </div>
         {!fit.ok && (
           <div className={`venue-fit ${p.override ? 'overridden' : ''}`} role="alert">
-            <p>{fit.message} {p.override ? 'Built anyway.' : fit.suggest.length ? 'Try a type that fits:' : 'No type in this round fits it.'}</p>
+            <p>{fit.message} {p.override ? 'Built anyway.' : fit.suggest.length ? 'Try a type that fits:' : 'No building type fits it.'}</p>
             <div className="chips">
               {!p.override && fit.suggest.slice(0, 2).map((a) => <button key={a} className="chip" onClick={() => pick(a)}>Use {VENUE_SPECS[a].name}</button>)}
               {p.override
@@ -818,14 +818,17 @@ function VenueSection() {
         {r?.built && (<>
           <div className="sub-label">3 · Fit</div>
           <LengthControl label="Stage to stage wall" units={u} value={p.upstage} min={0} max={20000} step={250} hint="Clear space behind the most upstage element" onChange={(v) => set((x) => { x.upstage = v; }, 'venue.up')} />
-          <LengthControl label={p.archetype === 'ballroom' ? 'Ceiling height' : p.archetype === 'black-box' || p.archetype === 'sound-stage' ? 'Grid height' : 'Clear to steel'} units={u}
-            value={r.clear} min={3000} max={30000} step={152.4}
-            hint={<>Typical for this size: {formatLength(spec.clear(p.width, p.depth), u)}{p.clearHeight != null && <> · <button className="text-btn" onClick={() => set((x) => { delete x.clearHeight; })}>Reset</button></>}</>}
-            onChange={(v) => set((x) => { x.clearHeight = v; }, 'venue.clear')} />
+          {r.openAir
+            ? <p className="muted small">Open air: no roof to hang from. Build a ground-supported roof in Structure.</p>
+            : <LengthControl label={r.clearLabel} units={u}
+              value={r.clear} min={3000} max={60000} step={152.4}
+              hint={<>Typical for this size: {formatLength(spec.clear(r.width, r.depth), u)}{p.clearHeight != null && <> · <button className="text-btn" onClick={() => set((x) => { delete x.clearHeight; })}>Reset</button></>}</>}
+              onChange={(v) => set((x) => { x.clearHeight = v; }, 'venue.clear')} />}
           <div className="cab-meta venue-facts">
             <VerificationBadge v="generic" />
             {r.bays && <span>{formatLength(r.bays.x, u)} × {formatLength(r.bays.y, u)} bays · {r.columns.length} columns</span>}
-            <span>{r.rigPoints ? `${r.rigPoints.toLocaleString()} rig points · ${r.rating?.label}` : 'Roof not rated: ground support'}</span>
+            {r.facts.map((f) => <span key={f}>{f}</span>)}
+            {!r.openAir && <span>{r.rigPoints ? `${r.rigPoints.toLocaleString()} rig points · ${r.rating?.label}` : 'Roof not rated: ground support'}</span>}
             <span>{r.power}</span><span>{r.floor}</span>
           </div>
           <p className="muted small">Typical planning values for this type of building. The real venue's rigging plot and electrical spec govern.</p>
