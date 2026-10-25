@@ -26,6 +26,7 @@ export const APP_VERSION = '0.1.0';
 /** Parent layers and their sub-layers, in the order they appear in Rhino. Colours are Rhino layer colours. */
 export const LAYER_TREE: { name: string; color: [number, number, number]; children: string[] }[] = [
   { name: '00_REFERENCE', color: [150, 150, 150], children: [] },
+  { name: '05_VENUE', color: [120, 124, 132], children: ['05_01_SHELL', '05_02_STRUCTURE', '05_03_RIGGING', '05_04_FIXTURES', '05_05_SERVICES', '05_06_GRID_LINES'] },
   { name: '10_STAGE', color: [60, 60, 60], children: ['10_01_DECKING', '10_02_RISERS', '10_03_SUPPORTS', '10_04_FINISHES'] },
   { name: '20_LED', color: [0, 112, 201], children: ['20_01_CABINETS', '20_02_SUPPORTS', '20_03_TRIM'] },
   { name: '30_RIGGING', color: [205, 120, 0], children: ['30_01_TRUSS', '30_02_HOISTS', '30_03_HARDWARE', '30_04_GROUND_SUPPORT', '30_05_GRID'] },
@@ -66,6 +67,16 @@ export const RHINO_MATERIALS: Record<MaterialKey, { name: string; rgb: [number, 
   structure: { name: 'SC_Ground_Support_Steel', rgb: [110, 112, 118], gloss: 0.4 },
   roofSkin: { name: 'SC_Roof_Skin', rgb: [228, 228, 230], gloss: 0.1, transparency: 0.55 },
   booth: { name: 'SC_DJ_Booth', rgb: [22, 22, 24], gloss: 0.3 },
+  venueWall: { name: 'SC_Venue_Wall', rgb: [228, 226, 221] },
+  venueDark: { name: 'SC_Venue_Black', rgb: [52, 54, 60] },
+  venueFloor: { name: 'SC_Venue_Slab', rgb: [214, 211, 204] },
+  venueCarpet: { name: 'SC_Venue_Carpet', rgb: [196, 186, 172] },
+  venueSteel: { name: 'SC_Venue_Steel', rgb: [125, 129, 137], gloss: 0.4 },
+  venueColumn: { name: 'SC_Venue_Column', rgb: [169, 173, 181], gloss: 0.2 },
+  venuePipe: { name: 'SC_Venue_Pipe_Grid', rgb: [85, 88, 95], gloss: 0.4 },
+  venueDoor: { name: 'SC_Venue_Door', rgb: [154, 160, 170], gloss: 0.3 },
+  venueGlass: { name: 'SC_Venue_Chandelier', rgb: [214, 226, 236], gloss: 0.9, transparency: 0.5 },
+  rigPoint: { name: 'SC_Venue_Rig_Point', rgb: [58, 107, 255], gloss: 0.3 },
 };
 
 export interface RhinoExportOptions {
@@ -198,6 +209,7 @@ export function exportRhino(rh: RhinoModule, scene: SceneGraph, project: Project
   // ── annotations (lines + text dots; rhino3dm cannot author true Rhino dimensions yet)
   if (opts.includeAnnotations !== false) {
     for (const an of scene.annotations) {
+      if (an.layer.startsWith('05_VENUE') && opts.systems && !opts.systems.includes('venue')) continue;
       const a = new rh.ObjectAttributes();
       a.layerIndex = layer(an.layer);
       a.name = an.id;

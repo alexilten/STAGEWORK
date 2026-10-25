@@ -112,15 +112,22 @@ export const SYSTEM_SETS: { label: string; systems?: SystemKey[] }[] = [
   { label: 'Audience only', systems: ['seating'] },
 ];
 
+const ALL_SYSTEMS: SystemKey[] = ['decking', 'supports', 'finishes', 'ledCabinets', 'ledSupports', 'rigging', 'structure', 'lighting', 'audio', 'scenic', 'seating', 'broadcast', 'dimensions', 'reference', 'venue'];
+
 export function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast: (m: string) => void }) {
   const [version, setVersion] = useState<'8' | '7'>('8');
   const [set, setSet] = useState(0);
+  const hasVenue = useStore((s) => !!s.scene.report.venue?.built);
+  const [withVenue, setWithVenue] = useState(true);
   const [busy, setBusy] = useState(false);
   const go = async (fn: () => Promise<unknown> | unknown, msg: string) => {
     setBusy(true);
     try { await fn(); onToast(msg); onClose(); } catch (e) { onToast(`Export failed: ${(e as Error).message}`); } finally { setBusy(false); }
   };
   const { scene, project } = useStore.getState();
+  // the venue rides along with whichever selection is picked, unless it's unticked
+  const chosen = SYSTEM_SETS[set].systems;
+  const systems: SystemKey[] | undefined = !hasVenue ? chosen : withVenue ? (chosen ? [...chosen, 'venue'] : undefined) : (chosen ?? ALL_SYSTEMS).filter((k) => k !== 'venue');
   return (
     <div className="menu glass" onMouseLeave={onClose}>
       <div className="menu-title">Export</div>
@@ -131,22 +138,23 @@ export function ExportMenu({ onClose, onToast }: { onClose: () => void; onToast:
         {SYSTEM_SETS.map((s, i) => (
           <label key={s.label} className="radio"><input type="radio" checked={set === i} onChange={() => setSet(i)} /> {s.label}</label>
         ))}
+        {hasVenue && <label className="radio venue-check"><input type="checkbox" checked={withVenue} onChange={(e) => setWithVenue(e.target.checked)} /> Include the venue</label>}
       </div>
       <button className="primary wide" disabled={busy} onClick={() => go(async () => {
-        const n = await export3dm(scene, project, { version: +version as 7 | 8, systems: SYSTEM_SETS[set].systems });
+        const n = await export3dm(scene, project, { version: +version as 7 | 8, systems });
         return n;
       }, 'Rhino .3dm exported')}>{busy ? 'Preparing…' : 'Export .3dm'}</button>
       <div className="menu-sep" />
       <button className="menu-item" onClick={() => go(async () => {
         const data = project.media && (useStore.getState().assets[project.media.assetId] ?? project.media.poster);
         const media = project.media && data ? await glbMedia(scene.report.led, project.media, data) : undefined;
-        exportGlbFile(scene, project, SYSTEM_SETS[set].systems, media);
+        exportGlbFile(scene, project, systems, media);
       }, 'GLB exported')}>glTF binary (selection above) <span>.glb</span></button>
       <button className="menu-item" onClick={() => go(() => exportBom(scene, project), 'Bill of materials exported')}>Bill of materials <span>.csv</span></button>
       <button className="menu-item" onClick={() => go(() => exportProject(projectForSave(project)), 'Project saved')}>Project file <span>.json</span></button>
-      <button className="menu-item" title="Maya, 3ds Max, Blender, Cinema 4D, Unreal, Unity — mm, Z-up, blocks as instances" onClick={() => go(() => exportFbxFile(scene, project, SYSTEM_SETS[set].systems), 'FBX exported')}>FBX (selection above) <span>.fbx</span></button>
-      <button className="menu-item" title="AutoCAD, Vectorworks, BricsCAD, SketchUp, Revit — open it and save as .dwg; DWG itself is a closed format" onClick={() => go(() => exportDxfFile(scene, project, SYSTEM_SETS[set].systems), 'DXF exported — open in AutoCAD and save as DWG if needed')}>DXF for AutoCAD / DWG <span>.dxf</span></button>
-      <button className="menu-item" title="SolidWorks, Inventor, Fusion, Creo, NX, CATIA, FreeCAD — exact solids, AP214" onClick={() => go(() => exportStepFile(scene, project, SYSTEM_SETS[set].systems), 'STEP exported')}>STEP solids (selection above) <span>.step</span></button>
+      <button className="menu-item" title="Maya, 3ds Max, Blender, Cinema 4D, Unreal, Unity — mm, Z-up, blocks as instances" onClick={() => go(() => exportFbxFile(scene, project, systems), 'FBX exported')}>FBX (selection above) <span>.fbx</span></button>
+      <button className="menu-item" title="AutoCAD, Vectorworks, BricsCAD, SketchUp, Revit — open it and save as .dwg; DWG itself is a closed format" onClick={() => go(() => exportDxfFile(scene, project, systems), 'DXF exported — open in AutoCAD and save as DWG if needed')}>DXF for AutoCAD / DWG <span>.dxf</span></button>
+      <button className="menu-item" title="SolidWorks, Inventor, Fusion, Creo, NX, CATIA, FreeCAD — exact solids, AP214" onClick={() => go(() => exportStepFile(scene, project, systems), 'STEP exported')}>STEP solids (selection above) <span>.step</span></button>
     </div>
   );
 }

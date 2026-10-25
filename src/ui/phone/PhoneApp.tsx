@@ -18,7 +18,7 @@ const SECTIONS: { title: string; chip: string }[] = [
   { title: 'Stage', chip: 'Stage' }, { title: 'Risers', chip: 'Risers' }, { title: 'LED media', chip: 'LED' },
   { title: 'Audience', chip: 'Audience' }, { title: 'Rigging', chip: 'Rigging' }, { title: 'Lighting', chip: 'Lighting' },
   { title: 'Structure', chip: 'Structure' }, { title: 'Audio', chip: 'Audio' }, { title: 'Show elements', chip: 'Show' },
-  { title: 'Scenic', chip: 'Scenic' }, { title: 'Broadcast', chip: 'Broadcast' },
+  { title: 'Scenic', chip: 'Scenic' }, { title: 'Broadcast', chip: 'Broadcast' }, { title: 'Venue', chip: 'Venue' },
 ];
 
 type DockTab = 'overview' | 'layers' | 'checks';

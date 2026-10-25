@@ -294,3 +294,19 @@ body[data-shot="1"] .panel, body[data-shot="1"] .hud, body[data-shot="1"] .viewb
 .cab-meta .ok { color: #1e8e4e; } .cab-meta .warn { color: #b7791f; } .cab-meta .bad { color: #c53030; }
 .section .segmented.wrap { flex-wrap: wrap; row-gap: 2px; }
 .section .segmented.wrap button { flex: 1 1 30%; }
+
+/* venue */
+.venue-area { display: flex; justify-content: space-between; align-items: center; margin: -4px 0 6px; font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.venue-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 8px; }
+.venue-card { display: flex; flex-direction: column; align-items: stretch; text-align: left; gap: 3px; padding: 5px 5px 8px; border-radius: 10px; transition: background 0.2s var(--ease), opacity 0.2s var(--ease); }
+.venue-card:hover { background: rgba(0, 0, 0, 0.04); }
+.venue-card.on { background: rgba(0, 0, 0, 0.06); box-shadow: inset 0 0 0 1px var(--line-2); }
+.venue-card.nofit { opacity: 0.45; }
+.venue-card.nofit.on { opacity: 0.8; }
+.venue-card .preset-name { font-size: 12px; }
+.venue-card .preset-sum { font-size: 10.5px; }
+.venue-fit { padding: 9px 10px; border-radius: 10px; background: rgba(199,106,0,.08); color: #8a4a00; font-size: 11.5px; line-height: 1.45; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+.venue-fit.overridden { background: rgba(0,0,0,.04); color: var(--ink-2); }
+.venue-fit .chip.warn { color: #8a4a00; }
+.venue-facts { margin-top: 0; }
+.venue-check { margin-top: 4px; padding-top: 6px; border-top: 0.5px solid var(--line-2); }

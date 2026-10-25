@@ -2,8 +2,9 @@ import { CHAIRS, DECK_SYSTEMS, FIXTURES, LED_CABINETS, SPEAKERS, getCatalogItem,
 import { SEAT_COUNT } from '../core/engine/seating';
 import { C_VALUE } from '../core/engine/audience';
 import { ROOFS } from '../core/engine/structure';
+import { VENUE_ORDER, VENUE_SPECS, venueFit } from '../core/engine/venue';
 import { useState } from 'react';
-import { DEFAULT_AUDIENCE, DEFAULT_SHOW, DEFAULT_STRUCTURE, type AudienceParams, type RoofSystem, type ShowParams, type StructureParams, DEFAULT_AUDIO, DEFAULT_BROADCAST, type BroadcastParams, DEFAULT_SCENIC, DEFAULT_SEATING, type ScenicParams, DEFAULT_SHAPES, type AudioParams, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
+import { DEFAULT_VENUE, type VenueArchetype, type VenueParams, DEFAULT_AUDIENCE, DEFAULT_SHOW, DEFAULT_STRUCTURE, type AudienceParams, type RoofSystem, type ShowParams, type StructureParams, DEFAULT_AUDIO, DEFAULT_BROADCAST, type BroadcastParams, DEFAULT_SCENIC, DEFAULT_SEATING, type ScenicParams, DEFAULT_SHAPES, type AudioParams, type SeatingLayout, type StageFinish, type StageShape } from '../core/schema';
 import { formatLength } from '../core/units';
 import { LengthControl, NumberControl, Section, Segmented, Select, Toggle, VerificationBadge } from './controls';
 import { useStore } from './store';
@@ -172,6 +173,7 @@ export function LeftPanel() {
         <ShowSection />
         <ScenicSection />
         <BroadcastSection />
+        <VenueSection />
       </div>
     </aside>
   );
@@ -756,6 +758,83 @@ function ShowSection() {
         {r?.dome && <div className="cab-meta"><VerificationBadge v="generic" /><span>{r.dome.tiles.toLocaleString()} tiles</span><span>{r.dome.rings} rings</span><span>{Math.round(r.dome.areaM2).toLocaleString()} m²</span></div>}
       </>)}
       {p.blocks.length > 0 && <p className="muted small">{p.blocks.length} scenic blocks, set by the preset.</p>}
+    </Section>
+  );
+}
+
+const venueThumb = (id: string) => `${import.meta.env.BASE_URL}venues/${id}.png`;
+
+/** Venue shell: footprint first, then the building type that fits it (see engine/venue.ts). */
+function VenueSection() {
+  const project = useStore((s) => s.project);
+  const r = useStore((s) => s.scene.report.venue);
+  const edit = useStore((s) => s.edit);
+  const u = project.units;
+  const p = project.venue ?? DEFAULT_VENUE;
+  const set = (fn: (x: VenueParams) => void, key?: string) => edit((pr) => { pr.venue ??= structuredClone(DEFAULT_VENUE); fn(pr.venue); }, key);
+  const pick = (a: VenueArchetype) => set((x) => { x.archetype = a; x.override = false; delete x.clearHeight; });
+  const spec = VENUE_SPECS[p.archetype];
+  const fit = venueFit(p.archetype, p.width, p.depth, u);
+  const step = u === 'imperial' ? 304.8 : 1000;
+  const show = () => useStore.getState().setView('house');
+  const area = u === 'imperial' ? `${Math.round((p.width * p.depth) / 92903.04).toLocaleString()} sq ft` : `${Math.round((p.width * p.depth) / 1e6).toLocaleString()} m²`;
+  const summary = p.enabled ? `${spec.name} · ${formatLength(p.width, u)} × ${formatLength(p.depth, u)}` : 'off';
+  return (
+    <Section title="Venue" defaultOpen={false} summary={summary}>
+      <Toggle label="Build the venue around the show" checked={p.enabled} onChange={(v) => { set((x) => { x.enabled = v; }); if (v) show(); }} />
+      {p.enabled && (<>
+        <div className="sub-label">1 · Footprint</div>
+        <LengthControl label="Width (across the stage)" units={u} value={p.width} min={6096} max={609600} step={step} onChange={(v) => set((x) => { x.width = v; }, 'venue.w')} />
+        <LengthControl label="Depth (stage wall to back of house)" units={u} value={p.depth} min={6096} max={609600} step={step} onChange={(v) => set((x) => { x.depth = v; }, 'venue.d')} />
+        <div className="venue-area"><span>{area}</span>
+          <button className="text-btn" title="Put the stage on the other wall" onClick={() => set((x) => { [x.width, x.depth] = [x.depth, x.width]; })}>Swap width and depth</button>
+        </div>
+
+        <div className="sub-label">2 · Building type</div>
+        <div className="venue-grid">
+          {VENUE_ORDER.map((a) => {
+            const f = venueFit(a, p.width, p.depth, u);
+            return (
+              <button key={a} className={`venue-card ${a === p.archetype ? 'on' : ''} ${f.ok ? '' : 'nofit'}`} title={f.ok ? VENUE_SPECS[a].blurb : f.message ?? ''} onClick={() => { pick(a); show(); }}>
+                <span className="preset-thumb"><img src={venueThumb(a)} alt="" loading="lazy" /></span>
+                <span className="preset-name">{VENUE_SPECS[a].name}</span>
+                <span className="preset-sum">{f.ok ? VENUE_SPECS[a].blurb : f.issue === 'big' ? 'Too big for this type' : 'Too small for this type'}</span>
+              </button>
+            );
+          })}
+        </div>
+        {!fit.ok && (
+          <div className={`venue-fit ${p.override ? 'overridden' : ''}`} role="alert">
+            <p>{fit.message} {p.override ? 'Built anyway.' : fit.suggest.length ? 'Try a type that fits:' : 'No type in this round fits it.'}</p>
+            <div className="chips">
+              {!p.override && fit.suggest.slice(0, 2).map((a) => <button key={a} className="chip" onClick={() => pick(a)}>Use {VENUE_SPECS[a].name}</button>)}
+              {p.override
+                ? <button className="chip" onClick={() => set((x) => { x.override = false; })}>Undo override</button>
+                : <button className="chip warn" onClick={() => set((x) => { x.override = true; })}>Override and build anyway</button>}
+            </div>
+          </div>
+        )}
+
+        {r?.built && (<>
+          <div className="sub-label">3 · Fit</div>
+          <LengthControl label="Stage to stage wall" units={u} value={p.upstage} min={0} max={20000} step={250} hint="Clear space behind the most upstage element" onChange={(v) => set((x) => { x.upstage = v; }, 'venue.up')} />
+          <LengthControl label={p.archetype === 'ballroom' ? 'Ceiling height' : p.archetype === 'black-box' || p.archetype === 'sound-stage' ? 'Grid height' : 'Clear to steel'} units={u}
+            value={r.clear} min={3000} max={30000} step={152.4}
+            hint={<>Typical for this size: {formatLength(spec.clear(p.width, p.depth), u)}{p.clearHeight != null && <> · <button className="text-btn" onClick={() => set((x) => { delete x.clearHeight; })}>Reset</button></>}</>}
+            onChange={(v) => set((x) => { x.clearHeight = v; }, 'venue.clear')} />
+          <div className="cab-meta venue-facts">
+            <VerificationBadge v="generic" />
+            {r.bays && <span>{formatLength(r.bays.x, u)} × {formatLength(r.bays.y, u)} bays · {r.columns.length} columns</span>}
+            <span>{r.rigPoints ? `${r.rigPoints.toLocaleString()} rig points · ${r.rating?.label}` : 'Roof not rated: ground support'}</span>
+            <span>{r.power}</span><span>{r.floor}</span>
+          </div>
+          <p className="muted small">Typical planning values for this type of building. The real venue's rigging plot and electrical spec govern.</p>
+        </>)}
+
+        <div className="sub-label">View</div>
+        <Toggle label="Cut away walls facing the camera" checked={p.cut.enabled} onChange={(v) => set((x) => { x.cut.enabled = v; })} />
+        {p.cut.enabled && <LengthControl label="Cut height" units={u} value={p.cut.height} min={0} max={6000} step={100} onChange={(v) => set((x) => { x.cut.height = v; }, 'venue.cut')} />}
+      </>)}
     </Section>
   );
 }

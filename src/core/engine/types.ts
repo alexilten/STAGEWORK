@@ -11,7 +11,8 @@ export type MaterialKey =
   | 'speaker' | 'speakerGrille'
   | 'scenicFlat' | 'drape'
   | 'camera' | 'platform' | 'glass' | 'screen'
-  | 'crowd' | 'barricade' | 'stand' | 'structure' | 'roofSkin' | 'booth' | 'accessible';
+  | 'crowd' | 'barricade' | 'stand' | 'structure' | 'roofSkin' | 'booth' | 'accessible'
+  | 'venueWall' | 'venueDark' | 'venueFloor' | 'venueCarpet' | 'venueSteel' | 'venueColumn' | 'venuePipe' | 'venueDoor' | 'venueGlass' | 'rigPoint';
 
 export type Part =
   | { kind: 'box'; min: Vec3; max: Vec3; mat: MaterialKey }
@@ -22,6 +23,7 @@ export type Part =
 /** Rhino layer paths (see docs/ARCHITECTURE.md §Rhino layer hierarchy) */
 export type LayerPath =
   | '00_REFERENCE'
+  | '05_VENUE::05_01_SHELL' | '05_VENUE::05_02_STRUCTURE' | '05_VENUE::05_03_RIGGING' | '05_VENUE::05_04_FIXTURES' | '05_VENUE::05_05_SERVICES' | '05_VENUE::05_06_GRID_LINES'
   | '10_STAGE::10_01_DECKING' | '10_STAGE::10_02_RISERS' | '10_STAGE::10_03_SUPPORTS' | '10_STAGE::10_04_FINISHES'
   | '20_LED::20_01_CABINETS' | '20_LED::20_02_SUPPORTS' | '20_LED::20_03_TRIM'
   | '30_RIGGING::30_01_TRUSS' | '30_RIGGING::30_02_HOISTS' | '30_RIGGING::30_03_HARDWARE' | '30_RIGGING::30_04_GROUND_SUPPORT' | '30_RIGGING::30_05_GRID'
@@ -33,7 +35,7 @@ export type LayerPath =
   | '90_TECHNICAL::90_01_DIMENSIONS' | '90_TECHNICAL::90_02_CENTERLINES' | '90_TECHNICAL::90_03_REFERENCE';
 
 /** UI layer toggles; several Rhino sub-layers can map to one toggle */
-export type SystemKey = 'decking' | 'supports' | 'finishes' | 'ledCabinets' | 'ledSupports' | 'rigging' | 'structure' | 'lighting' | 'audio' | 'scenic' | 'seating' | 'broadcast' | 'dimensions' | 'reference';
+export type SystemKey = 'decking' | 'supports' | 'finishes' | 'ledCabinets' | 'ledSupports' | 'rigging' | 'structure' | 'lighting' | 'audio' | 'scenic' | 'seating' | 'broadcast' | 'dimensions' | 'reference' | 'venue';
 
 export interface BlockDef {
   key: string; // Rhino block name

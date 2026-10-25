@@ -8,6 +8,7 @@ import { resolveBroadcast, type BroadcastReport } from './broadcast';
 import { resolveAudience, type AudienceReport } from './audience';
 import { resolveStructure, type StructureReport } from './structure';
 import { resolveShow, type ShowReport } from './show';
+import { COLUMN_SEAT_CLEARANCE, resolveVenue, type VenueReport } from './venue';
 import type { Project } from '../schema';
 import { resolveDeck, type DeckLayout } from './deck';
 import { resolveLedWall, type LedLayout } from './led';
@@ -29,6 +30,7 @@ export interface ProductionReport {
   audience: AudienceReport | null;
   structure: StructureReport | null;
   show: ShowReport | null;
+  venue: VenueReport | null;
 }
 
 export interface SceneGraph {
@@ -304,9 +306,46 @@ export function resolveScene(project: Project): SceneGraph {
   const bp = broadcast?.platform;
   if (bp) { hmin[1] = Math.min(hmin[1], bp.yFront - bp.depth - 500); hmin[0] = Math.min(hmin[0], -bp.width / 2 - 2500); hmax[0] = Math.max(hmax[0], bp.width / 2 + 2500); }
 
+  // ── Venue shell around everything above (the stage wall sits behind the most upstage element)
+  let venue: VenueReport | null = null;
+  const vp = project.venue;
+  if (vp?.enabled) {
+    const r = resolveVenue(vp, { backY: Math.max(max[1], hmax[1]) }, project.units);
+    venue = r.report; addBlocks(r.blocks); objects.push(...r.objects); annotations.push(...r.annotations); warnings.push(...r.warnings);
+    if (venue.built) {
+      const { x0, y0, x1, y1 } = venue.box;
+      // columns: none in the stage, seats cleared around each one
+      const half = venue.columnSize / 2;
+      const hits = venue.columns.filter((c) => deck.layout.areas.some((a) => c.x + half > a.minX && c.x - half < a.maxX && c.y + half > a.minY && c.y - half < a.maxY));
+      if (hits.length) warnings.push({ level: 'error', code: 'venue.column.stage', target: 'venue', message: `${hits.length} building column${hits.length > 1 ? 's land' : ' lands'} in the stage. Change the footprint or the stage size so the stage sits in one bay.` });
+      if (venue.columns.length && seating) {
+        const k = half + COLUMN_SEAT_CLEARANCE;
+        const before = objects.length;
+        for (let i = objects.length - 1; i >= 0; i--) {
+          const o = objects[i];
+          if (o.system === 'seating' && o.block?.startsWith('SC_CHAIR') && venue.columns.some((c) => Math.abs(o.position[0] - c.x) < k && Math.abs(o.position[1] - c.y) < k)) objects.splice(i, 1);
+        }
+        const killed = before - objects.length;
+        if (killed) {
+          seating = { ...seating, count: seating.count - killed, capacity: seating.capacity - killed, seatKills: (seating.seatKills ?? 0) + killed };
+          warnings.push({ level: 'info', code: 'venue.column.seats', target: 'seating', message: `${killed} seats removed around building columns.` });
+        }
+      }
+      // overhead: the rig must trim under the venue's clear height
+      const rigTop = max[2];
+      if (rigTop > venue.clear - 600) warnings.push({ level: 'warn', code: 'venue.clear', target: 'venue', message: `The show reaches ${(rigTop / 1000).toFixed(1)} m but the ${venue.name.toLowerCase()} clears ${(venue.clear / 1000).toFixed(1)} m to ${venue.archetype === 'ballroom' ? 'the ceiling' : 'steel'}. Lower the trims or the LED.` });
+      if (!venue.rating && truss.length) warnings.push({ level: 'warn', code: 'venue.roof.unrated', target: 'venue', message: 'Warehouse roof joists are usually not rated for production loads. Hang from a ground-supported grid or get the roof rated by an engineer.' });
+      // the show must sit inside the walls
+      const sx = Math.max(-hmin[0], hmax[0]);
+      if (sx > (x1 - x0) / 2) warnings.push({ level: 'warn', code: 'venue.width', target: 'venue', message: `The show is ${((2 * sx) / 1000).toFixed(1)} m wide; the venue is ${((x1 - x0) / 1000).toFixed(1)} m.` });
+      if (hmin[1] < y0) warnings.push({ level: 'warn', code: 'venue.depth', target: 'venue', message: `The audience runs ${((y0 - hmin[1]) / 1000).toFixed(1)} m past the back-of-house wall. Increase the venue depth or reduce seating.` });
+      hmin[0] = Math.min(hmin[0], x0); hmax[0] = Math.max(hmax[0], x1); hmin[1] = Math.min(hmin[1], y0); hmax[1] = Math.max(hmax[1], y1); hmax[2] = Math.max(hmax[2], venue.wallHeight);
+    }
+  }
+
   return {
     objects, blocks, annotations, warnings,
-    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions, scenic, broadcast, audience, structure, show },
+    report: { stage: { ...deck.layout, system: deckSys }, led, truss, trussSystem: trussSys, fixtures, hoist, seating, audio, lightingPositions, scenic, broadcast, audience, structure, show, venue },
     bounds: { min, max },
     houseBounds: { min: hmin, max: hmax },
   };
