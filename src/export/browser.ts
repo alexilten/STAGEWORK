@@ -6,6 +6,9 @@ import { serializeProject, type Project } from '../core/schema';
 import { bomCsv } from './bom';
 import { exportRhino, type RhinoModule } from './rhino';
 import { exportGlb, type GlbMedia } from './glb';
+import { exportFbx } from './fbx';
+import { exportDxf } from './dxf';
+import { exportStep } from './step';
 
 let rhinoPromise: Promise<RhinoModule> | null = null;
 export function loadRhino(): Promise<RhinoModule> {
@@ -30,5 +33,11 @@ export async function export3dm(scene: SceneGraph, project: Project, opts: { ver
 }
 export const exportProject = (p: Project) => download(`${slug(p.name)}.stagecraft.json`, serializeProject(p), 'application/json');
 export const exportBom = (s: SceneGraph, p: Project) => download(`${slug(p.name)}_BOM.csv`, bomCsv(s), 'text/csv');
+export const exportFbxFile = (s: SceneGraph, p: Project, systems?: SystemKey[]) =>
+  download(`${slug(p.name)}.fbx`, exportFbx(s, p.name, { systems, finish: p.stage.finish, scenicFinish: p.scenic?.portal.finish }), 'application/octet-stream');
+export const exportDxfFile = (s: SceneGraph, p: Project, systems?: SystemKey[]) =>
+  download(`${slug(p.name)}.dxf`, exportDxf(s, p.name, { systems }), 'image/vnd.dxf');
+export const exportStepFile = (s: SceneGraph, p: Project, systems?: SystemKey[]) =>
+  download(`${slug(p.name)}.step`, exportStep(s, p.name, { systems, finish: p.stage.finish, scenicFinish: p.scenic?.portal.finish, fileName: `${slug(p.name)}.step` }), 'model/step');
 export const exportGlbFile = (s: SceneGraph, p: Project, systems?: SystemKey[], media?: GlbMedia) =>
   download(`${slug(p.name)}.glb`, exportGlb(s, p.name, { systems, finish: p.stage.finish, scenicFinish: p.scenic?.portal.finish, media }) as BlobPart, 'model/gltf-binary');

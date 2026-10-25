@@ -71,7 +71,12 @@ Next:
 Risers / multi-level decks, stage shapes (thrust, T, rounded front), ground-stacked LED, manufacturer flying bars, Claypaky and more LED products, lighting arrangement presets, seating follow-ups (~~placed wheelchair spaces~~ done), ~~jib / Steadicam / PTZ positions~~ (done), camera view for any point in the house, ~~video for screen media~~ (done), richer warnings (sightlines, trim vs. venue height).
 
 ## Round 4 — interoperability
-Rhino dimensions via Compute (decision needed), FBX (local converter), DXF, DWG (ODA), STEP (opencascade.js), export dialog, automated geometry validation.
+Done:
+- **FBX 7.4** (`src/export/fbx.ts`): mm, Z-up, one shared mesh per equipment block, a named model per component, layer hierarchy as empty nodes, metadata as user properties. Verified with Assimp (extents match the model, tilted cameras included).
+- **DXF R12** (`src/export/dxf.ts`) for AutoCAD / Vectorworks / BricsCAD: Rhino layer tree (`$` separator), equipment as BLOCK + INSERT, tilted parts as 3DFACEs. Verified with ezdxf (audit clean, extents match). DWG is Autodesk's closed format and cannot be written reliably in a browser, so the app exports DXF: open it in AutoCAD and save as DWG.
+- **STEP AP214** (`src/export/step.ts`): exact solids (planar B-rep boxes/prisms, true cylinders), blocks as mapped items, layers and colours. Verified with OpenCASCADE (7,812 valid solids for Minimal Keynote, extents match).
+
+Next: Rhino dimensions via Compute (decision needed), automated geometry validation in CI.
 
 ## Round 5 — production-quality app
 Performance (5k+ cabinets), catalogue search/filter UI, venue models (e.g. Pier 80 site model import), desktop packaging (Tauri/Electron), shared libraries, Grasshopper bridge.
@@ -84,5 +89,5 @@ Performance (5k+ cabinets), catalogue search/filter UI, venue models (e.g. Pier 
 - Curved walls hang from a straight header truss with no pickup geometry.
 - Rectangular single-level stages only.
 - Seating: accessible routes to the wheelchair spaces, exits, egress width and venue walls are not modelled; the chair is a generic envelope. Every seating plan needs venue / AHJ approval.
-- No FBX/DXF/DWG/STEP yet (GLB done in Round 2).
+- FBX/DXF/STEP are written from the same scene as the .3dm; DWG ships as DXF. Curved parts are faceted (16 sides) in FBX/DXF; STEP has true cylinders. None has been opened in the commercial apps from the build environment; they are verified with Assimp, ezdxf and OpenCASCADE.
 - The .3dm has not been opened in desktop Rhino from the build environment; it is verified with two openNURBS readers.
